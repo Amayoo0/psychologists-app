@@ -4,6 +4,9 @@ import "./globals.css";
 import {
   ClerkProvider,
 } from '@clerk/nextjs'
+import Header from "@/components/Header";
+import Aside from "@/components/Aside";
+import { Separator } from "@radix-ui/react-separator";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +34,19 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          {children}
+        <div className="flex flex-col h-screen overflow-hidden">
+        <div id="header" className="w-full flex-shrink-0">
+          <Header/>
+        </div>
+          <main className="flex h-screen w-full flex-shrink-0">
+            <Aside/>
+
+            <Separator orientation="vertical" />
+            <div id="content" className="px-20 py-10 max-h-full w-full overflow-y-auto overflow-hidden">
+              {children}
+            </div>
+          </main>
+        </div>
         </body>
       </html>
     </ClerkProvider>

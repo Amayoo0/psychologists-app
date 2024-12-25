@@ -4,10 +4,12 @@ import { redirect } from "next/navigation"
 import { NextResponse } from "next/server"
 
 export async function GET(request: Request){
-    const user = await currentUser()
+    const user = await request.json()
 
-    if (!user) return redirect('/sign-in')
-    
+    if (!user || !user.authId) {
+        console.log(user)
+        return redirect('/sign-in')
+    }
     const email = user.emailAddresses[0].emailAddress
     const name = user.fullName
 
@@ -22,6 +24,7 @@ export async function GET(request: Request){
         console.log(user)
         return NextResponse.redirect(new URL('/dashboard', new URL(request.url).origin))
     } catch {
+        console.log(user)
         return new Response('Error creating user', { status: 500 })
     }
 }
