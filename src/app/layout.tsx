@@ -35,14 +35,14 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
         <div className="flex flex-col h-screen overflow-hidden">
-        <div id="header" className="w-full flex-shrink-0">
+        {/* <div id="header" className="w-full flex-shrink-0">
           <Header/>
-        </div>
+        </div> */}
           <main className="flex h-screen w-full flex-shrink-0">
             <Aside/>
 
             <Separator orientation="vertical" />
-            <div id="content" className="px-20 py-10 max-h-full w-full overflow-y-auto overflow-hidden">
+            <div id="content" className="px-10 py-5 max-h-full w-full overflow-y-auto overflow-hidden">
               {children}
             </div>
           </main>

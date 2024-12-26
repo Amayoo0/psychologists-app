@@ -3,8 +3,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCalendar } from "./calendar-context";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "../ui/separator";
 
 
 const CalendarHeader = () => {
@@ -25,9 +23,6 @@ const CalendarHeader = () => {
     const navigatePrevious = () => {
         const newDate = new Date(date)
         switch( view ){
-            case "day":
-                newDate.setDate(date.getDate() - 1) 
-                break 
             case "week":
                 newDate.setDate(date.getDate() - 7)
                 break 
@@ -40,9 +35,6 @@ const CalendarHeader = () => {
     const navigateNext = () => {
         const newDate = new Date(date)
         switch( view ){
-            case "day":
-                newDate.setDate(date.getDate() + 1)
-                break 
             case "week":
                 newDate.setDate(date.getDate() + 7)
                 break 
@@ -102,14 +94,12 @@ const CalendarHeader = () => {
                     <SelectValue placeholder="Select view" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="day">Día</SelectItem>
                     <SelectItem value="week">Semana</SelectItem>
                     <SelectItem value="month">Mes</SelectItem>
                 </SelectContent>
             </Select>
 
         </div>
-        
         </div>
     )
 }

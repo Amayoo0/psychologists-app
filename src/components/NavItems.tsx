@@ -1,4 +1,6 @@
 import {Calendar1, LayoutDashboard, LucideLogOut, User} from 'lucide-react'
+import NewPatientDialog from './NewPatientDialog';
+import ScheduleAppointmentDialog from './ScheduleAppointmentDialog';
 
 export const NavItems = () => {
     return [

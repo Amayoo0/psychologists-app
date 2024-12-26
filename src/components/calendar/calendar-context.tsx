@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState } from "react"
 
-type ViewType = "day" | "week" | "month" | "schedule"
+type ViewType = "week" | "month" | "schedule"
 
 interface CalendarContextType {
     view: ViewType

@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react'
 
 import { cn } from '@/lib/utils';
 import { NavItems } from '@/components/NavItems';
-import { ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Settings } from 'lucide-react';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Separator } from "./ui/separator"
 import { usePathname } from 'next/navigation';
+import { Avatar } from './ui/avatar';
 
 const Aside = () => {
+	const name = 'Amira Domingos'
 	const navItems = NavItems();
 	const pathname = usePathname();
 
@@ -37,6 +39,7 @@ const Aside = () => {
 	  const toggleSidebar = () => {
 		setIsSidebarExpanded(!isSidebarExpanded);
 	  };
+	  
 	  return (
 		<div
 		className={cn(
@@ -44,9 +47,27 @@ const Aside = () => {
 			'border-r transition-all duration-300 ease-in-out transform hidden sm:flex h-full bg-accent',
 		)}
 		>
-			<aside className="flex h-full flex-col w-full break-words px-4 overflow-x-hidden columns-1 p-5 ">
+			<aside className="flex h-full flex-col w-full break-words px-4 overflow-x-hidden columns-1">
 				{/* Top */}
-				<div id="navItems">
+				<div id="right" className="flex flex-row items-center pt-3 py-2">
+					<Avatar>
+						<div className="w-full h-full bg-foreground text-background flex items-center justify-center font-medium text-xl">
+							{name.split(' ')[0][0].toUpperCase()}{name.split(' ')[1][0].toUpperCase()}
+						</div>	
+					</Avatar>
+					{isSidebarExpanded ? (
+						<div className="pl-2 flex flex-col">
+							<h2 className="text-md font-bold">Amira Domingos</h2>
+							<span className="text-xs italic">Gratis</span>
+						</div>
+					): ('') }
+				</div>
+				{isSidebarExpanded ? (
+					<Separator className='w-full'/>
+				): ('')}
+
+				{/* NavItems */}
+				<div id="navItems" className='py-2'>
 					{navItems.map((item, idx) => {
 						return (
 							<div className="space-y-1" key={idx}>
@@ -64,7 +85,7 @@ const Aside = () => {
 				<Separator/>
 
 				{/* Bottom */}
-				<div id="settings" className='sticky pb-5 mt-auto whitespace-nowrap mb-4 transition duration-200 block'>
+				<div id="settings" className='sticky mt-auto whitespace-nowrap mb-4 transition duration-200 block'>
 					<SideNavItem
 						label="Configuración"
 						icon={Settings}
@@ -98,7 +119,7 @@ const Aside = () => {
 	  path: string;
 	  active: boolean;
 	  isSidebarExpanded: boolean;
-	}> = ({ label, icon: Icon, path, active, isSidebarExpanded }) => {
+	}> = ({ label, icon: Icon, path, active, isSidebarExpanded }) => {	  
 	  return (
 		<>
 		  {isSidebarExpanded ? (
@@ -110,9 +131,9 @@ const Aside = () => {
 				  : 'hover:bg-neutral-200 hover:text-neutral-700 text-neutral-500 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
 			  }`}
 			>
-			  <div className="relative font-base text-[17px] py-1.5 px-2 flex flex-row items-center space-x-3 rounded-md duration-100">
-				<Icon/>
-				<span>{label}</span>
+			  <div className="relative font-base text-[17px] py-1.5 px-2 flex flex-row items-center space-x-2.5 rounded-md duration-100">
+					<Icon/>
+					<span>{label}</span>
 			  </div>
 			</a>
 		  ) : (
@@ -127,7 +148,7 @@ const Aside = () => {
 						: 'hover:bg-neutral-200 hover:text-neutral-700 text-neutral-500 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
 					}`}
 				  >
-					<div className="relative font-base text-[19px] p-2 flex flex-row items-center space-x-2 rounded-md duration-100">
+					<div className="relative font-base py-1.5 px-2 flex flex-row items-center rounded-md duration-100">
 						<Icon/>
 					</div>
 				  </a>
