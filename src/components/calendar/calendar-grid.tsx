@@ -32,7 +32,7 @@ const CalendarGrid = () => {
         endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
       } else {
         startDate = new Date(date)
-        startDate.setDate(date.getDate() - date.getDay())
+        startDate.setDate(date.getDate() - getDayEs(date))
         endDate = new Date(startDate)
         endDate.setDate(startDate.getDate() + 6)
       }
@@ -44,31 +44,31 @@ const CalendarGrid = () => {
     loadEvents()
   }, [date, view, setEvents])
 
-  useEffect(() => {
-    if (gridRef.current) {
-      const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start}"]`)
-      if (firstWorkHourElement) {
-        firstWorkHourElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    }
-  }, [workHours.start])
   // useEffect(() => {
   //   if (gridRef.current) {
-  //     gridRef.current.scrollIntoView({
-  //       behavior: "smooth", // Animación suave
-  //       block: "start", // Alinea el elemento al inicio del contenedor
-  //     });
+  //     const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start}"]`)
+  //     if (firstWorkHourElement) {
+  //       firstWorkHourElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  //     }
   //   }
-  // }, []);
+  // }, [workHours.start])
+  useEffect(() => {
+    if (gridRef.current) {
+      gridRef.current.scrollIntoView({
+        behavior: "smooth", // Animación suave
+        block: "start", // Alinea el elemento al inicio del contenedor
+      });
+    }
+  }, [workHours.start]);  // Aquí se usa la dependencia workHours.start
 
   
-  const renderEvent = (e: Event) => {
+  const renderEventWeekView = (e: Event) => {
     const startOfWeek = new Date(date);
-    startOfWeek.setDate(date.getDate() - date.getDay());
+    startOfWeek.setDate(date.getDate() - getDayEs(date));
     
-    const dayOfWeek = e.startTime.getDay();
+    const dayOfWeek = getDayEs(e.startTime);
     const height = ((e.endTime.getTime() - e.startTime.getTime()) / (1000 * 60 * 60)) * cellSize; // Hours duration * 48px
-    const top = ((e.startTime.getHours() + e.startTime.getMinutes() / 60) )* cellSize; // hours + minutes fraction * 48px
+    const top = ((e.startTime.getHours() + e.startTime.getMinutes() / 60) - 1)* cellSize; // hours + minutes fraction * 48px
 
     return (
       <div 
@@ -77,8 +77,8 @@ const CalendarGrid = () => {
         style={{
           top: `${top}px`,
           height: `${height}px`,
-          left: `${dayOfWeek * (100 / 7)}%`,
-          width: `${100 / 7}%`,
+          left: `${dayOfWeek * (100 / (showWeekends ? 7 : 5))}%`,
+          width: `${100 / (showWeekends ? 7 : 5)}%`,
         }}>
             <div 
               className={cn(
@@ -155,6 +155,13 @@ const CalendarGrid = () => {
     return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()
   }
 
+  function getDayEs(date: Date) {
+    const day = date.getDay();
+    // If it's Sunday (0), return 6 (the last day of the week)
+    // If it's Monday (1), return 0 (the first day of the week)
+    return day === 0 ? 6 : day - 1;
+  }
+
   
 
   const renderWeekView = () => {
@@ -162,13 +169,12 @@ const CalendarGrid = () => {
     const hours = Array.from({ length: 24 }, (_, i) => i)
     const days = Array.from({ length: 7 }, (_, i) => {
       const day = new Date(date)
-      day.setDate(date.getDate() - date.getDay() + i)
+      day.setDate(date.getDate() - getDayEs(date) + i)
       return day
     })
-    console.log('renderWeekView.events', events)
 
     return (
-      <div className="h-screen flex flex-col z-10">
+      <div className="h-screen pb-4 flex flex-col z-10">
         {/* Sticky Header */}
         <div id="sticky-header" className="sticky bg-background border-b flex top-0 z-10">
           {/* Time column header */}
@@ -201,11 +207,13 @@ const CalendarGrid = () => {
             {hours.map((hour) => (
               <div 
                 key={hour} 
+                ref={hour === workHours.start ? gridRef : null}
                 className={cn(
                   "border-b border-r p-2 text-sm text-muted-foreground flex items-center justify-end pr-4",
                   hour < workHours.start || hour > workHours.end ? "bg-gray-100" : ""
                 )}
                 style={{height: `${cellSize}px`}}
+                data-hour={hour}
               >
                 {`${hour.toString().padStart(2, '0')}:00`}
               </div>
@@ -220,15 +228,13 @@ const CalendarGrid = () => {
             {hours.map((hour) => (
               <React.Fragment key={hour}>
                 {days.map((day, i) => (
-                  (!showWeekends && [0, 6].includes(day.getDay())) ? null : (
+                  (!showWeekends && [0, 6].includes(getDayEs(day))) ? null : (
                     <div 
                       key={i} 
-                      ref={hour === workHours.start ? gridRef : null}
                       className={cn(
                         "border-r border-b",
                         hour < workHours.start || hour > workHours.end ? "bg-gray-100" : ""
                       )}
-                      data-hour={hour}
                     />
                   )
                 ))}
@@ -242,8 +248,8 @@ const CalendarGrid = () => {
                 className="absolute left-0 right-0 z-10"
                 style={{
                   top: `${((now.getHours() + now.getMinutes() / 60)-0.09) * cellSize}px`,
-                  left: `${now.getDay() * (100 / 7)}%`,
-                  width: `${100 / 7}%`,
+                  left: `${getDayEs(now) * (100 / (showWeekends ? 7 : 5))}%`,
+                  width: `${100 / (showWeekends ? 7 : 5)}%`,
                 }}
               >
                 <div className="flex items-center w-full">
@@ -256,7 +262,7 @@ const CalendarGrid = () => {
             {/* Events */}
             {events
               // .filter((e) => e.startTime >= days[0] && e.endTime <= days[6])
-              .map(renderEvent)}
+              .map(renderEventWeekView)}
           </div>
         </div>
       </div>

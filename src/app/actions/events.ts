@@ -25,7 +25,6 @@ export async function getEventsByDateRange(startDate: Date, endDate: Date) {
         startTime: 'asc'
       }
     })
-    console.log('getEventsByDateRange.events', events)
     return events
   } catch (error) {
     console.error('Error fetching events:', error)
