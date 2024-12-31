@@ -1,8 +1,13 @@
 'use client'
 
 import { createContext, useContext, useState } from "react"
+import { Event } from '@prisma/client'
 
 type ViewType = "week" | "month" | "schedule"
+interface WorkHours {
+    start: number
+    end: number
+  }
 
 interface CalendarContextType {
     view: ViewType
@@ -15,6 +20,12 @@ interface CalendarContextType {
     setShowDeclinedEvents: (show: boolean) => void
     showCompletedTasks: boolean
     setShowCompletedTasks: (show: boolean) => void
+    events: Event[]
+    setEvents: (events: Event[]) => void
+    cellSize: number
+    setCellSize: (size: number) => void
+    workHours: WorkHours
+    setWorkHours: (hours: WorkHours) => void
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined)
@@ -26,6 +37,10 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     const [showWeekends, setShowWeekends] = useState(true)
     const [showDeclinedEvents, setShowDeclinedEvents] = useState(true)
     const [showCompletedTasks, setShowCompletedTasks] = useState(true)
+    const [events, setEvents] = useState<Event[]>([])
+    const [cellSize, setCellSize] = useState(60)
+    const [workHours, setWorkHours] = useState<WorkHours>({ start: 9, end: 21 })
+
     return (
         <CalendarContext.Provider 
             value={{
@@ -39,6 +54,12 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
                 setShowDeclinedEvents,
                 showCompletedTasks,
                 setShowCompletedTasks,
+                events,
+                setEvents,
+                cellSize,
+                setCellSize,
+                workHours,
+                setWorkHours,
             }}
         >
             {children}

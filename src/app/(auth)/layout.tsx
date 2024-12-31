@@ -19,9 +19,6 @@ export default function Layout ({ children } : { children: React.ReactNode }) {
               <div className="md:w-1/2 p-8">
                 {children}
               </div>
-              <>
-                <SignOutButton/>
-              </>
             </div>
           </CardContent>
         </Card>

@@ -4,16 +4,25 @@ import { redirect } from "next/navigation"
 import { NextResponse } from "next/server"
 
 export async function GET(request: Request){
-    const user = await request.json()
+    const user = await currentUser()
 
-    if (!user || !user.authId) {
-        console.log(user)
+    if (!user) {
         return redirect('/sign-in')
     }
+
     const email = user.emailAddresses[0].emailAddress
     const name = user.fullName
 
     try {
+        const prismaUser = await prisma.user.findUnique({
+            where: {
+                authId: user.id
+            }
+        })
+        console.log(prismaUser)
+        if (prismaUser){
+            return NextResponse.redirect(new URL('/dashboard', new URL(request.url).origin))
+        }
         await prisma.user.create({
             data: {
                 authId: user.id,
@@ -21,10 +30,8 @@ export async function GET(request: Request){
                 name: name
             },
         })
-        console.log(user)
         return NextResponse.redirect(new URL('/dashboard', new URL(request.url).origin))
     } catch {
-        console.log(user)
         return new Response('Error creating user', { status: 500 })
     }
 }

@@ -1,8 +1,10 @@
 'use client'
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu } from "lucide-react";
 import { useCalendar } from "./calendar-context";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import ConfigDialog from "../ConfigDialog";
 
 
 const CalendarHeader = () => {
@@ -11,13 +13,10 @@ const CalendarHeader = () => {
         setView,
         date,
         setDate,
-        showWeekends,
-        setShowWeekends,
-        showDeclinedEvents,
-        setShowDeclinedEvents,
-        showCompletedTasks,
-        setShowCompletedTasks,
       } = useCalendar()
+
+      const [isConfigOpen, setIsConfigOpen] = useState(false)
+
 
     const navigateToday = () => setDate(new Date())
     const navigatePrevious = () => {
@@ -72,34 +71,39 @@ const CalendarHeader = () => {
             ...(view === "day" && { day: "numeric" }),
         })
         return capitalize(genericFormatter.format(date))
-      }
+    }
 
     return (
-        <div id="calendar-header" className="flex justify-between">        
-        <div id="calendar-header-navigation" className="flex gap-2 items-center">
-            <Button size="icon" variant="outline" onClick={navigateToday}>
-                Hoy
-            </Button>
-            <Button size="icon" variant="ghost" onClick={navigatePrevious}>
-                <ChevronLeft className="h-4 w-4"/>
-            </Button>
-            <Button size="icon" variant="ghost" onClick={navigateNext}>
-                <ChevronRight className="h-4 w-4"/>
-            </Button>
-            <h1 className="text-xl font-semibold">{formatDate()}</h1>
-        </div>
-        <div id="calendar-header-view">
-            <Select value={view} onValueChange={(value: any) => setView(value)}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Select view" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="week">Semana</SelectItem>
-                    <SelectItem value="month">Mes</SelectItem>
-                </SelectContent>
-            </Select>
-
-        </div>
+        <div id="calendar-header" className="flex justify-between pb-1 z-40 bg-background top-0">        
+            <div id="calendar-header-navigation" className="flex gap-2 items-center">
+                <Button size="icon" variant="outline" onClick={navigateToday}>
+                    Hoy
+                </Button>
+                <Button size="icon" variant="ghost" onClick={navigatePrevious}>
+                    <ChevronLeft className="h-4 w-4"/>
+                </Button>
+                <Button size="icon" variant="ghost" onClick={navigateNext}>
+                    <ChevronRight className="h-4 w-4"/>
+                </Button>
+                <h1 className="text-xl font-semibold">{formatDate()}</h1>
+            </div>
+            <div id="calendar-header-view-and-settings" className="flex gap-2 items-center">
+                <Select value={view} onValueChange={(value: any) => setView(value)}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select view" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="week">Semana</SelectItem>
+                        <SelectItem value="month">Mes</SelectItem>
+                    </SelectContent>
+                </Select>
+                {view === "week" && (
+                    <Button size="icon" variant="ghost" onClick={() => setIsConfigOpen(true)}>
+                        <Menu className="h-4 w-4"/>
+                    </Button>
+                )}
+                <ConfigDialog open={isConfigOpen} onOpenChange={setIsConfigOpen} />
+            </div>
         </div>
     )
 }

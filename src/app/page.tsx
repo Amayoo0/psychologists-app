@@ -1,6 +1,16 @@
-import { RedirectToSignIn } from '@clerk/nextjs'
+import { RedirectToSignIn, SignedIn, SignedOut } from '@clerk/nextjs';
+import { redirect } from 'next/navigation'
 
 export default function Home() {
-  return RedirectToSignIn
+  return (
+    <>
+      <SignedIn>
+        {redirect('/dashboard')}       
+      </SignedIn>
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+    </>
+  );
 }
 

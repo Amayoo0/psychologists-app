@@ -18,12 +18,45 @@ model User {
   authId    String  @unique
 
   patients  Patient[]
+  events  Event[]
 }
 
 model Patient {
   id        Int     @id @default(autoincrement())
   name      String
+  initials  String  @unique
 
   user      User    @relation(fields: [userId], references: [id])
   userId    Int 
+
+  events  Event[]
+  file    File[]
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  type        String   @default("event") // "event" | "pending"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  patient   Patient @relation(fields: [patientId], references: [id])
+  patientId Int
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+}
+
+
+model File {
+  id        Int      @id @default(autoincrement())
+  filename  String
+  url       String
+  uploadedAt DateTime @default(now())
+
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  patientId Int
 }
