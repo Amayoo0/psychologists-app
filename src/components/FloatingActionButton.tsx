@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import NewPatientDialog from './NewPatientDialog'
 import ScheduleAppointmentDialog from './ScheduleAppointmentDialog'
+import { EventDialog } from './EventDialog'
 
 export default function FloatingActionButton() {
-  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
+    const [showEventDialog, setShowEventDialog] = useState(false)
+  
   const [newPatientDialogOpen, setNewPatientDialogOpen] = useState(false)
 
   return (
@@ -25,7 +27,7 @@ export default function FloatingActionButton() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuItem onSelect={() => setScheduleDialogOpen(true)}>
+          <DropdownMenuItem onSelect={() => setShowEventDialog(true)}>
             Agendar Cita
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setNewPatientDialogOpen(true)}>
@@ -35,9 +37,11 @@ export default function FloatingActionButton() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <ScheduleAppointmentDialog
-        open={scheduleDialogOpen}
-        onOpenChange={setScheduleDialogOpen}
+      <EventDialog
+        open={showEventDialog}
+        onOpenChange={setShowEventDialog}
+        startTime={new Date()}
+        endTime={new Date()}
       />
       <NewPatientDialog
         open={newPatientDialogOpen}

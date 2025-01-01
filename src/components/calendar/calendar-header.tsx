@@ -68,7 +68,6 @@ const CalendarHeader = () => {
         const genericFormatter = new Intl.DateTimeFormat("es", {
             month: "short",
             year: "numeric",
-            ...(view === "day" && { day: "numeric" }),
         })
         return capitalize(genericFormatter.format(date))
     }

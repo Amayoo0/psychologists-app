@@ -27,7 +27,10 @@ model Patient {
   initials  String  @unique
 
   user      User    @relation(fields: [userId], references: [id])
-  userId    Int 
+  userId    Int
+  createdAt   DateTime @default(now())
+  lastSession DateTime?
+
 
   events  Event[]
   file    File[]
@@ -39,7 +42,8 @@ model Event {
   description String?
   startTime   DateTime
   endTime     DateTime
-  type        String   @default("event") // "event" | "pending"
+  type        String   @default("event") // "appoinment" | "task"
+  sessionUrl  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
