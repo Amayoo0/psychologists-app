@@ -427,7 +427,7 @@ const CalendarGrid = () => {
             {hours.map((hour) => (
               <React.Fragment key={hour}>
                 {days.map((day, dayIndex) => (
-                  (!showWeekends && [0, 6].includes(getDayEs(day))) ? null : (
+                  (!showWeekends && [5, 6].includes(getDayEs(day))) ? null : (
                     <div 
                       key={dayIndex} 
                       className={cn(
