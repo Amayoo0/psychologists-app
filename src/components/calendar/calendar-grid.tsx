@@ -4,19 +4,13 @@ import { cn } from "@/lib/utils"
 import { useCalendar } from "./calendar-context"
 import { Separator } from "../ui/separator"
 import React, { useEffect, useRef, useState } from "react"
-import { Event } from '@prisma/client'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { EventDialog } from "../EventDialog"
 import { getEvents } from "@/app/actions/events"
+import { getDayEs  } from "./utils"
+import { RenderEventWeekView } from "./RenderEventsWeekView"
+import { DragSelection, RenderDragSelectionWeekView } from "./RenderDragSelectionWeekView"
 
-interface DragSelection {
-  startTime: Date
-  endTime: Date
-  startY: number
-  currentY: number
-  isDragging: boolean
-  dayIndex: number
-}
+
 
 const CalendarGrid = () => {
   const { view, date, showWeekends, events, setEvents, cellSize, workHours } = useCalendar()
@@ -45,7 +39,10 @@ const CalendarGrid = () => {
   }
 
   const handleMouseDown = (e: React.MouseEvent, dayIndex: number) => {
-    if (!gridRef.current) return
+    if (!gridRef.current) {
+      console.log('gridRef.current is null')
+      return
+    }
 
     const rect = gridRef.current.getBoundingClientRect()
     const y = e.clientY - rect.top
@@ -80,7 +77,6 @@ const CalendarGrid = () => {
       endTime,
       currentY: y
     }))
-    renderDragSelection();
   }
 
   const handleMouseUp = () => {
@@ -103,50 +99,7 @@ const CalendarGrid = () => {
     }
   }
 
-  const renderDragSelection = () => {
-    if (!dragSelection.isDragging) return null
-
-    const top = Math.min(dragSelection.startY, dragSelection.currentY)
-    const height = Math.abs(dragSelection.currentY - dragSelection.startY)
-    const leftOffset = `${dragSelection.dayIndex * (100 / (showWeekends ? 7 : 5))}%`
-    const width = `${100 / (showWeekends ? 7 : 5)}%`
-
-    const timeFormatter = new Intl.DateTimeFormat('es', {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
-    });
-
-    const startTimeFormatted = timeFormatter.format(
-      dragSelection.startTime < dragSelection.endTime ? dragSelection.startTime : dragSelection.endTime
-    );
-
-    const endTimeFormatted = timeFormatter.format(
-      dragSelection.startTime < dragSelection.endTime ? dragSelection.endTime : dragSelection.startTime
-    );
-
-    return (
-      <div
-        className="absolute pointer-events-none z-50"
-        style={{
-          top: `${top}px`,
-          height: `${height}px`,
-          left: leftOffset,
-          width: width,
-        }}
-      >
-        <div className="absolute inset-1 bg-blue-500 rounded-lg shadow-lg">
-          <div className="p-1 text-white">
-            <div className="text-sm font-medium">(Sin título)</div>
-            <div className="text-xs">
-              {startTimeFormatted} - {endTimeFormatted}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
+  
 
   const getMonth = (month: number) => {
     const months = [
@@ -179,7 +132,7 @@ const CalendarGrid = () => {
     }
 
     loadEvents()
-  }, [date, view, setEvents])
+  }, [date, view])
 
   // useEffect(() => {
   //   if (gridRef.current) {
@@ -197,92 +150,6 @@ const CalendarGrid = () => {
       });
     }
   }, [workHours.start]);
-
-  
-  type EventGroup = Event[][];
-
-  const groupOverlappingEvents = (events: Event[]): EventGroup => {
-    // Sort events by start date to facilitate grouping
-    const sortedEvents = [...events].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-  
-    const groups: EventGroup = [];
-  
-    // Function to check if two events overlap
-    const doEventsOverlap = (e1: Event, e2: Event): boolean => {
-      return (
-        e1.startTime < e2.endTime && // e1 starts before e2 ends
-        e1.endTime > e2.startTime // e1 ends after e2 starts
-      );
-    };
-  
-    // Iterate over events and group overlapping ones
-    sortedEvents.forEach((event) => {
-      let addedToGroup = false;
-  
-      // Try to add the event to an existing group
-      for (const group of groups) {
-        if (group.some((e) => doEventsOverlap(e, event))) {
-          group.push(event);
-          addedToGroup = true;
-          break;
-        }
-      }
-  
-      // If it couldn't be added to any group, create a new one
-      if (!addedToGroup) {
-        groups.push([event]);
-      }
-    });
-  
-    return groups;
-  };
-
-  const renderEventWeekView = (events: Event[]) => {
-    const startOfWeek = new Date(date);
-    startOfWeek.setDate(date.getDate() - getDayEs(date));
-    const overlappingGroups = groupOverlappingEvents(events);
-    console.log(overlappingGroups);
-    return overlappingGroups.flatMap((group) => {
-      const groupLength = group.length;
-      return group.map((e, i) => {
-        const dayOfWeek = getDayEs(e.startTime);
-        const height = ((e.endTime.getTime() - e.startTime.getTime()) / (1000 * 60 * 60)) * cellSize; // Hours duration * 48px
-        const top = ((e.startTime.getHours() + e.startTime.getMinutes() / 60) - 1)* cellSize; // hours + minutes fraction * 48px
-        const width = 100 / (showWeekends ? 7 : 5) / groupLength;
-        const left = dayOfWeek * (100 / (showWeekends ? 7 : 5)) + width * i;
-        return (
-            <div 
-              key={`event-${e.id}`}
-              className="absolute left-0 right-0 "
-              style={{
-                top: `${top}px`,
-                height: `${height}px`,
-                left: `${left}%`,
-                width: `${width}%`,
-              }}>
-              <TooltipProvider delayDuration={70}>
-                <Tooltip>
-                <TooltipTrigger asChild>
-                  <div 
-                    className={cn(
-                      "flex items-center justify-center rounded py-1 h-full w-full text-sm text-center overflow-hidden break-words leading-tight",
-                      e.endTime < new Date()
-                        ? "bg-gray-300 text-gray-700 border border-gray-800"
-                        : "bg-blue-100 text-blue-800 border border-blue-950"
-                    )}>
-                    {e.title}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {e.title}
-                </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-        );
-      });
-    });
-  };
 
   const renderMonthView = () => {
     const start = new Date(date.getFullYear(), date.getMonth(), 1)
@@ -345,12 +212,6 @@ const CalendarGrid = () => {
     return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()
   }
 
-  function getDayEs(date: Date) {
-    const day = date.getDay();
-    // If it's Sunday (0), return 6 (the last day of the week)
-    // If it's Monday (1), return 0 (the first day of the week)
-    return day === 0 ? 6 : day - 1;
-  }
 
   
 
@@ -364,7 +225,10 @@ const CalendarGrid = () => {
     })
 
     return (
-      <div className="h-screen pb-4 flex flex-col z-10">
+      <div 
+        className="pb-4 flex flex-col z-10"
+        style={{ height: `calc(100vh - 50px)` }}
+      >
         {/* Sticky Header */}
         <div id="sticky-header" className="sticky bg-background border-b flex top-0 z-10">
           {/* Time column header */}
@@ -393,7 +257,7 @@ const CalendarGrid = () => {
         {/* Scrollable Content */}
         <div 
           id="scrollable-content" 
-          className="flex-1 overflow-y-auto flex relative" 
+          className="flex-1 overflow-y-auto flex relative"
           ref={gridRef}
         >
           {/* Hours column */}
@@ -440,7 +304,9 @@ const CalendarGrid = () => {
                 ))}
               </React.Fragment>
             ))}
-            {renderDragSelection()}
+            {gridRef.current && (
+              <RenderDragSelectionWeekView dragSelection={dragSelection} showWeekends={showWeekends} gridRef={gridRef as React.RefObject<HTMLDivElement>} />
+            )}
 
             {/* Time marker */}
             {isToday(date) && (
@@ -461,7 +327,7 @@ const CalendarGrid = () => {
             )}
 
             {/* Events */}
-            {renderEventWeekView(events)}
+            <RenderEventWeekView events={events} date={date} cellSize={cellSize} showWeekends={showWeekends} />
           </div>
         </div>
         
