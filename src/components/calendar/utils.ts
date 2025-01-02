@@ -44,3 +44,16 @@ export function getDayEs(date: Date): number {
     // If it's Monday (1), return 0 (the first day of the week)
     return day === 0 ? 6 : day - 1;
 }
+
+export function isToday(date: Date): boolean {
+    const today = new Date()
+    return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()
+};
+
+export const getMonth = (month: number) => {
+  const months = [
+    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+  ];
+  return months[month];
+}

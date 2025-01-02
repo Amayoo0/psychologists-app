@@ -2,13 +2,13 @@
 
 import { cn } from "@/lib/utils"
 import { useCalendar } from "./calendar-context"
-import { Separator } from "../ui/separator"
 import React, { useEffect, useRef, useState } from "react"
 import { EventDialog } from "../EventDialog"
 import { getEvents } from "@/app/actions/events"
-import { getDayEs  } from "./utils"
-import { RenderEventWeekView } from "./RenderEventsWeekView"
-import { DragSelection, RenderDragSelectionWeekView } from "./RenderDragSelectionWeekView"
+import { getDayEs, getMonth, isToday  } from "./utils"
+import { EventWeekView, EventWeekViewDragged, DragSelection } from "./EventWeekView"
+import TimeMarker from "./TimeMarker"
+import HeaderWeekDays from "./HeaderWeekDays"
 
 
 
@@ -101,13 +101,7 @@ const CalendarGrid = () => {
 
   
 
-  const getMonth = (month: number) => {
-    const months = [
-      "Ene", "Feb", "Mar", "Abr", "May", "Jun",
-      "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
-    ];
-    return months[month];
-  }
+
   
   // useEffect will run after the DOM load finishes and every time the date, view or setEvents change.
   // It defines a function (loadEvents) that will fetch the events for the current view and date.
@@ -134,22 +128,22 @@ const CalendarGrid = () => {
     loadEvents()
   }, [date, view])
 
-  // useEffect(() => {
-  //   if (gridRef.current) {
-  //     const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start}"]`)
-  //     if (firstWorkHourElement) {
-  //       firstWorkHourElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  //     }
-  //   }
-  // }, [workHours.start])
+  // Scroll the grid to the first work hour after the DOM load finishes 
+  // and every time the workHours, date or view change.
   useEffect(() => {
     if (gridRef.current) {
-      gridRef.current.scrollIntoView({
-        behavior: "smooth", 
-        block: "start",
-      });
+      const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start}"]`);
+      if (firstWorkHourElement) {
+        const offsetTop = (firstWorkHourElement as HTMLElement).offsetTop;
+        gridRef.current.scrollTo({
+          top: offsetTop,
+          behavior: 'smooth',
+        });
+      }
     }
-  }, [workHours.start]);
+  }, [workHours.start, gridRef, date, view]);
+  
+  
 
   const renderMonthView = () => {
     const start = new Date(date.getFullYear(), date.getMonth(), 1)
@@ -207,16 +201,12 @@ const CalendarGrid = () => {
     )
   }
 
-  function isToday(date: Date) {
-    const today = new Date()
-    return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()
-  }
+
 
 
   
 
   const renderWeekView = () => {
-    const now = new Date()
     const hours = Array.from({ length: 24 }, (_, i) => i)
     const days = Array.from({ length: 7 }, (_, i) => {
       const day = new Date(date)
@@ -231,27 +221,8 @@ const CalendarGrid = () => {
       >
         {/* Sticky Header */}
         <div id="sticky-header" className="sticky bg-background border-b flex top-0 z-10">
-          {/* Time column header */}
-          <div className={`w-16 h-[${cellSize}px]`}/>
-
-          {/* Days header */}
-          <div className="grid flex-1 pr-[14px]" style={{ gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)` }}>
-            {days.map((day, i) => (
-              (!showWeekends && [0, 6].includes(day.getDay())) ? null : (
-                <div key={i} className="border-r border-l text-center py-2">
-                  <div className="text-sm text-muted-foreground">
-                    {new Intl.DateTimeFormat("es", { weekday: "short" }).format(day).toUpperCase()}
-                  </div>
-                  <div className={cn(
-                    "mt-1 w-8 h-8 rounded-full flex items-center justify-center mx-auto text-sm",
-                    isToday(day) && "bg-blue-600 text-white"
-                  )}>
-                    {day.getDate()}
-                  </div>
-                </div>
-              )
-            ))}
-          </div>
+            <div id="header-hours-column" className={`w-16 h-[${cellSize}px]`}/>
+            <HeaderWeekDays showWeekends={showWeekends} days={days} />
         </div>
 
         {/* Scrollable Content */}
@@ -265,7 +236,6 @@ const CalendarGrid = () => {
             {hours.map((hour) => (
               <div 
                 key={hour} 
-                ref={hour === workHours.start ? gridRef : null}
                 className={cn(
                   "border-b border-r pt-1 text-sm text-muted-foreground flex justify-end pr-4",
                   hour < workHours.start || hour >= workHours.end ? "bg-gray-100" : ""
@@ -305,29 +275,16 @@ const CalendarGrid = () => {
               </React.Fragment>
             ))}
             {gridRef.current && (
-              <RenderDragSelectionWeekView dragSelection={dragSelection} showWeekends={showWeekends} gridRef={gridRef as React.RefObject<HTMLDivElement>} />
+              <EventWeekViewDragged dragSelection={dragSelection} showWeekends={showWeekends} gridRef={gridRef as React.RefObject<HTMLDivElement>} />
             )}
 
             {/* Time marker */}
             {isToday(date) && (
-              <div 
-                id="time-marker" 
-                className="absolute left-0 right-0 z-10"
-                style={{
-                  top: `${((now.getHours() + now.getMinutes() / 60)-0.09) * cellSize}px`,
-                  left: `${getDayEs(now) * (100 / (showWeekends ? 7 : 5))}%`,
-                  width: `${100 / (showWeekends ? 7 : 5)}%`,
-                }}
-              >
-                <div className="flex items-center w-full">
-                  <span className="h-2 w-2 bg-red-600 rounded-full -ml-1"/>
-                  <Separator className="flex-1 bg-red-600 h-[2px]"/>
-                </div>
-              </div>
+              <TimeMarker showWeekends={showWeekends} cellSize={cellSize} />
             )}
 
             {/* Events */}
-            <RenderEventWeekView events={events} date={date} cellSize={cellSize} showWeekends={showWeekends} />
+            <EventWeekView events={events} date={date} cellSize={cellSize} showWeekends={showWeekends} />
           </div>
         </div>
         

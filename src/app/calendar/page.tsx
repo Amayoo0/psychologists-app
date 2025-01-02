@@ -7,17 +7,11 @@ import AppLayout from "../AppLayout";
 export default function Home() {
     return (
         <AppLayout>
-            <div className="">
-                <CalendarProvider>
-                    <div>
-                        <CalendarHeader/>
-                    </div>
-                    <div className="">
-                        <CalendarGrid/>
-                    </div>
-                </CalendarProvider>
-                <FloatingActionButton/>
-            </div>
+            <CalendarProvider>
+                <CalendarHeader/>
+                <CalendarGrid/>
+            </CalendarProvider>
+            <FloatingActionButton/>
         </AppLayout>
     )
 }
