@@ -9,216 +9,99 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, Clock, MapPin, Users, Video } from 'lucide-react'
-import { format, set } from "date-fns"
-import { es, se } from "date-fns/locale"
-import { useState, useEffect } from "react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Calendar, Users, Video } from 'lucide-react'
+import { format } from "date-fns"
+import { useState, useEffect, use } from "react"
 import SearchableDropdown from "./SearchableDropdown"
-import { getPatients } from "@/app/actions/patients"
-import { Patient } from "@prisma/client"
-import { on } from "events"
+import { Patient, Event } from "@prisma/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { currentUser } from "@clerk/nextjs/server"
 import { useUser } from "@clerk/nextjs"
+import { userAgent } from "next/server"
+import { saveEvent } from "@/app/actions/events"
+import { prisma } from "@/lib/prisma"
+import { useCalendar } from "./calendar/calendar-context"
+
+export type EventData = {
+    title?: string
+    description?: string
+    type?: string
+    patientId?: number
+    startTime?: Date
+    endTime?: Date
+    sessionUrl?: string
+};
 
 interface EventDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  startTime: Date
-  endTime: Date
-  eventData?: {
-    title: string
-    description: string
-    type: string
-    patientId: number
-  }
+  eventData?: EventData
   repeat?: string
 }
 
 export function EventDialog({
   open,
   onOpenChange,
-  startTime,
-  endTime,
   eventData,
 }: EventDialogProps) {
+    const {patients} = useCalendar();
     const [title, setTitle] = useState(eventData?.title || "")
     const [description, setDescription] = useState(eventData?.description || "")
     const [type, setType] = useState(eventData?.type || "appointment")
     const [patientId, setPatientId] = useState(eventData?.patientId || 0)
-    const [patients, setPatients] = useState<Patient[]>([])
-    const [startTimeStr, setStartTimeStr] = useState(format(startTime, "HH:mm"))
-    const [endTimeStr, setEndTimeStr] = useState(format(endTime, "HH:mm"))
-    const [newStartTime, setNewStartTime] = useState(startTime)
-    const [newEndTime, setNewEndTime] = useState(endTime)
+    const [patient, setPatient] = useState<Patient>()
+    const [sessionUrl, setSessionUrl] = useState(eventData?.sessionUrl || "")
+    const [startTimeStr, setStartTimeStr] = useState(format(eventData?.startTime ? eventData.startTime : new Date(), "HH:mm"))
+    const [endTimeStr, setEndTimeStr] = useState(format(eventData?.endTime ? eventData.endTime : new Date(), "HH:mm"))
+    const [newStartTime, setNewStartTime] = useState(eventData?.startTime ? eventData.startTime : new Date())
+    const [newEndTime, setNewEndTime] = useState(eventData?.endTime ? eventData.endTime : new Date())
     const [repeat, setRepeat] = useState("no-repeat")
+    const [repetitionCount, setRepetitionCount] = useState(1)
 
     useEffect(() => {
-        setNewStartTime(startTime);
-        setStartTimeStr(format(startTime, "HH:mm"));
-        setNewEndTime(endTime);
-        setEndTimeStr(format(endTime, "HH:mm"));
-      }, [startTime, endTime]);
+        setStartTimeStr(format(newStartTime, "HH:mm"));
+        setEndTimeStr(format(newEndTime, "HH:mm"));
+    }, [newStartTime, newEndTime]);
 
     useEffect(() => {
-        // Fetch patients when the component mounts
-        async function fetchPatients() {
-            const fetchedPatients = await getPatients();
-            if (!fetchedPatients){
-                console.log("No patients found, using mock data");
-                setPatients([
-                    {
-                        id: 4,
-                        name: "Bob Brown",
-                        initials: "BB",
-                        userId: 104,
-                        createdAt: new Date("2023-01-15T13:00:00Z"),
-                        lastSession: new Date("2023-02-15T13:00:00Z"),
-                    },
-                    {
-                        id: 5,
-                        name: "Charlie Davis",
-                        initials: "CD",
-                        userId: 105,
-                        createdAt: new Date("2023-01-20T14:00:00Z"),
-                        lastSession: new Date("2023-02-20T14:00:00Z"),
-                    },
-                    {
-                        id: 6,
-                        name: "Diana Evans",
-                        initials: "DE",
-                        userId: 106,
-                        createdAt: new Date("2023-01-25T15:00:00Z"),
-                        lastSession: new Date("2023-02-25T15:00:00Z"),
-                    },
-                    {
-                        id: 7,
-                        name: "Ethan Foster",
-                        initials: "EF",
-                        userId: 107,
-                        createdAt: new Date("2023-01-30T16:00:00Z"),
-                        lastSession: new Date("2023-02-28T16:00:00Z"),
-                    },
-                    {
-                        id: 8,
-                        name: "Fiona Green",
-                        initials: "FG",
-                        userId: 108,
-                        createdAt: new Date("2023-02-01T17:00:00Z"),
-                        lastSession: new Date("2023-03-01T17:00:00Z"),
-                    },
-                    {
-                        id: 9,
-                        name: "George Harris",
-                        initials: "GH",
-                        userId: 109,
-                        createdAt: new Date("2023-02-05T18:00:00Z"),
-                        lastSession: new Date("2023-03-05T18:00:00Z"),
-                    },
-                    {
-                        id: 10,
-                        name: "Hannah Irving",
-                        initials: "HI",
-                        userId: 110,
-                        createdAt: new Date("2023-02-10T19:00:00Z"),
-                        lastSession: new Date("2023-03-10T19:00:00Z"),
-                    },
-                    {
-                        id: 11,
-                        name: "Ian Johnson",
-                        initials: "IJ",
-                        userId: 111,
-                        createdAt: new Date("2023-02-15T20:00:00Z"),
-                        lastSession: new Date("2023-03-15T20:00:00Z"),
-                    },
-                    {
-                        id: 12,
-                        name: "Jessica King",
-                        initials: "JK",
-                        userId: 112,
-                        createdAt: new Date("2023-02-20T21:00:00Z"),
-                        lastSession: new Date("2023-03-20T21:00:00Z"),
-                    },
-                    {
-                        id: 13,
-                        name: "Kevin Lewis",
-                        initials: "KL",
-                        userId: 113,
-                        createdAt: new Date("2023-02-25T22:00:00Z"),
-                        lastSession: new Date("2023-03-25T22:00:00Z"),
-                    },
-                    {
-                        id: 1,
-                        name: "John Doe",
-                        initials: "JD",
-                        userId: 101,
-                        createdAt: new Date("2023-01-01T10:00:00Z"),
-                        lastSession: new Date("2023-02-01T10:00:00Z"),
-                    },
-                    {
-                        id: 2,
-                        name: "Jane Smith",
-                        initials: "JS",
-                        userId: 102,
-                        createdAt: new Date("2023-01-05T11:00:00Z"),
-                        lastSession: null,
-                    },
-                    {
-                        id: 3,
-                        name: "Alice Johnson",
-                        initials: "AJ",
-                        userId: 103,
-                        createdAt: new Date("2023-01-10T12:00:00Z"),
-                        lastSession: new Date("2023-02-10T12:00:00Z"),
-                    },
-                ]);
-            } else {
-                setPatients(fetchedPatients);
-            }
-
-        }
-        fetchPatients()
-    }, [onOpenChange])
-
+        const patient = patients.find((p) => p.id === patientId)
+        if (patient) setPatient(patient)
+    }, [patientId, patients])
+    
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
         const [startHour, startMinute] = startTimeStr.split(':')
         const [endHour, endMinute] = endTimeStr.split(':')
-        newStartTime.setHours(Number(startHour), Number(startMinute))
-        newEndTime.setHours(Number(endHour), Number(endMinute))
+        
+        let newStart = new Date(newStartTime)
+        newStart.setHours(Number(startHour), Number(startMinute))
 
-        console.log("Saving event", title, description, newStartTime, newEndTime, type, patientId)
+        let newEnd = new Date(newEndTime)
+        newEnd.setHours(Number(endHour), Number(endMinute))
 
         const event = {
-        title,
-        description,
-        startTime: newStartTime,
-        endTime: newEndTime,
-        type,
-        patientId,
+            title,
+            description,
+            startTime: newStart,
+            endTime: newEnd,
+            type,
+            patientId,
+            sessionUrl,
+            // userId: currentUser.id
         }
-        switch (repeat) {
-            case "daily":
-                // Guardar evento diariamente
-                break
-            case "weekly":
-                // Guardar evento semanalmente
-                break
-            case "monthly":
-                // Guardar evento mensualmente
-                break
-            default:
-                // Guardar evento sin repetición
-                // saveEvent(event)
-                break
-        }
+        console.log('saving event', event)
+
+        saveEvent(event, repeat, repetitionCount)
+
 
         // Cierra el diálogo después de guardar el evento
         onOpenChange(false)
     }
 
+    console.log('patient', patient)
+    
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[450px]">
@@ -280,38 +163,58 @@ export function EventDialog({
                     />
                 </div>
                 ) : (
-                    <Select value={repeat} onValueChange={setRepeat}>
-                        <SelectTrigger className="w-[180px] h-8 text-sm">
-                        <SelectValue placeholder="No se repite" />
-                        </SelectTrigger>
-                        <SelectContent>
-                        <SelectItem value="no-repeat">No se repite</SelectItem>
-                        <SelectItem value="daily">Diariamente</SelectItem>
-                        <SelectItem value="weekly">Semanalmente</SelectItem>
-                        <SelectItem value="monthly">Mensualmente</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="flex flex-row items-center space-x-2">
+                        <Select value={repeat} onValueChange={setRepeat}>
+                            <SelectTrigger className="w-[180px] h-8 text-sm">
+                            <SelectValue placeholder="No se repite" />
+                            </SelectTrigger>
+                            <SelectContent>
+                            <SelectItem value="no-repeat">No se repite</SelectItem>
+                            <SelectItem value="weekly">Semanal</SelectItem>
+                            <SelectItem value="biweekly">Bisemanal</SelectItem>
+                            <SelectItem value="monthly">Mensual</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {repeat !== "no-repeat" && (
+                            <Input
+                                type="number"
+                                placeholder="Cantidad de sesiones"
+                                className="w-25 h-8"
+                                min={1}
+                                onChange={(e) => {
+                                    const value = parseInt(e.target.value, 10);
+                                    if (value > 0) {
+                                        setRepetitionCount(value);
+                                    }
+                                }}
+                            />
+                        )}
+                    </div>
                 )}
 
                 <div className="grid gap-2">
                 <div className="flex items-center gap-4">
                     <Video className="h-4 w-4 text-muted-foreground" />
                     <Input
+                    type="text"
                     placeholder="Añadir videollamada"
-                    />
+                    value={sessionUrl}
+                    onChange={(e) => setSessionUrl(e.target.value)}
+                />
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="pb-32">
-                        <Users className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-4 h-10 pb-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <div className="relative w-full h-8">
+                        <SearchableDropdown
+                            options={patients}
+                            label="initials"
+                            id="id"
+                            filterBy="name"                 
+                            selectedVal={patient ? patient.initials : ""}
+                            handleChange={(val) => setPatientId(Number(val))}
+                            placeholder="Seleccionar paciente"
+                        />
                     </div>
-                    <SearchableDropdown
-                    options={patients}
-                    label="initials"
-                    id="id"
-                    selectedVal={patientId.toString()}
-                    handleChange={(val) => setPatientId(Number(val))}
-                    placeholder="Seleccionar paciente"
-                    />
                 </div>
                 <div className="flex items-center gap-4">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -325,7 +228,9 @@ export function EventDialog({
                 </div>
             </div>
             <DialogFooter>
-                <Button type="submit">Guardar</Button>
+                <Button type="submit">
+                    {repetitionCount > 1 ? `Guardar (${repetitionCount})` : "Guardar"}
+                </Button>
             </DialogFooter>
             </form>
         </DialogContent>

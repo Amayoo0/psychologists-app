@@ -1,8 +1,7 @@
 import { cn } from "@/lib/utils";
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@radix-ui/react-tooltip";
 import React from "react";
 import { Event } from '@prisma/client'
-import { getDayEs, groupOverlappingEvents } from "./utils";
+import { getDayEs, groupOverlappingEvents, formatTime } from "./utils";
 import { EventDialog } from "../EventDialog";
 
 
@@ -11,74 +10,71 @@ const EventWeekView = ({
     date,
     cellSize,
     showWeekends 
-}: { events: Event[], date: Date, cellSize: number, showWeekends: boolean }) => {
+}: { events: Event[] | null, date: Date, cellSize: number, showWeekends: boolean }) => {
+
+    if (!events) return null;
+
     const startOfWeek = new Date(date);
     startOfWeek.setDate(date.getDate() - getDayEs(date));
     const [showEventDialog, setShowEventDialog] = React.useState(false);
     const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
 
     const overlappingGroups = groupOverlappingEvents(events);
-    console.log('overlappingGroups', overlappingGroups);
   
     return overlappingGroups.flatMap((group) => {
         const groupLength = group.length;
         return group.map((e, i) => {
             const dayOfWeek = getDayEs(e.startTime);
             const height = ((e.endTime.getTime() - e.startTime.getTime()) / (1000 * 60 * 60)) * cellSize;
-            const top = ((e.startTime.getHours() + e.startTime.getMinutes() / 60) - 1) * cellSize;
+            const top = ((e.startTime.getHours() + e.startTime.getMinutes() / 60) ) * cellSize;
             const width = 100 / (showWeekends ? 7 : 5) / groupLength;
             const left = dayOfWeek * (100 / (showWeekends ? 7 : 5)) + width * i;
+
             return (
-                <div 
-                    key={`event-${e.id}`}
-                    className="absolute left-0 right-0 z-30"
-                    style={{
-                        top: `${top}px`,
-                        height: `${height}px`,
-                        left: `${left}%`,
-                        width: `${width}%`,
-                    }}
-                    onClick={() => {
-                        setSelectedEvent(e);
-                        setShowEventDialog(true);
-                    }}    
+                <React.Fragment key={`EventWeekView-Fragment-${e.id}`}>
+                    {showEventDialog && selectedEvent ? (
+                        <EventDialog
+                            open={showEventDialog}
+                            onOpenChange={setShowEventDialog}
+                            eventData={{
+                                title: selectedEvent.title,
+                                description: selectedEvent.description ? selectedEvent.description : undefined,
+                                type: selectedEvent.type,
+                                patientId: selectedEvent.patientId,
+                                startTime: selectedEvent.startTime,
+                                endTime: selectedEvent.endTime,
+                                sessionUrl: selectedEvent.sessionUrl ? selectedEvent.sessionUrl : undefined,
+                            }}
+                        />
+                    ): (
+                    <div 
+                        key={`EventWeekView-${e.id}`}
+                        className="absolute left-0 right-0 z-30 inset-1"
+                        style={{
+                            top: `${top}px`,
+                            height: `${height}px`,
+                            left: `${left}%`,
+                            width: `${width}%`,
+                        }}
+                        onClick={() => {
+                            setSelectedEvent(e);
+                            setShowEventDialog(true);
+                        }}    
                     >
-                        {showEventDialog && selectedEvent ? (
-                            <EventDialog
-                                open={showEventDialog}
-                                onOpenChange={(isOpen) => {
-                                    setShowEventDialog(isOpen); 
-                                    if (!isOpen) {
-                                    // Wait for the dialog to close before resetting the selected event
-                                    setTimeout(() => setSelectedEvent(null), 0);
-                                    }
-                                }}
-                                startTime={selectedEvent?.startTime || new Date()}
-                                endTime={selectedEvent?.endTime || new Date()}
-                            />
-                        ): (
-                        <TooltipProvider delayDuration={70}>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                            <div 
-                                className={cn(
-                                    "flex items-center justify-center rounded py-1 h-full w-full text-sm text-center overflow-hidden break-words leading-tight",
-                                    e.endTime < new Date()
-                                    ? "bg-gray-300 text-gray-700 border border-gray-800"
-                                    : "bg-blue-100 text-blue-800 border border-blue-950"
-                                )}>
-                                {e.title}
-                            </div>
-                            </TooltipTrigger>
-                            {height < 40 && (
-                                <TooltipContent>
-                                    {e.title}
-                                </TooltipContent>
+                        <div 
+                            className={cn(
+                                "w-full h-full rounded-lg shadow-lg p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight",
+                                e.endTime < new Date() ? "bg-gray-300" : "bg-blue-500"
                             )}
-                        </Tooltip>
-                        </TooltipProvider>
+                        >
+                            {e.title}
+                            <div className="text-xs">
+                                {formatTime(e.startTime)} - {formatTime(e.endTime)}h
+                            </div>
+                        </div>  
+                    </div>
                     )}
-                </div>
+                </React.Fragment>
             );
         });
     });
@@ -101,8 +97,6 @@ const EventWeekViewDragged = ({
     
     if (!dragSelection.isDragging) return null
 
-    console.log('renderizando drag selection')
-
     const scrollTop = gridRef.current?.scrollTop || 0;
 
     const top = Math.min(dragSelection.startY, dragSelection.currentY) + scrollTop;
@@ -111,25 +105,18 @@ const EventWeekViewDragged = ({
     const leftOffset = `${dragSelection.dayIndex * (100 / (showWeekends ? 7 : 5))}%`
     const width = `${100 / (showWeekends ? 7 : 5)}%`
 
-    console.log('top', top, 'height', height, 'leftOffset', leftOffset, 'width', width)
 
-    const timeFormatter = new Intl.DateTimeFormat('es', {
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true
-    });
-
-    const startTimeFormatted = timeFormatter.format(
-    dragSelection.startTime < dragSelection.endTime ? dragSelection.startTime : dragSelection.endTime
+    const startTimeFormatted = formatTime(
+        dragSelection.startTime < dragSelection.endTime ? dragSelection.startTime : dragSelection.endTime
     );
 
-    const endTimeFormatted = timeFormatter.format(
-    dragSelection.startTime < dragSelection.endTime ? dragSelection.endTime : dragSelection.startTime
+    const endTimeFormatted = formatTime(
+        dragSelection.startTime < dragSelection.endTime ? dragSelection.endTime : dragSelection.startTime
     );
 
     return (
     <div
-        className="absolute pointer-events-none z-30"
+        className="absolute pointer-events-none z-40"
         style={{
         top: `${top}px`,
         height: `${height}px`,
@@ -141,7 +128,7 @@ const EventWeekViewDragged = ({
         <div className="p-1 text-white">
             <div className="text-sm font-medium">(Sin título)</div>
             <div className="text-xs">
-            {startTimeFormatted} - {endTimeFormatted}
+                {startTimeFormatted} - {endTimeFormatted} h
             </div>
         </div>
         </div>

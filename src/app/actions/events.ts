@@ -1,6 +1,8 @@
 "use server"
 import { prisma } from '@/lib/prisma'
 import { currentUser, User } from '@clerk/nextjs/server'
+import { Event } from '@prisma/client'
+
 export async function getEvents(startDate: Date, endDate: Date) {
   try {
     console.log('user', await currentUser())
@@ -33,7 +35,7 @@ export async function getEvents(startDate: Date, endDate: Date) {
   }
 }
 
-export async function saveEvents(events: any[]) {
+export async function saveEvent(event: Event, repeat: string, repetitionCount: number) {
   try {
     // const user = await currentUser()
     // if (!user) {
@@ -47,17 +49,29 @@ export async function saveEvents(events: any[]) {
     // if (!prismaUser) {
     //   throw new Error('User not found in database')
     // }
-    const savedEvents = await prisma.$transaction(
-      events.map(event => 
-        prisma.event.create({
-          data: {
-            ...event,
-            // userId: prismaUser.id
-          }
-        })
-      )
-    )
-    return savedEvents
+    let shiftTimeInDays = 0;
+    switch (repeat) {
+      case "weekly":
+          shiftTimeInDays = 7;
+          break
+      case "biweekly":
+          shiftTimeInDays = 14;
+          break
+      case "monthly":
+          shiftTimeInDays = 30;
+          break
+      default:
+          break
+    }
+    Array.from({ length: repetitionCount }, (_, i) => i).map(async (i) => {
+      await prisma.event.create({
+        data: {
+          ...event,
+          startTime: new Date(event.startTime.getDate() + shiftTimeInDays*i)
+        }
+      })
+    })
+
   } catch (error) {
     console.error('Error saving events:', error)
     return []

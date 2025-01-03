@@ -1,94 +1,3 @@
-// "use client"
-
-// import { useState, useCallback, useMemo, useRef } from "react";
-
-// interface SearchableDropdownProps {
-//   options: { [key: string]: string }[];
-//   label: string;
-//   id: string;
-//   selectedVal: string | null;
-//   handleChange: (value: string | null) => void;
-//   placeholder?: string;
-// }
-
-// const SearchableDropdown = ({
-//   options,
-//   label,
-//   id,
-//   selectedVal,
-//   handleChange,
-//   placeholder,
-// }: SearchableDropdownProps) => {
-//   const [query, setQuery] = useState<string>("");
-//   const [isOpen, setIsOpen] = useState<boolean>(false);
-
-//   const inputRef = useRef<HTMLInputElement>(null);
-
-//   const toggle = useCallback((e: MouseEvent) => {
-//     if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
-//       setIsOpen(false);
-//     }
-//   }, []);
-
-//   const selectOption = useCallback(
-//     (option: { [key: string]: string }) => {
-//       setQuery("");
-//       handleChange(option[label]);
-//       setIsOpen(false);
-//     },
-//     [handleChange, label]
-//   );
-
-//   const getDisplayValue = useMemo(() => {
-//     if (query) return query;
-//     if (selectedVal) return selectedVal;
-//     return "";
-//   }, [query, selectedVal]);
-
-//   const filteredOptions = useMemo(() => {
-//     return options.filter((option) =>
-//       option[label].toLowerCase().includes(query.toLowerCase())
-//     );
-//   }, [options, query, label]);
-
-//   return (
-//     <div className="dropdown">
-//       <div className="control">
-//       <div className="selected-value">
-//         <input
-//         ref={inputRef}
-//         type="text"
-//         value={getDisplayValue}
-//         name="searchTerm"
-//         placeholder={placeholder}
-//         onChange={(e) => {
-//           setQuery(e.target.value);
-//           handleChange(null);
-//         }}
-//         onClick={() => setIsOpen((prev) => !prev)}
-//         />
-//       </div>
-//       <div className={`arrow ${isOpen ? "open" : ""}`} />
-//       </div>
-
-//       {isOpen && (
-//       <div className="options">
-//         {filteredOptions.map((option, index) => (
-//         <div
-//           key={`${id}-${index}`}
-//           className={`option ${option[label] === selectedVal ? "selected" : ""}`}
-//           onClick={() => selectOption(option)}
-//         >
-//           {option[label]}
-//         </div>
-//         ))}
-//       </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default SearchableDropdown;
 import React, { useState, useEffect, useRef } from 'react'
 import { Input } from "@/components/ui/input"
 import {ScrollArea} from "@/components/ui/scroll-area"
@@ -101,6 +10,7 @@ interface SearchableDropdownProps {
   options: Option[]
   label: string
   id: string
+  filterBy: string
   selectedVal: string | number
   handleChange: (value: string) => void
   placeholder?: string
@@ -110,6 +20,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   options,
   label,
   id,
+  filterBy,
   selectedVal,
   handleChange,
   placeholder = "Buscar..."
@@ -117,6 +28,12 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (selectedVal) {
+      setQuery(selectedVal.toString())  
+    }
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -130,7 +47,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   }, [])
 
   const filteredOptions = options.filter((option) =>
-    option[label].toLowerCase().includes(query.toLowerCase())
+    option[filterBy].toLowerCase().includes(query.toLowerCase())
   )
 
   const handleSelectOption = (option: Option) => {
@@ -139,16 +56,20 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     setIsOpen(false)
   }
 
+
   return (
-    <div className={`${!isOpen ? "pb-32" : ""}`} ref={dropdownRef}>
+    <div className="absolute" ref={dropdownRef}>
+      
       <Input
         type="text"
         value={query}
         onChange={(e) => {
           setQuery(e.target.value)
-          setIsOpen(true)
+          if (e.target.value !== "")
+            setIsOpen(true)
+          else
+            setIsOpen(false)
         }}
-        onFocus={() => setIsOpen(true)}
         placeholder={placeholder}
         className="w-full"
       />

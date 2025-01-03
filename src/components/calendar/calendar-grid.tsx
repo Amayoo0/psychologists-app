@@ -9,11 +9,11 @@ import { getDayEs, getMonth, isToday  } from "./utils"
 import { EventWeekView, EventWeekViewDragged, DragSelection } from "./EventWeekView"
 import TimeMarker from "./TimeMarker"
 import HeaderWeekDays from "./HeaderWeekDays"
-
+import { Event, Patient } from '@prisma/client'
 
 
 const CalendarGrid = () => {
-  const { view, date, showWeekends, events, setEvents, cellSize, workHours } = useCalendar()
+  const { view, date, showWeekends, cellSize, workHours, events, patients, loading, loadMoreEvents } = useCalendar()
   const gridRef = useRef<HTMLDivElement>(null)
   const [dragSelection, setDragSelection] = useState<DragSelection>({
     startTime: new Date(),
@@ -24,6 +24,7 @@ const CalendarGrid = () => {
     dayIndex: 0
   })
   const [showEventDialog, setShowEventDialog] = useState(false)
+  const [eventsToShow, setEventsToShow] = useState<Event[]>([])
 
   const getTimeFromMousePosition = (y: number, baseDate: Date) => {
     if (!gridRef.current) return new Date()
@@ -40,7 +41,6 @@ const CalendarGrid = () => {
 
   const handleMouseDown = (e: React.MouseEvent, dayIndex: number) => {
     if (!gridRef.current) {
-      console.log('gridRef.current is null')
       return
     }
 
@@ -99,37 +99,34 @@ const CalendarGrid = () => {
     }
   }
 
-  
 
-
-  
-  // useEffect will run after the DOM load finishes and every time the date, view or setEvents change.
-  // It defines a function (loadEvents) that will fetch the events for the current view and date.
-  // Render -> useEffect -> loadEvents -> getEvents -> setEvents
+  // Load events when the date or view changes
   useEffect(() => {
-    async function loadEvents() {
-      let startDate: Date
-      let endDate: Date
-      
+    function loadEvents() {
+      let startDate: Date;
+      let endDate: Date;
+
       if (view === 'month') {
-        startDate = new Date(date.getFullYear(), date.getMonth(), 1)
-        endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+        startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+        endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
       } else {
-        startDate = new Date(date)
-        startDate.setDate(date.getDate() - getDayEs(date))
-        endDate = new Date(startDate)
-        endDate.setDate(startDate.getDate() + 6)
+        startDate = new Date(date);
+        startDate.setDate(date.getDate() - getDayEs(date));
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
       }
+      const filteredEvents: Event[] = events.filter(event => {
+        return event.startTime >= startDate && event.endTime <= endDate;
+      });
 
-      const fetchedEvents = await getEvents(startDate, endDate)
-      setEvents(fetchedEvents)
+      if (filteredEvents) {
+        setEventsToShow(filteredEvents);
+      }
     }
+    loadEvents();
+  }, [date, view, events]);
 
-    loadEvents()
-  }, [date, view])
-
-  // Scroll the grid to the first work hour after the DOM load finishes 
-  // and every time the workHours, date or view change.
+  // Scroll to the first work hour when the work hours change
   useEffect(() => {
     if (gridRef.current) {
       const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start}"]`);
@@ -201,10 +198,6 @@ const CalendarGrid = () => {
     )
   }
 
-
-
-
-  
 
   const renderWeekView = () => {
     const hours = Array.from({ length: 24 }, (_, i) => i)
@@ -284,7 +277,7 @@ const CalendarGrid = () => {
             )}
 
             {/* Events */}
-            <EventWeekView events={events} date={date} cellSize={cellSize} showWeekends={showWeekends} />
+            {eventsToShow && <EventWeekView events={eventsToShow} date={date} cellSize={cellSize} showWeekends={showWeekends} />}
           </div>
         </div>
         
@@ -292,8 +285,10 @@ const CalendarGrid = () => {
         <EventDialog
           open={showEventDialog}
           onOpenChange={setShowEventDialog}
-          startTime={dragSelection.startTime}
-          endTime={dragSelection.endTime}
+          eventData={{
+            startTime: dragSelection.startTime,
+            endTime: dragSelection.endTime
+          }}
         />
       </div>
     )

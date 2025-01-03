@@ -2,11 +2,13 @@ import { Event } from '@prisma/client'
 
 type EventGroup = Event[][];
 
-export function groupOverlappingEvents(events: Event[]): EventGroup {
+export function groupOverlappingEvents(events: Event[] | null): EventGroup {
     // Sort events by start date to facilitate grouping
-    const sortedEvents = [...events].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-  
     const groups: EventGroup = [];
+    
+    if (!events) return groups;
+    
+    const sortedEvents = [...events].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
   
     // Function to check if two events overlap
     const doEventsOverlap = (e1: Event, e2: Event): boolean => {
@@ -57,3 +59,16 @@ export const getMonth = (month: number) => {
   ];
   return months[month];
 }
+
+
+const timeFormatter = new Intl.DateTimeFormat('es', {
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false
+});
+export function formatTime(date: Date): string {
+    const formattedTime = timeFormatter.format(date);
+    const minutes = date.getMinutes();
+    return minutes !== 0 ? formattedTime : formattedTime.replace(/:\d{2}$/, '');
+};
+

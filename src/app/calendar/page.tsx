@@ -10,8 +10,8 @@ export default function Home() {
             <CalendarProvider>
                 <CalendarHeader/>
                 <CalendarGrid/>
+                <FloatingActionButton/>
             </CalendarProvider>
-            <FloatingActionButton/>
         </AppLayout>
     )
 }

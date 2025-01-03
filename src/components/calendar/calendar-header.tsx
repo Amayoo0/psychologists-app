@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import ConfigDialog from "../ConfigDialog";
+import { isAfter, isBefore } from "date-fns";
 
 
 const CalendarHeader = () => {
@@ -13,9 +14,11 @@ const CalendarHeader = () => {
         setView,
         date,
         setDate,
-      } = useCalendar()
+        loadedRange,
+        loadMoreEvents,
+    } = useCalendar()
 
-      const [isConfigOpen, setIsConfigOpen] = useState(false)
+    const [isConfigOpen, setIsConfigOpen] = useState(false)
 
 
     const navigateToday = () => setDate(new Date())
@@ -29,6 +32,9 @@ const CalendarHeader = () => {
                 newDate.setMonth(date.getMonth() -1)
                 break 
         }
+        if (isBefore(newDate, loadedRange.start)) {
+            loadMoreEvents(newDate, loadedRange.start)
+        }
         setDate(newDate)
     }
     const navigateNext = () => {
@@ -40,6 +46,9 @@ const CalendarHeader = () => {
             case "month":
                 newDate.setMonth(date.getMonth() +1)
                 break 
+        }
+        if (isAfter(newDate, loadedRange.end)) {
+            loadMoreEvents(loadedRange.end, newDate)
         }
         setDate(newDate)
     }

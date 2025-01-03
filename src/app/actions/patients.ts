@@ -27,3 +27,18 @@ export async function getPatients() {
     return []
   }
 }
+
+export async function getPatientById(patientId: number) {
+  try {
+    const patient = await prisma.patient.findUnique({
+      where: {
+        id: patientId
+      }
+    })
+
+    return patient
+  } catch (error) {
+    console.error('Error fetching patient:', error)
+    return null
+  }
+}

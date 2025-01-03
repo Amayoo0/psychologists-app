@@ -1,7 +1,11 @@
 'use client'
 
-import { createContext, useContext, useState } from "react"
-import { Event } from '@prisma/client'
+import { createContext, useContext, useEffect, useState } from "react"
+import { Event, Patient } from '@prisma/client'
+import { getDayEs } from "./utils"
+import { getEvents } from "@/app/actions/events"
+import { addMonths, isAfter, isBefore, set, subMonths } from "date-fns"
+import { getPatients } from "@/app/actions/patients"
 
 type ViewType = "week" | "month" | "schedule"
 interface WorkHours {
@@ -20,12 +24,18 @@ interface CalendarContextType {
     setShowDeclinedEvents: (show: boolean) => void
     showCompletedTasks: boolean
     setShowCompletedTasks: (show: boolean) => void
-    events: Event[]
-    setEvents: (events: Event[]) => void
     cellSize: number
     setCellSize: (size: number) => void
     workHours: WorkHours
-    setWorkHours: (hours: WorkHours) => void
+    setWorkHours: (hours: WorkHours) => void,
+    
+    events: Event[]
+    setEvents: (events: Event[]) => void
+    patients: Patient[]
+    setPatients: (patients: Patient[]) => void
+    loading: boolean,
+    loadedRange: { start: Date; end: Date }
+    loadMoreEvents: (viewStartDate: Date, viewEndDate: Date) => Promise<void>;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined)
@@ -37,29 +47,86 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     const [showWeekends, setShowWeekends] = useState(true)
     const [showDeclinedEvents, setShowDeclinedEvents] = useState(true)
     const [showCompletedTasks, setShowCompletedTasks] = useState(true)
-    const [events, setEvents] = useState<Event[]>([])
     const [cellSize, setCellSize] = useState(60)
     const [workHours, setWorkHours] = useState<WorkHours>({ start: 9, end: 21 })
+    const [events, setEvents] = useState<Event[]>([]);
+    const [patients, setPatients] = useState<Patient[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [loadingPatients, setLoadingPatients] = useState<boolean>(false);
+    const [loadingEvents, setLoadingEvents] = useState<boolean>(false);
+    const [loadedRange, setLoadedRange] = useState<{ start: Date; end: Date }>(() => {
+        const now = new Date();
+        return { start: subMonths(now, 3), end: addMonths(now, 3) };
+    });
+
+
+    // Render -> useEffect -> loadEvents -> getEvents -> setEvents
+    useEffect(() => {      
+        async function loadEvents() {
+            setLoadingEvents(true);
+            
+            const { start, end } = loadedRange;
+            const fetchedEvents = await getEvents(start, end);
+            setEvents(fetchedEvents);
+            setLoadingEvents(false);
+        }
+      
+        loadEvents();
+    }, []);
+
+    const loadMoreEvents = async (viewStartDate: Date, viewEndDate: Date) => {
+        if (isBefore(viewStartDate, loadedRange.start) || isAfter(viewEndDate, loadedRange.end)) {
+            setLoading(true);
+            try {
+                const newStart = isBefore(viewStartDate, loadedRange.start)
+                    ? subMonths(loadedRange.start, 3)
+                    : loadedRange.start;
+                const newEnd = isAfter(viewEndDate, loadedRange.end)
+                    ? addMonths(loadedRange.end, 3)
+                    : loadedRange.end;
+
+                const fetchedEvents = await getEvents(newStart, newEnd);
+                setEvents((prevEvents) => [...prevEvents, ...fetchedEvents]);
+                setLoadedRange({ start: newStart, end: newEnd });
+            } catch (error) {
+                console.error("Error loading more events:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
+    useEffect(() => {
+        async function loadPatients() {
+            setLoadingPatients(true);
+            const patients = await getPatients();
+            if (patients) {
+                setPatients(patients);
+            }
+            setLoadingPatients(false);
+        }
+        loadPatients();
+    }, []);
+
+    useEffect(() => {
+        setLoading(loadingPatients || loadingEvents);
+    }, [loadingPatients, loadingEvents]);
 
     return (
         <CalendarContext.Provider 
             value={{
-                view,
-                setView,
-                date,
-                setDate,
-                showWeekends,
-                setShowWeekends,
-                showDeclinedEvents,
-                setShowDeclinedEvents,
-                showCompletedTasks,
-                setShowCompletedTasks,
-                events,
-                setEvents,
-                cellSize,
-                setCellSize,
-                workHours,
-                setWorkHours,
+                view, setView,
+                date, setDate,
+                showWeekends, setShowWeekends,
+                showDeclinedEvents, setShowDeclinedEvents,
+                showCompletedTasks, setShowCompletedTasks,
+                cellSize, setCellSize,
+                workHours, setWorkHours,
+                events, setEvents,
+                patients, setPatients,
+                loading,
+                loadedRange,
+                loadMoreEvents,
             }}
         >
             {children}
