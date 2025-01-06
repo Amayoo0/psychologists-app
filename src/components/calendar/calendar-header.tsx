@@ -98,7 +98,7 @@ const CalendarHeader = () => {
             <div id="calendar-header-view-and-settings" className="flex gap-2 items-center">
                 <Select value={view} onValueChange={(value: any) => setView(value)}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Select view" />
+                        <SelectValue placeholder="Elige vista" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="week">Semana</SelectItem>

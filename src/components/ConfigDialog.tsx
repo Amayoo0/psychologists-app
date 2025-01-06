@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { useCalendar } from './calendar/calendar-context'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 
 interface ConfigDialogProps {
   open: boolean
@@ -14,10 +15,11 @@ interface ConfigDialogProps {
 }
 
 const ConfigDialog: React.FC<ConfigDialogProps> = ({ open, onOpenChange }) => {
-  const { cellSize, setCellSize, showWeekends, setShowWeekends, workHours, setWorkHours } = useCalendar()
+  const {view, cellSize, setCellSize, showWeekends, setShowWeekends, workHours, setWorkHours } = useCalendar()
   const [startHour, setStartHour] = React.useState(workHours.start.toString())
   const [endHour, setEndHour] = React.useState(workHours.end.toString())
   const [localCellSize, setLocalCellSize] = React.useState(cellSize.toString())
+  const [preferedView, setPreferedView] = React.useState(view)
 
   const handleSave = () => {
     setCellSize(Number(localCellSize))
@@ -75,6 +77,20 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({ open, onOpenChange }) => {
               onChange={(e) => setEndHour(e.target.value)}
               className="col-span-3"
             />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="prefered-view" className="text-right">
+              Vista Preferida
+            </Label>
+            <Select value={preferedView} onValueChange={(value: any) => setPreferedView(value)}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Elige vista" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="week">Semana</SelectItem>
+                    <SelectItem value="month">Mes</SelectItem>
+                </SelectContent>
+            </Select>
           </div>
         </div>
         <Button onClick={handleSave}>Guardar cambios</Button>

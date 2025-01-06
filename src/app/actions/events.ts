@@ -1,7 +1,9 @@
 "use server"
+import { EventData } from '@/components/EventDialog'
 import { prisma } from '@/lib/prisma'
 import { currentUser, User } from '@clerk/nextjs/server'
 import { Event } from '@prisma/client'
+import { addDays } from 'date-fns'
 
 export async function getEvents(startDate: Date, endDate: Date) {
   try {
@@ -35,7 +37,7 @@ export async function getEvents(startDate: Date, endDate: Date) {
   }
 }
 
-export async function saveEvent(event: Event, repeat: string, repetitionCount: number) {
+export async function saveEvent(event: EventData, repeat: string, repetitionCount: number) {
   try {
     // const user = await currentUser()
     // if (!user) {
@@ -66,8 +68,17 @@ export async function saveEvent(event: Event, repeat: string, repetitionCount: n
     Array.from({ length: repetitionCount }, (_, i) => i).map(async (i) => {
       await prisma.event.create({
         data: {
-          ...event,
-          startTime: new Date(event.startTime.getDate() + shiftTimeInDays*i)
+          title: event.title ? event.title : "",
+          type: event.type,
+          description: event.description,
+          startTime: addDays(event.startTime, shiftTimeInDays*i),
+          endTime: addDays(event.endTime, shiftTimeInDays*i),
+          sessionUrl: event.sessionUrl,
+          patientId: event.patientId,
+
+          // userId: prismaUser.Id   // TODO: change this when user fix comes
+          userId: 1,
+
         }
       })
     })

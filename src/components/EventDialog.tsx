@@ -25,12 +25,12 @@ import { useCalendar } from "./calendar/calendar-context"
 
 export type EventData = {
     title?: string
-    description?: string
     type?: string
-    patientId?: number
-    startTime?: Date
-    endTime?: Date
+    description?: string
+    startTime: Date
+    endTime: Date
     sessionUrl?: string
+    patientId: number
 };
 
 interface EventDialogProps {
@@ -81,15 +81,14 @@ export function EventDialog({
         let newEnd = new Date(newEndTime)
         newEnd.setHours(Number(endHour), Number(endMinute))
 
-        const event = {
+        const event: EventData = {
             title,
+            type,
             description,
             startTime: newStart,
             endTime: newEnd,
-            type,
-            patientId,
             sessionUrl,
-            // userId: currentUser.id
+            patientId,
         }
         console.log('saving event', event)
 

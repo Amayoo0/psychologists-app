@@ -110,10 +110,11 @@ const CalendarGrid = () => {
         startDate = new Date(date.getFullYear(), date.getMonth(), 1);
         endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
       } else {
-        startDate = new Date(date);
+        startDate = new Date(date.setHours(0, 0, 0, 0));
         startDate.setDate(date.getDate() - getDayEs(date));
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
       }
       const filteredEvents: Event[] = events.filter(event => {
         return event.startTime >= startDate && event.endTime <= endDate;
@@ -280,16 +281,6 @@ const CalendarGrid = () => {
             {eventsToShow && <EventWeekView events={eventsToShow} date={date} cellSize={cellSize} showWeekends={showWeekends} />}
           </div>
         </div>
-        
-        {/* Event Dialog */}
-        <EventDialog
-          open={showEventDialog}
-          onOpenChange={setShowEventDialog}
-          eventData={{
-            startTime: dragSelection.startTime,
-            endTime: dragSelection.endTime
-          }}
-        />
       </div>
     )
   }

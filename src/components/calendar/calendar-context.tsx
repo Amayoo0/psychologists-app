@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { Event, Patient } from '@prisma/client'
 import { getDayEs } from "./utils"
 import { getEvents } from "@/app/actions/events"
-import { addMonths, isAfter, isBefore, set, subMonths } from "date-fns"
+import { addDays, addMonths, isAfter, isBefore, set, subMonths } from "date-fns"
 import { getPatients } from "@/app/actions/patients"
 
 type ViewType = "week" | "month" | "schedule"
@@ -42,7 +42,7 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 
 
 export function CalendarProvider({ children }: { children: React.ReactNode}) {
-    const [view, setView] = useState<ViewType>("month")
+    const [view, setView] = useState<ViewType>("week")
     const [date, setDate] = useState(new Date())
     const [showWeekends, setShowWeekends] = useState(true)
     const [showDeclinedEvents, setShowDeclinedEvents] = useState(true)
@@ -51,7 +51,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     const [workHours, setWorkHours] = useState<WorkHours>({ start: 9, end: 21 })
     const [events, setEvents] = useState<Event[]>([]);
     const [patients, setPatients] = useState<Patient[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [loadingPatients, setLoadingPatients] = useState<boolean>(false);
     const [loadingEvents, setLoadingEvents] = useState<boolean>(false);
     const [loadedRange, setLoadedRange] = useState<{ start: Date; end: Date }>(() => {
@@ -72,11 +72,11 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
         }
       
         loadEvents();
-    }, []);
+    }, [setEvents]);
 
     const loadMoreEvents = async (viewStartDate: Date, viewEndDate: Date) => {
         if (isBefore(viewStartDate, loadedRange.start) || isAfter(viewEndDate, loadedRange.end)) {
-            setLoading(true);
+            setLoadingEvents(true);
             try {
                 const newStart = isBefore(viewStartDate, loadedRange.start)
                     ? subMonths(loadedRange.start, 3)
@@ -91,7 +91,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
             } catch (error) {
                 console.error("Error loading more events:", error);
             } finally {
-                setLoading(false);
+                setLoadingEvents(false);
             }
         }
     };
@@ -100,6 +100,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
         async function loadPatients() {
             setLoadingPatients(true);
             const patients = await getPatients();
+            console.log('CalendarContext.patients', patients)
             if (patients) {
                 setPatients(patients);
             }
