@@ -37,7 +37,7 @@ export async function getEvents(startDate: Date, endDate: Date) {
   }
 }
 
-export async function saveEvent(event: EventData, repeat: string, repetitionCount: number) {
+export async function saveEvent(event: EventData, repeat: string, repetitionCount: number): Promise<Event[]> {
   try {
     // const user = await currentUser()
     // if (!user) {
@@ -65,23 +65,25 @@ export async function saveEvent(event: EventData, repeat: string, repetitionCoun
       default:
           break
     }
-    Array.from({ length: repetitionCount }, (_, i) => i).map(async (i) => {
-      await prisma.event.create({
-        data: {
-          title: event.title ? event.title : "",
-          type: event.type,
-          description: event.description,
-          startTime: addDays(event.startTime, shiftTimeInDays*i),
-          endTime: addDays(event.endTime, shiftTimeInDays*i),
-          sessionUrl: event.sessionUrl,
-          patientId: event.patientId,
-
-          // userId: prismaUser.Id   // TODO: change this when user fix comes
-          userId: 1,
-
-        }
-      })
-    })
+    
+    let savedEvents: Event[] = await Promise.all(
+      Array.from({ length: repetitionCount }, (_, i) => 
+        prisma.event.create({
+          data: {
+            title: event.title ? event.title : "",
+            type: event.type,
+            description: event.description,
+            startTime: addDays(event.startTime, shiftTimeInDays * i),
+            endTime: addDays(event.endTime, shiftTimeInDays * i),
+            sessionUrl: event.sessionUrl,
+            patientId: event.patientId,
+            // userId: prismaUser.Id   // TODO: change this when user fix comes
+            userId: 1,
+          }
+        })
+      )
+    )
+    return savedEvents
 
   } catch (error) {
     console.error('Error saving events:', error)

@@ -15,9 +15,6 @@ const EventMonthView = ({
 
     if (!events) return null;
 
-    console.log('EventMonthView.days[]: ', days)
-    console.log('EventsMonthView.events[]: ', events)
-
     const [showEventDialog, setShowEventDialog] = React.useState(false);
     const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
     const [showHiddenEvents, setShowHiddenEvents] = React.useState(false);
@@ -33,9 +30,6 @@ const EventMonthView = ({
                 const width = 100 / (showWeekends ? 7 : 5) -0.5;
                 const top = weekOfMonth*cellSize + height*i + paddingTop;
                 const left = getDayEs(e.startTime) * (100 / (showWeekends ? 7 : 5)) +0.25;
-
-                console.log('isHidden (',i, '): ', i * height + paddingTop)
-
 
                 return (
                     <React.Fragment key={`EventWeekView-Fragment-${e.id}`}>
@@ -64,15 +58,18 @@ const EventMonthView = ({
                                     width: `${width}%`,
                                 }}
                                 onClick={() => {
-                                    setSelectedEvent(e);
-                                    setShowEventDialog(true);
+                                    if ((i + 2) * height + paddingTop < cellSize || showHiddenEvents) {
+                                        setSelectedEvent(e);
+                                        setShowEventDialog(true);
+                                    }
                                 }}    
                             >
                                 <div 
                                     className={cn(
                                         "w-full h-full rounded-md p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight",
                                         e.endTime < new Date() ? "bg-gray-300" : "bg-blue-500",
-                                        (i+2) * height + paddingTop >= cellSize && !showHiddenEvents && "hidden"
+                                        (i+2) * height + paddingTop >= cellSize && !showHiddenEvents && "hidden",
+                                        showHiddenEvents && "z-50"
                                     )}
                                 >
                                     {e.title}
@@ -86,16 +83,17 @@ const EventMonthView = ({
                 );
             })}
             {/* Show hidden items */}
-            {(group.length)* height + paddingTop >= cellSize &&
+            {group.length >= (cellSize - paddingTop - height) / height &&
                 <div key={`extend-groupIndex-${groupIndex}`} className="absolute left-0 right-0 z-50 inset-1 rounded-lg" style={{
-                        top: `${Math.trunc(days.findIndex(day => day.getDate() === group[0].startTime.getDate()) / (showWeekends ? 7 : 5)) + (!showHiddenEvents ? cellSize - paddingTop : 5)}px`,
-                        left: `calc(${(getDayEs(group[0].startTime) + 1) * (100 / (showWeekends ? 7 : 5))}% - 25px)`,
-                        width: "25px",
+                        top: `${Math.trunc(days.findIndex(day => day.getDate() === group[0].startTime.getDate()) / (showWeekends ? 7 : 5)) *cellSize + (!showHiddenEvents ? cellSize - paddingTop : 5)}px`,
                         height: "25px",
+                        width: "25px",
+                        left: `calc(${(getDayEs(group[0].startTime) + 1) * (100 / (showWeekends ? 7 : 5))}% - 25px)`,
                 }}>
                     {!showHiddenEvents ? 
                         <a onClick={() => setShowHiddenEvents(true)} className="hover:underline">
-                            +{group.length - Math.trunc((cellSize - paddingTop) / height) + 1}
+                            +{group.length - Math.trunc((cellSize - paddingTop) / height)+2}
+                            {/* Mostrar todos... */}
                         </a>
                     : 
                         <a onClick={() => setShowHiddenEvents(false)}>

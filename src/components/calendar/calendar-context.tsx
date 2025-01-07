@@ -79,14 +79,12 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
             setLoadingEvents(true);
             try {
                 const newStart = isBefore(viewStartDate, loadedRange.start)
-                    ? subMonths(loadedRange.start, 3)
+                    ? subMonths(viewStartDate, 3)
                     : loadedRange.start;
-                const newEnd = isAfter(viewEndDate, loadedRange.end)
-                    ? addMonths(loadedRange.end, 3)
-                    : loadedRange.end;
+                const newEnd = addMonths(newStart, 6)
 
                 const fetchedEvents = await getEvents(newStart, newEnd);
-                setEvents((prevEvents) => [...prevEvents, ...fetchedEvents]);
+                setEvents(fetchedEvents);
                 setLoadedRange({ start: newStart, end: newEnd });
             } catch (error) {
                 console.error("Error loading more events:", error);

@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import NewPatientDialog from './NewPatientDialog'
-import ScheduleAppointmentDialog from './ScheduleAppointmentDialog'
 import { EventDialog } from './EventDialog'
 
 export default function FloatingActionButton() {
@@ -40,8 +39,6 @@ export default function FloatingActionButton() {
       <EventDialog
         open={showEventDialog}
         onOpenChange={setShowEventDialog}
-        startTime={new Date()}
-        endTime={new Date()}
       />
       <NewPatientDialog
         open={newPatientDialogOpen}

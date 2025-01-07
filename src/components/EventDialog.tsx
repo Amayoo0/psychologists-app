@@ -45,7 +45,7 @@ export function EventDialog({
   onOpenChange,
   eventData,
 }: EventDialogProps) {
-    const {patients} = useCalendar();
+    const {patients, setEvents, events} = useCalendar();
     const [title, setTitle] = useState(eventData?.title || "")
     const [description, setDescription] = useState(eventData?.description || "")
     const [type, setType] = useState(eventData?.type || "appointment")
@@ -92,7 +92,8 @@ export function EventDialog({
         }
         console.log('saving event', event)
 
-        saveEvent(event, repeat, repetitionCount)
+        const savedEvents: Promise<Event[]> = saveEvent(event, repeat, repetitionCount)
+        setEvents([...await savedEvents as Event[], ...events])
 
 
         // Cierra el diálogo después de guardar el evento
@@ -129,7 +130,12 @@ export function EventDialog({
                     type="date"
                     value={format(newStartTime, "yyyy-MM-dd")}
                     className="w-30"
-                    onChange={(e) => setNewStartTime((prev) => new Date(new Date(e.target.value).setHours(prev.getHours(), prev.getMinutes())))}
+                    onChange={(e) => {
+                        setNewStartTime((prev) => new Date(new Date(e.target.value).setHours(prev.getHours(), prev.getMinutes())))
+                        if (type !== "event"){
+                            setNewEndTime((prev) => new Date(new Date(e.target.value).setHours(prev.getHours(), prev.getMinutes())))
+                        }
+                    }}
                 />
                 <Input
                     type="time"

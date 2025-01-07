@@ -9,102 +9,21 @@ import { getDayEs, getMonth, isToday  } from "./utils"
 import { EventWeekView, EventWeekViewDragged, DragSelection } from "./EventWeekView"
 import TimeMarker from "./TimeMarker"
 import HeaderWeekDays from "./HeaderWeekDays"
-import { Event, Patient } from '@prisma/client'
+import { Event } from '@prisma/client'
 import { EventMonthView } from "./EventMonthView"
+import LoadingSpinner from "../LoadingSpinner"
 
 
 const CalendarGrid = () => {
-  const { view, date, showWeekends, cellSize, workHours, events, patients, loading, loadMoreEvents } = useCalendar()
-  const gridRef = useRef<HTMLDivElement>(null)
-  const [dragSelection, setDragSelection] = useState<DragSelection>({
-    startTime: new Date(),
-    endTime: new Date(),
-    startY: 0,
-    currentY: 0,
-    isDragging: false,
-    dayIndex: 0
-  })
+  const { view, date, showWeekends, cellSize, workHours, events, loading, loadMoreEvents } = useCalendar()
   const [showEventDialog, setShowEventDialog] = useState(false)
   const [eventsToShow, setEventsToShow] = useState<Event[]>([])
   const [days, setDays] = useState<Date[]>([])
 
-  const getTimeFromMousePosition = (y: number, baseDate: Date) => {
-    if (!gridRef.current) return new Date()
-
-    const scrollTop = gridRef.current.scrollTop
-    const totalY = y + scrollTop
-    const hour = Math.floor(totalY / cellSize)
-    const minutes = Math.floor((totalY % cellSize) / cellSize * 60)
-    
-    const time = new Date(baseDate)
-    time.setHours(hour, minutes, 0, 0)
-    return time
-  }
-
-  const handleMouseDown = (e: React.MouseEvent, dayIndex: number) => {
-    if (!gridRef.current) {
-      return
-    }
-
-    const rect = gridRef.current.getBoundingClientRect()
-    const y = e.clientY - rect.top
-    
-    const startDate = new Date(date)
-    startDate.setDate(date.getDate() - getDayEs(date) + dayIndex)
-    const startTime = getTimeFromMousePosition(y, startDate)
-    
-    setDragSelection({
-      startTime,
-      endTime: startTime,
-      startY: y,
-      currentY: y,
-      isDragging: true,
-      dayIndex
-    })
-
-    // Prevent text selection while dragging
-    e.preventDefault()
-  }
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!dragSelection.isDragging || !gridRef.current) return
-
-    const rect = gridRef.current.getBoundingClientRect()
-    const y = e.clientY - rect.top
-    
-    const endTime = getTimeFromMousePosition(y, dragSelection.startTime)
-
-    setDragSelection(prev => ({
-      ...prev,
-      endTime,
-      currentY: y
-    }))
-  }
-
-  const handleMouseUp = () => {
-    if (dragSelection.isDragging) {
-      // Ensure start time is always before end time
-      const finalStartTime = dragSelection.startTime < dragSelection.endTime 
-        ? dragSelection.startTime 
-        : dragSelection.endTime
-      const finalEndTime = dragSelection.startTime < dragSelection.endTime 
-        ? dragSelection.endTime 
-        : dragSelection.startTime
-
-      setDragSelection(prev => ({ 
-        ...prev, 
-        isDragging: false,
-        startTime: finalStartTime,
-        endTime: finalEndTime
-      }))
-      setShowEventDialog(true)
-    }
-  }
-
-
-  // Load events when the date or view changes
+  // Load events when the date, view or days change
   useEffect(() => {
     function loadEvents() {
+      console.log('CalendarGrid.LoadEvents.events: ', events)
       const filteredEvents: Event[] = events.filter(event => {
         return event.startTime >= days[0] && event.endTime <= days[days.length - 1];
       });
@@ -112,24 +31,13 @@ const CalendarGrid = () => {
       if (filteredEvents) {
         setEventsToShow(filteredEvents);
       }
+      console.log("CalendarGrid.LoadEvents.filteredEvents: ", days[0], days[days.length - 1], filteredEvents)
     }
     loadEvents();
   }, [view, events, days]);
 
-  // Scroll to the first work hour when the work hours change
-  useEffect(() => {
-    if (gridRef.current) {
-      const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start}"]`);
-      if (firstWorkHourElement) {
-        const offsetTop = (firstWorkHourElement as HTMLElement).offsetTop;
-        gridRef.current.scrollTo({
-          top: offsetTop,
-          behavior: 'smooth',
-        });
-      }
-    }
-  }, [workHours.start, gridRef, date, view]);
 
+  // Load days when view or date change
   useEffect(() => {
     if (view === "month"){
       const start = new Date(date.getFullYear(), date.getMonth(), 1)
@@ -167,6 +75,7 @@ const CalendarGrid = () => {
   
       setDays(weekDays)
     }
+    loadMoreEvents(days[0], days[days.length - 1])
   }, [view, date])
   
   
@@ -174,7 +83,7 @@ const CalendarGrid = () => {
   const renderMonthView = () => {
 
     return (
-      <div>
+      <div id="calendar-grid-month-view">
         <div id="month-header" className="grid flex-1" style={{
           gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)`,
         }}>
@@ -222,9 +131,107 @@ const CalendarGrid = () => {
 
   const renderWeekView = () => {
     const hours = Array.from({ length: 24 }, (_, i) => i)
+    const gridRef = useRef<HTMLDivElement>(null)
+    const [dragSelection, setDragSelection] = useState<DragSelection>({
+      startTime: new Date(),
+      endTime: new Date(),
+      startY: 0,
+      currentY: 0,
+      isDragging: false,
+      dayIndex: 0
+    })
+
+      // Scroll to the first work hour when the work hours change
+    useEffect(() => {
+      if (gridRef.current) {
+        const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start}"]`);
+        if (firstWorkHourElement) {
+          const offsetTop = (firstWorkHourElement as HTMLElement).offsetTop;
+          gridRef.current.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth',
+          });
+        }
+      }
+    }, [workHours.start, gridRef, date, view]);
+
+    const getTimeFromMousePosition = (y: number, baseDate: Date) => {
+      if (!gridRef.current) return new Date()
+  
+      const scrollTop = gridRef.current.scrollTop
+      const totalY = y + scrollTop
+      const hour = Math.floor(totalY / cellSize)
+      const minutes = Math.floor((totalY % cellSize) / cellSize * 60)
+      
+      const time = new Date(baseDate)
+      time.setHours(hour, minutes, 0, 0)
+      return time
+    }
+  
+    const handleMouseDown = (e: React.MouseEvent, dayIndex: number) => {
+      if (!gridRef.current) {
+        return
+      }
+  
+      const rect = gridRef.current.getBoundingClientRect()
+      const y = e.clientY - rect.top
+      
+      const startDate = new Date(date)
+      startDate.setDate(date.getDate() - getDayEs(date) + dayIndex)
+      const startTime = getTimeFromMousePosition(y, startDate)
+      
+      setDragSelection({
+        startTime,
+        endTime: startTime,
+        startY: y,
+        currentY: y,
+        isDragging: true,
+        dayIndex
+      })
+  
+      // Prevent text selection while dragging
+      e.preventDefault()
+    }
+  
+    const handleMouseMove = (e: React.MouseEvent) => {
+      if (!dragSelection.isDragging || !gridRef.current) return
+  
+      const rect = gridRef.current.getBoundingClientRect()
+      const y = e.clientY - rect.top
+      
+      const endTime = getTimeFromMousePosition(y, dragSelection.startTime)
+  
+      setDragSelection(prev => ({
+        ...prev,
+        endTime,
+        currentY: y
+      }))
+    }
+  
+    const handleMouseUp = () => {
+      if (dragSelection.isDragging) {
+        // Ensure start time is always before end time
+        const finalStartTime = dragSelection.startTime < dragSelection.endTime 
+          ? dragSelection.startTime 
+          : dragSelection.endTime
+        const finalEndTime = dragSelection.startTime < dragSelection.endTime 
+          ? dragSelection.endTime 
+          : dragSelection.startTime
+  
+        setDragSelection(prev => ({ 
+          ...prev, 
+          isDragging: false,
+          startTime: finalStartTime,
+          endTime: finalEndTime
+        }))
+        setShowEventDialog(true)
+      }
+    }
+  
 
     return (
       <div 
+        id="calendar-grid-week-view"
         className="pb-4 flex flex-col z-10"
         style={{ height: `calc(100vh - 50px)` }}
       >
@@ -301,10 +308,13 @@ const CalendarGrid = () => {
   }
 
   return (
-    <div className="flex-1">
-      {view === "month" && renderMonthView()}
-      {view === "week" && renderWeekView()}
-    </div>
+    <>
+      {loading ? (
+        <LoadingSpinner message="Cargando eventos..." />
+      ) : (
+        view === "month" ? renderMonthView() : renderWeekView()
+      )}
+    </>
   )
 }
 
