@@ -143,11 +143,14 @@ const CalendarGrid = () => {
                     !showWeekends && [5, 6].includes(getDayEs(day)) && "hidden"
                   )}
                 >
-                  <span className="text-sm">
+                  <div className={cn(
+                    "w-10 h-5 rounded-full flex flex-col items-center justify-center text-xs",
+                    isToday(day) && "bg-blue-600 text-white"
+                  )}>
                       {day.getDate() === 1 
                       ? day.getDate() + ' ' + getMonth(day.getMonth())
                       : day.getDate()}
-                  </span>
+                  </div>
                 </div>
               ))}
               {eventsToShow && <EventMonthView events={eventsToShow} days={days} showWeekends={showWeekends} cellSize={cellSize}/>}
