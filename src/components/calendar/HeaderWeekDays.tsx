@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { isToday } from "./utils"
+import { getDayEs, isToday } from "./utils"
 
 const HeaderWeekDays = ({
     showWeekends,
@@ -8,7 +8,7 @@ const HeaderWeekDays = ({
     return (
         <div className="grid flex-1 pr-[14px]" style={{ gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)` }}>
         {days.map((day, i) => (
-            (!showWeekends && [0, 6].includes(day.getDay())) ? null : (
+            (!showWeekends && [5, 6].includes(getDayEs(day))) ? null : (
             <div key={i} className="border-r border-l text-center py-2">
                 <div className="text-sm text-muted-foreground">
                     {new Intl.DateTimeFormat("es", { weekday: "short" }).format(day).toUpperCase()}

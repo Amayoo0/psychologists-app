@@ -105,11 +105,11 @@ const CalendarHeader = () => {
                         <SelectItem value="month">Mes</SelectItem>
                     </SelectContent>
                 </Select>
-                {view === "week" && (
+                {/* {view === "week" && ( */}
                     <Button size="icon" variant="ghost" onClick={() => setIsConfigOpen(true)}>
                         <Menu className="h-4 w-4"/>
                     </Button>
-                )}
+                {/* )} */}
                 <ConfigDialog open={isConfigOpen} onOpenChange={setIsConfigOpen} />
             </div>
         </div>

@@ -56,28 +56,32 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({ open, onOpenChange }) => {
               onCheckedChange={setShowWeekends}
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="startHour" className="text-right">
-              Hora de inicio
-            </Label>
-            <Input
-              id="startHour"
-              value={startHour}
-              onChange={(e) => setStartHour(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="endHour" className="text-right">
-              Hora de fin
-            </Label>
-            <Input
-              id="endHour"
-              value={endHour}
-              onChange={(e) => setEndHour(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
+          {view === "week" &&
+            <>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="startHour" className="text-right">
+                  Hora de inicio
+                </Label>
+                <Input
+                  id="startHour"
+                  value={startHour}
+                  onChange={(e) => setStartHour(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="endHour" className="text-right">
+                  Hora de fin
+                </Label>
+                <Input
+                  id="endHour"
+                  value={endHour}
+                  onChange={(e) => setEndHour(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+            </>
+          }
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="prefered-view" className="text-right">
               Vista Preferida

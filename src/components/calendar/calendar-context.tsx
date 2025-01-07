@@ -42,12 +42,12 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 
 
 export function CalendarProvider({ children }: { children: React.ReactNode}) {
-    const [view, setView] = useState<ViewType>("week")
+    const [view, setView] = useState<ViewType>("month")
     const [date, setDate] = useState(new Date())
     const [showWeekends, setShowWeekends] = useState(true)
     const [showDeclinedEvents, setShowDeclinedEvents] = useState(true)
     const [showCompletedTasks, setShowCompletedTasks] = useState(true)
-    const [cellSize, setCellSize] = useState(60)
+    const [cellSize, setCellSize] = useState(view === "week" ? 60 : 130)
     const [workHours, setWorkHours] = useState<WorkHours>({ start: 9, end: 21 })
     const [events, setEvents] = useState<Event[]>([]);
     const [patients, setPatients] = useState<Patient[]>([]);

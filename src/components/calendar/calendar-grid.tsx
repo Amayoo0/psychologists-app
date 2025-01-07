@@ -10,6 +10,7 @@ import { EventWeekView, EventWeekViewDragged, DragSelection } from "./EventWeekV
 import TimeMarker from "./TimeMarker"
 import HeaderWeekDays from "./HeaderWeekDays"
 import { Event, Patient } from '@prisma/client'
+import { EventMonthView } from "./EventMonthView"
 
 
 const CalendarGrid = () => {
@@ -25,6 +26,7 @@ const CalendarGrid = () => {
   })
   const [showEventDialog, setShowEventDialog] = useState(false)
   const [eventsToShow, setEventsToShow] = useState<Event[]>([])
+  const [days, setDays] = useState<Date[]>([])
 
   const getTimeFromMousePosition = (y: number, baseDate: Date) => {
     if (!gridRef.current) return new Date()
@@ -103,21 +105,8 @@ const CalendarGrid = () => {
   // Load events when the date or view changes
   useEffect(() => {
     function loadEvents() {
-      let startDate: Date;
-      let endDate: Date;
-
-      if (view === 'month') {
-        startDate = new Date(date.getFullYear(), date.getMonth(), 1);
-        endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-      } else {
-        startDate = new Date(date.setHours(0, 0, 0, 0));
-        startDate.setDate(date.getDate() - getDayEs(date));
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        endDate.setHours(23, 59, 59, 999);
-      }
       const filteredEvents: Event[] = events.filter(event => {
-        return event.startTime >= startDate && event.endTime <= endDate;
+        return event.startTime >= days[0] && event.endTime <= days[days.length - 1];
       });
 
       if (filteredEvents) {
@@ -125,7 +114,7 @@ const CalendarGrid = () => {
       }
     }
     loadEvents();
-  }, [date, view, events]);
+  }, [view, events, days]);
 
   // Scroll to the first work hour when the work hours change
   useEffect(() => {
@@ -140,61 +129,92 @@ const CalendarGrid = () => {
       }
     }
   }, [workHours.start, gridRef, date, view]);
+
+  useEffect(() => {
+    if (view === "month"){
+      const start = new Date(date.getFullYear(), date.getMonth(), 1)
+      const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+      const monthDays = []
+      
+      // Add days from previous month to start on Sunday
+      const firstDay = getDayEs(start)
+      for (let i = firstDay; i > 0; i--) {
+        const prevDate = new Date(start)
+        prevDate.setDate(-i + 1)
+        monthDays.push(prevDate)
+      }
+      
+      // Add days of current month
+      for (let i = 1; i <= end.getDate(); i++) {
+        monthDays.push(new Date(date.getFullYear(), date.getMonth(), i))
+      }
+      
+      // Add days from next month to complete the grid
+      const lastDay = getDayEs(end)
+      for (let i = 1; i < 7 - lastDay; i++) {
+        const nextDate = new Date(end)
+        nextDate.setDate(end.getDate() + i)
+        monthDays.push(nextDate)
+      }
+  
+      setDays(monthDays);
+    }else{
+      const weekDays = Array.from({ length: 7 }, (_, i) => {
+        const day = new Date(date)
+        day.setDate(date.getDate() - getDayEs(date) + i)
+        return day
+      })
+  
+      setDays(weekDays)
+    }
+  }, [view, date])
   
   
 
   const renderMonthView = () => {
-    const start = new Date(date.getFullYear(), date.getMonth(), 1)
-    const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
-    const days = []
-    
-    // Add days from previous month to start on Sunday
-    const firstDay = getDayEs(start)
-    for (let i = firstDay; i > 0; i--) {
-      const prevDate = new Date(start)
-      prevDate.setDate(-i + 1)
-      days.push(prevDate)
-    }
-    
-    // Add days of current month
-    for (let i = 1; i <= end.getDate(); i++) {
-      days.push(new Date(date.getFullYear(), date.getMonth(), i))
-    }
-    
-    // Add days from next month to complete the grid
-    const lastDay = getDayEs(end)
-    for (let i = 1; i < 7 - lastDay; i++) {
-      const nextDate = new Date(end)
-      nextDate.setDate(end.getDate() + i)
-      days.push(nextDate)
-    }
 
     return (
-      <div className="grid grid-cols-7 flex-1">
-        {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((day) => (
-          <div
-            key={day}
-            className="p-2 text-sm font-medium text-center border-b"
-          >
-            {day}
+      <div>
+        <div id="month-header" className="grid flex-1" style={{
+          gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)`,
+        }}>
+          {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((day) => (
+            (!showWeekends && (day === "Sáb" || day === "Dom") ? null :
+              <div
+              key={day}
+              className="p-2 text-sm font-medium text-center border-b"
+            >
+              {day}
+            </div>
+            )
+          ))}
+        </div>
+         
+          <div className="flex-1 overflow-y-auto flex relative">
+            <div id="month-grid" className="grid flex-1" style={{
+              gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)`,
+              gridAutoRows: `${cellSize}px`
+            }}>
+              {days.map((day, i) => (
+                <div
+                  key={`monthView-dayIndex-${i}`}
+                  className={cn(
+                    "p-2 border-b border min-h-[100px]",
+                    day.getMonth() !== date.getMonth() && "text-muted-foreground bg-muted/5",
+                    !showWeekends && [5, 6].includes(getDayEs(day)) && "hidden"
+                  )}
+                >
+                  <span className="text-sm">
+                      {day.getDate() === 1 
+                      ? day.getDate() + ' ' + getMonth(day.getMonth())
+                      : day.getDate()}
+                  </span>
+                </div>
+              ))}
+              {eventsToShow && <EventMonthView events={eventsToShow} days={days} showWeekends={showWeekends} cellSize={cellSize}/>}
+            </div>
+
           </div>
-        ))}
-        {days.map((day, i) => (
-          <div
-            key={i}
-            className={cn(
-              "p-2 border-b border min-h-[100px]",
-              day.getMonth() !== date.getMonth() && "text-muted-foreground bg-muted/5",
-              !showWeekends && [5, 6].includes(getDayEs(day)) && "hidden"
-            )}
-          >
-            <span className="text-sm">
-                {day.getDate() === 1 
-                ? day.getDate() + ' ' + getMonth(day.getMonth())
-                : day.getDate()}
-            </span>
-          </div>
-        ))}
       </div>
     )
   }
@@ -202,11 +222,6 @@ const CalendarGrid = () => {
 
   const renderWeekView = () => {
     const hours = Array.from({ length: 24 }, (_, i) => i)
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const day = new Date(date)
-      day.setDate(date.getDate() - getDayEs(date) + i)
-      return day
-    })
 
     return (
       <div 

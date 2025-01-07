@@ -2,7 +2,7 @@ import { Event } from '@prisma/client'
 
 type EventGroup = Event[][];
 
-export function groupOverlappingEvents(events: Event[] | null): EventGroup {
+export function groupOverlappingEvents(events: Event[] | null, view: string = "week"): EventGroup {
     // Sort events by start date to facilitate grouping
     const groups: EventGroup = [];
     
@@ -12,10 +12,15 @@ export function groupOverlappingEvents(events: Event[] | null): EventGroup {
   
     // Function to check if two events overlap
     const doEventsOverlap = (e1: Event, e2: Event): boolean => {
-      return (
-        e1.startTime < e2.endTime && // e1 starts before e2 ends
-        e1.endTime > e2.startTime // e1 ends after e2 starts
-      );
+      if (view === "month")
+        return (
+          e1.startTime.getDate() === e2.startTime.getDate()
+        );
+      else
+        return (
+          e1.startTime < e2.endTime && // e1 starts before e2 ends
+          e1.endTime > e2.startTime // e1 ends after e2 starts
+        );
     };
   
     // Iterate over events and group overlapping ones
