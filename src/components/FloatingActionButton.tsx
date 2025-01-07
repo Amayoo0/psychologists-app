@@ -18,7 +18,7 @@ export default function FloatingActionButton() {
   const [newPatientDialogOpen, setNewPatientDialogOpen] = useState(false)
 
   return (
-    <div className="fixed bottom-4 right-4">
+    <div className="fixed bottom-4 right-4 z-40">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button size="icon" className="h-14 w-14 rounded-full shadow-lg">

@@ -20,6 +20,30 @@ const CalendarGrid = () => {
   const [eventsToShow, setEventsToShow] = useState<Event[]>([])
   const [days, setDays] = useState<Date[]>([])
 
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [dragSelection, setDragSelection] = useState<DragSelection>({
+    startTime: new Date(),
+    endTime: new Date(),
+    startY: 0,
+    currentY: 0,
+    isDragging: false,
+    dayIndex: 0
+  })
+
+  // Scroll to the first work hour when the work hours change
+  useEffect(() => {
+    if (gridRef.current) {
+      const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start}"]`);
+      if (firstWorkHourElement) {
+        const offsetTop = (firstWorkHourElement as HTMLElement).offsetTop;
+        gridRef.current.scrollTo({
+          top: offsetTop,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [workHours.start, gridRef, date, view]);
+
   // Load events when the date, view or days change
   useEffect(() => {
     function loadEvents() {
@@ -41,7 +65,9 @@ const CalendarGrid = () => {
   useEffect(() => {
     if (view === "month"){
       const start = new Date(date.getFullYear(), date.getMonth(), 1)
+      start.setHours(0, 0, 0, 0)
       const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+      end.setHours(23, 59, 59, 999)
       const monthDays = []
       
       // Add days from previous month to start on Sunday
@@ -69,6 +95,10 @@ const CalendarGrid = () => {
     }else{
       const weekDays = Array.from({ length: 7 }, (_, i) => {
         const day = new Date(date)
+        if (i === 0)
+          day.setHours(0, 0, 0, 0)
+        else if (i === 6)
+          day.setHours(23, 59, 59, 999)
         day.setDate(date.getDate() - getDayEs(date) + i)
         return day
       })
@@ -131,29 +161,7 @@ const CalendarGrid = () => {
 
   const renderWeekView = () => {
     const hours = Array.from({ length: 24 }, (_, i) => i)
-    const gridRef = useRef<HTMLDivElement>(null)
-    const [dragSelection, setDragSelection] = useState<DragSelection>({
-      startTime: new Date(),
-      endTime: new Date(),
-      startY: 0,
-      currentY: 0,
-      isDragging: false,
-      dayIndex: 0
-    })
-
-      // Scroll to the first work hour when the work hours change
-    useEffect(() => {
-      if (gridRef.current) {
-        const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start}"]`);
-        if (firstWorkHourElement) {
-          const offsetTop = (firstWorkHourElement as HTMLElement).offsetTop;
-          gridRef.current.scrollTo({
-            top: offsetTop,
-            behavior: 'smooth',
-          });
-        }
-      }
-    }, [workHours.start, gridRef, date, view]);
+ 
 
     const getTimeFromMousePosition = (y: number, baseDate: Date) => {
       if (!gridRef.current) return new Date()
