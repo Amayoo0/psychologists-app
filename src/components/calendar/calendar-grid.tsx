@@ -15,7 +15,7 @@ import LoadingSpinner from "../LoadingSpinner"
 
 
 const CalendarGrid = () => {
-  const { view, date, showWeekends, cellSize, workHours, events, loading, loadMoreEvents } = useCalendar()
+  const { view, date, showWeekends, cellSize, setCellSize, workHours, events, loading, loadMoreEvents } = useCalendar()
   const [showEventDialog, setShowEventDialog] = useState(false)
   const [eventsToShow, setEventsToShow] = useState<Event[]>([])
   const [days, setDays] = useState<Date[]>([])
@@ -43,6 +43,18 @@ const CalendarGrid = () => {
       }
     }
   }, [workHours.start, gridRef, date, view]);
+
+  useEffect(() => {
+    if (gridRef.current) {
+      const gridHeight = gridRef.current.getBoundingClientRect().height;
+      const numRows = Math.ceil(days.length / (showWeekends ? 7 : 5));
+      const newCellSize = gridHeight / numRows;
+  
+      setCellSize(newCellSize);
+    }
+  }, [days, showWeekends, gridRef]);
+  
+  
 
   // Load events when the date, view or days change
   useEffect(() => {
@@ -111,7 +123,7 @@ const CalendarGrid = () => {
   
 
   const renderMonthView = () => {
-
+    
     return (
       <div id="calendar-grid-month-view">
         <div id="month-header" className="grid flex-1" style={{
@@ -130,9 +142,8 @@ const CalendarGrid = () => {
         </div>
          
           <div className="flex-1 overflow-y-auto flex relative">
-            <div id="month-grid" className="grid flex-1" style={{
+            <div id="month-grid" className="grid flex-1" ref={gridRef} style={{
               gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)`,
-              gridAutoRows: `${cellSize}px`
             }}>
               {days.map((day, i) => (
                 <div

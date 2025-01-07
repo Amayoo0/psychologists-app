@@ -35,17 +35,19 @@ const ConfigDialog: React.FC<ConfigDialogProps> = ({ open, onOpenChange }) => {
           <DialogTitle>Configuración del Calendario</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="cellSize" className="text-right">
-              Tamaño de celda
-            </Label>
-            <Input
-              id="cellSize"
-              value={localCellSize}
-              onChange={(e) => setLocalCellSize(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
+          {view === "week" &&
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="cellSize" className="text-right">
+                Tamaño de celda
+              </Label>
+              <Input
+                id="cellSize"
+                value={localCellSize}
+                onChange={(e) => setLocalCellSize(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          }
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="showWeekends" className="text-right">
               Mostrar fines de semana

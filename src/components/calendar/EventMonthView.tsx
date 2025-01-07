@@ -92,7 +92,7 @@ const EventMonthView = ({
                 }}>
                     {!showHiddenEvents ? 
                         <a onClick={() => setShowHiddenEvents(true)} className="hover:underline">
-                            +{group.length - Math.trunc((cellSize - paddingTop) / height)+2}
+                            +{group.length - Math.trunc((cellSize - paddingTop) / height)+1}
                             {/* Mostrar todos... */}
                         </a>
                     : 

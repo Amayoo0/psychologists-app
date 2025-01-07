@@ -7,21 +7,20 @@ import { addDays } from 'date-fns'
 
 export async function getEvents(startDate: Date, endDate: Date) {
   try {
-    console.log('user', await currentUser())
-    console.log('user is commented in so all events are shown')
-    // if (!user) {
-    //   return []
-    // }
-    // const prismaUser = await prisma.user.findUnique({
-    //     where: {
-    //         authId: user.id
-    //     }
-    // })
+    const user = await currentUser()
+    if (!user) {
+      return []
+    }
+    const prismaUser = await prisma.user.findUnique({
+        where: {
+            authId: user.id
+        }
+    })
     const events = await prisma.event.findMany({
       where: {
 
         AND: [
-          // { userId: prismaUser?.id },
+          { userId: prismaUser?.id },
           { startTime: { gte: startDate } },
           { endTime: { lte: endDate } }
         ]
@@ -39,18 +38,18 @@ export async function getEvents(startDate: Date, endDate: Date) {
 
 export async function saveEvent(event: EventData, repeat: string, repetitionCount: number): Promise<Event[]> {
   try {
-    // const user = await currentUser()
-    // if (!user) {
-    //   throw new Error('User not authenticated')
-    // }
-    // const prismaUser = await prisma.user.findUnique({
-    //   where: {
-    //     authId: user.id
-    //   }
-    // })
-    // if (!prismaUser) {
-    //   throw new Error('User not found in database')
-    // }
+    const user = await currentUser()
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+    const prismaUser = await prisma.user.findUnique({
+      where: {
+        authId: user.id
+      }
+    })
+    if (!prismaUser) {
+      throw new Error('User not found in database')
+    }
     let shiftTimeInDays = 0;
     switch (repeat) {
       case "weekly":
@@ -77,12 +76,12 @@ export async function saveEvent(event: EventData, repeat: string, repetitionCoun
             endTime: addDays(event.endTime, shiftTimeInDays * i),
             sessionUrl: event.sessionUrl,
             patientId: event.patientId,
-            // userId: prismaUser.Id   // TODO: change this when user fix comes
-            userId: 1,
+            userId: prismaUser.id
           }
         })
       )
     )
+    console.log('savedEvents[]: ', savedEvents)
     return savedEvents
 
   } catch (error) {
