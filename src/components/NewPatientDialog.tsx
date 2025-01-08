@@ -17,20 +17,53 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
+import { Event, File } from "@prisma/client"
+import { useState } from "react"
+import { usePatientContext } from "./patient/patient-context"
+
+export type PatientData = {
+  id?: number
+  name: string
+  initials: string
+  email: string
+  lastSession: Date | null 
+  events: Event[]
+  file: File[]
+}
 
 interface NewPatientDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  patientData?: PatientData
 }
 
 export default function NewPatientDialog({
   open,
   onOpenChange,
+  patientData
 }: NewPatientDialogProps) {
-  const form = useForm()
+  const { patients, setPatients } = usePatientContext()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [initials, setInitials] = useState('')
+  const [lastSession, setLastSession] = useState<Date | null>(null)
+  const [events, setEvents] = useState<Event[]>([])
+  const [file, setFile] = useState<File[]>([])
 
-  const onSubmit = (data: any) => {
-    console.log(data)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const patient: PatientData = {
+      name,
+      email,
+      initials,
+      lastSession,
+      events,
+      file,
+    }
+
+    const savedPatients: Promise<Patient[]> = savePatient(patient)
+    setPatients(savedPatients)
     onOpenChange(false)
   }
 

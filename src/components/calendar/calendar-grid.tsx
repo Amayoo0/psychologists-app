@@ -44,17 +44,6 @@ const CalendarGrid = () => {
     }
   }, [workHours.start, gridRef, date, view]);
 
-  useEffect(() => {
-    if (gridRef.current) {
-      const gridHeight = gridRef.current.getBoundingClientRect().height;
-      const numRows = Math.ceil(days.length / (showWeekends ? 7 : 5));
-      const newCellSize = gridHeight / numRows;
-  
-      setCellSize(newCellSize);
-    }
-  }, [days, showWeekends, gridRef]);
-  
-  
 
   // Load events when the date, view or days change
   useEffect(() => {
@@ -170,7 +159,7 @@ const CalendarGrid = () => {
                   </div>
                 </div>
               ))}
-              {eventsToShow && <EventMonthView events={eventsToShow} days={days} showWeekends={showWeekends} cellSize={cellSize}/>}
+              {eventsToShow && <EventMonthView events={eventsToShow} days={days} showWeekends={showWeekends} cellSize={100}/>}
             </div>
 
           </div>
