@@ -125,15 +125,21 @@ const CalendarGrid = () => {
   const renderMonthView = () => {
     
     return (
-      <div id="calendar-grid-month-view">
-        <div id="month-header" className="grid flex-1" style={{
+      <div 
+        id="calendar-grid-month-view" 
+        className="flex flex-col z-10"
+        style={{
+          height: `calc(100vh - 50px)`
+        }}
+      >
+        <div id="month-header" className="grid" style={{
           gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)`,
         }}>
           {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((day) => (
             (!showWeekends && (day === "Sáb" || day === "Dom") ? null :
               <div
               key={day}
-              className="p-2 text-sm font-medium text-center border-b"
+              className="text-sm font-medium text-center border-b"
             >
               {day}
             </div>
