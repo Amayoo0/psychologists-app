@@ -9,13 +9,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import NewPatientDialog from './NewPatientDialog'
+import PatientDialog from './PatientDialog'
 import { EventDialog } from './EventDialog'
 
 export default function FloatingActionButton() {
     const [showEventDialog, setShowEventDialog] = useState(false)
   
-  const [newPatientDialogOpen, setNewPatientDialogOpen] = useState(false)
+  const [patientDialogOpen, setPatientDialogOpen] = useState(false)
 
   return (
     <div className="fixed bottom-4 right-4 z-40">
@@ -29,7 +29,7 @@ export default function FloatingActionButton() {
           <DropdownMenuItem onSelect={() => setShowEventDialog(true)}>
             Agendar Cita
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => setNewPatientDialogOpen(true)}>
+          <DropdownMenuItem onSelect={() => setPatientDialogOpen(true)}>
             Nuevo Paciente
           </DropdownMenuItem>
           <DropdownMenuItem>Otros</DropdownMenuItem>
@@ -40,9 +40,9 @@ export default function FloatingActionButton() {
         open={showEventDialog}
         onOpenChange={setShowEventDialog}
       />
-      <NewPatientDialog
-        open={newPatientDialogOpen}
-        onOpenChange={setNewPatientDialogOpen}
+      <PatientDialog
+        open={patientDialogOpen}
+        onOpenChange={setPatientDialogOpen}
       />
     </div>
   )

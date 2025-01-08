@@ -100,7 +100,6 @@ export function EventDialog({
         onOpenChange(false)
     }
 
-    console.log('patient', patient)
     
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

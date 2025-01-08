@@ -1,16 +1,15 @@
+
 import AppLayout from '../AppLayout'
-import { PatientProvider } from '@/components/patient/patient-context'
 import PatientList from '@/components/patient/PatientList'
+import { CalendarProvider } from '@/components/calendar/calendar-context'
 
 
 export default function Home() {
-  
   return (
     <AppLayout>
-      <PatientProvider>
+      <CalendarProvider>
         <PatientList/>
-        <PatientDialog />
-      </PatientProvider>
+      </CalendarProvider>
     </AppLayout>
   )
 }

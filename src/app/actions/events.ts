@@ -5,7 +5,7 @@ import { currentUser, User } from '@clerk/nextjs/server'
 import { Event } from '@prisma/client'
 import { addDays } from 'date-fns'
 
-export async function getEvents(startDate: Date, endDate: Date) {
+export async function getEvents(startDate: Date, endDate: Date): Promise<Event[]> {
   try {
     const user = await currentUser()
     if (!user) {

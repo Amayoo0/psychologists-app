@@ -1,67 +1,70 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { usePatientContext } from './patient/patient-context'
-import NewPatientDialog from './NewPatientDialog'
 
-export function PasswordProtect() {
-  const { isOpen, selectedPatient, closeDialog } = usePatientContext()
+interface PasswordProtectProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onAuthenticated?: () => void
+  title?: string
+  description?: string
+  children: React.ReactNode
+}
+
+export function PasswordProtect({
+	open,
+	onOpenChange,
+	onAuthenticated,
+	title,
+	description,
+	children,
+}: PasswordProtectProps) {
   const [password, setPassword] = useState('')
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   const handleAuthenticate = () => {
     if (password === 'password123') {
+      onAuthenticated?.();
       setIsAuthenticated(true)
     } else {
       alert('Contraseña incorrecta')
     }
   }
 
-  const handleClose = () => {
-    closeDialog()
-    setPassword('')
-    setIsAuthenticated(false)
-  }
-
   useEffect(() => {
-    closeDialog()
-    setPassword('')
+	if (isAuthenticated){
+		onAuthenticated?.();
+	}
+  }, [])
 
-  
-  }, [isAuthenticated])
 
   return (
-    <NewPatientDialog 
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{selectedPatient?.name}</DialogTitle>
-          <DialogDescription>
-            {isAuthenticated ? (
-              <div>
-                <p>ID: {selectedPatient?.id}</p>
-                <p>Nombre: {selectedPatient?.name}</p>
-                {/* Aquí puedes agregar más información del paciente */}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p>Ingrese la contraseña para ver los detalles del paciente</p>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Contraseña"
-                />
-                <Button onClick={handleAuthenticate}>Verificar</Button>
-              </div>
-            )}
-          </DialogDescription>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
-  )
+    <>
+		{isAuthenticated ? children : (
+			<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>{title ?? "Contraseña requerida"}</DialogTitle>
+					<DialogDescription>
+						{description ?? "Por favor, ingresa la contraseña para continuar"}
+					</DialogDescription>
+				</DialogHeader>
+				<div className="flex flex-row items-center space-x-2" />
+				<Input
+					type="password"
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					placeholder="Contraseña"
+				/>
+				<Button onClick={handleAuthenticate}>Verificar</Button>
+			</DialogContent>
+			</Dialog>
+		)}
+		</>
+	)
 }
+    
 
