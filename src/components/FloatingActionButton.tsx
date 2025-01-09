@@ -39,10 +39,12 @@ export default function FloatingActionButton() {
       <EventDialog
         open={showEventDialog}
         onOpenChange={setShowEventDialog}
+        eventData={{}}
       />
       <PatientDialog
         open={patientDialogOpen}
         onOpenChange={setPatientDialogOpen}
+        patientData={{}}
       />
     </div>
   )

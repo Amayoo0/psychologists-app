@@ -3,6 +3,7 @@ import React from "react";
 import { Event } from '@prisma/client'
 import { getDayEs, groupOverlappingEvents, formatTime } from "./utils";
 import { EventDialog } from "../EventDialog";
+import { set } from "date-fns";
 
 
 const EventWeekView = ({

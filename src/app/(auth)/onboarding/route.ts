@@ -19,7 +19,6 @@ export async function GET(request: Request){
                 authId: user.id
             }
         })
-        console.log(prismaUser)
         if (prismaUser){
             return NextResponse.redirect(new URL('/dashboard', new URL(request.url).origin))
         }

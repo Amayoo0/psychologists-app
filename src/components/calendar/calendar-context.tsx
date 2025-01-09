@@ -1,11 +1,12 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { Event, Patient } from '@prisma/client'
+import { Event, Patient, File } from '@prisma/client'
 import { getDayEs } from "./utils"
 import { getEvents } from "@/app/actions/events"
 import { addDays, addMonths, isAfter, isBefore, set, subMonths } from "date-fns"
 import { getPatients } from "@/app/actions/patients"
+import { getFiles } from "@/app/actions/files"
 
 type ViewType = "week" | "month" | "schedule"
 interface WorkHours {
@@ -33,6 +34,8 @@ interface CalendarContextType {
     setEvents: (events: Event[]) => void
     patients: Patient[]
     setPatients: (patients: Patient[]) => void
+    files: File[]
+    setFiles: (files: File[]) => void
     loading: boolean
     loadedRange: { start: Date; end: Date }
     loadMoreEvents: (viewStartDate: Date, viewEndDate: Date) => Promise<void>
@@ -53,9 +56,11 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     const [workHours, setWorkHours] = useState<WorkHours>({ start: 9, end: 21 })
     const [events, setEvents] = useState<Event[]>([]);
     const [patients, setPatients] = useState<Patient[]>([]);
+    const [files, setFiles] = useState<File[]>([])
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingPatients, setLoadingPatients] = useState<boolean>(false);
     const [loadingEvents, setLoadingEvents] = useState<boolean>(false);
+    const [loadingFiles, setLoadingFiles] = useState<boolean>(false);
     const [loadedRange, setLoadedRange] = useState<{ start: Date; end: Date }>(() => {
         const now = new Date();
         return { start: subMonths(now, 3), end: addMonths(now, 3) };
@@ -76,7 +81,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
         }
       
         loadEvents();
-    }, [setEvents]);
+    }, []);
 
     const loadMoreEvents = async (viewStartDate: Date, viewEndDate: Date) => {
         if (isBefore(viewStartDate, loadedRange.start) || isAfter(viewEndDate, loadedRange.end)) {
@@ -102,7 +107,6 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
         async function loadPatients() {
             setLoadingPatients(true);
             const patients = await getPatients();
-            console.log('CalendarContext.patients', patients)
             if (patients) {
                 setPatients(patients);
             }
@@ -112,8 +116,20 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     }, []);
 
     useEffect(() => {
-        setLoading(loadingPatients || loadingEvents);
-    }, [loadingPatients, loadingEvents]);
+        setLoading(loadingPatients || loadingEvents || loadingFiles);
+    }, [loadingPatients, loadingEvents, loadingFiles]);
+
+    useEffect(() => {
+        async function loadFiles() {
+            setLoadingFiles(true);
+            const files = await getFiles();
+            if (files) {
+                setFiles(files);
+            }
+            setLoadingFiles(false);
+        }
+        loadFiles();
+    }, []);
 
     return (
         <CalendarContext.Provider 
@@ -127,6 +143,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
                 workHours, setWorkHours,
                 events, setEvents,
                 patients, setPatients,
+                files, setFiles,
                 loading,
                 loadedRange,
                 loadMoreEvents,

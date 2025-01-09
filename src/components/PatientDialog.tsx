@@ -10,33 +10,39 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Event, Patient } from "@prisma/client"
-import { useState } from "react"
-import { savePatient } from "@/app/actions/patients"
+import { useEffect, useState } from "react"
+import { savePatient, updatePatient } from "@/app/actions/patients"
 import { format } from "date-fns"
 import { AtSign, File, Phone, User } from "lucide-react"
 import EventTable from "./EventsTable"
+import { useCalendar } from "./calendar/calendar-context"
 
 
 interface PatientDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	patientData?: Partial<Patient>
-	patientEvents?: Event[]
-	setPatientEvents: (events: Event[]) => void
 }
 
 export default function PatientDialog({
 	open,
 	onOpenChange,
 	patientData,
-	patientEvents,
-	setPatientEvents,
 }: PatientDialogProps) {
-	const [patients, setPatients] = useState<Patient[]>([])
+	const {patients, setPatients} = useCalendar()
 	const [name, setName] = useState(patientData?.name ?? '')
 	const [email, setEmail] = useState(patientData?.email ?? '')
 	const [phone, setPhone] = useState(patientData?.phone ?? '')
 	const [initials, setInitials] = useState(patientData?.initials ?? '')
+
+	useEffect(() => {
+		if (patientData) {
+			setName(patientData.name ?? '');
+			setEmail(patientData.email ?? '');
+			setPhone(patientData.phone ?? '');
+			setInitials(patientData.initials ?? '');
+		}
+	}, [patientData]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -44,13 +50,19 @@ export default function PatientDialog({
 		const patient: Partial<Patient> = {
 			name,
 			email,
+			phone,
 			initials,
 		}
 
-		console.log('saving Patient:', patient)
+		if (patientData?.id) {
+			const updatedPatient = await updatePatient(patientData.id, patient)
+			const updatedPatients = patients.map(p => p.id === updatedPatient?.id ? updatedPatient : p)
+			setPatients(updatedPatients)
+		} else {
+			const savedPatient = await savePatient(patient)
+			setPatients([...patients, savedPatient as Patient])
+		}
 
-		const savedPatient = await savePatient(patient)
-		setPatients([...patients, savedPatient as Patient])
 
 		onOpenChange(false)
 	}

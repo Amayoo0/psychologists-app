@@ -17,14 +17,14 @@ function EventTable({
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
 
     const onEditEvent = (event: Event) => {
-        setShowEventDialog(true)
         setSelectedEvent(event)
+        setShowEventDialog(true)
     }
 
     const onDeleteEvent = async (event: Event) => {
-        console.log('Delete event:', event)
         const result = await deleteEvent(event)
-        setEvents(events.filter(e => e.id !== event.id))
+        const newEvents = events.filter(e => e.id !== event.id)
+        setEvents(newEvents)
     }
 
 
@@ -50,7 +50,7 @@ function EventTable({
                 <td className="px-4 py-2 border-b whitespace-nowrap">
                     {`${event.startTime.toLocaleDateString()} ${format(event.startTime, "HH:mm")}`}{" "}
                     {event.type === "event"
-                        ? `${event.endTime.toLocaleDateString()} ${format(event.endTime, "HH:mm")}`
+                        ? `- ${event.endTime.toLocaleDateString()} ${format(event.endTime, "HH:mm")}`
                         : ` - ${format(event.endTime, "HH:mm")}`}
                 </td>
                 <td className="px-4 py-2 border-b">{event.sessionUrl}</td>

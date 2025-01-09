@@ -8,20 +8,21 @@ import { PasswordProtect } from "../PasswordProtect";
 import { on } from "events";
 import { deletePatient } from "@/app/actions/patients";
 import PatientTable from "../PatientsTable";
+import LoadingSpinner from "../LoadingSpinner";
 
 const PatientList = () => {
-    const { patients, setPatients, events, setEvents, isAuthenticated } = useCalendar()
+    const { patients, setPatients, events, setEvents, isAuthenticated, files, setFiles, loading } = useCalendar()
 	const [showPatientDialog, setShowPatientDialog] = useState(false)
 	const [showPasswordDialog, setShowPasswordDialog] = useState(false)
 	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
 
 	const onEditPatient = (patient: Patient) => {
 		if (isAuthenticated) {
+			setSelectedPatient(patient)
 			setShowPatientDialog(true)
-			setSelectedPatient(patient)
 		} else {
-			setShowPasswordDialog(true)
 			setSelectedPatient(patient)
+			setShowPasswordDialog(true)
 		}
 	}
 
@@ -31,38 +32,38 @@ const PatientList = () => {
 
 	const onDeletePatient = async (patient: Patient) => {
 		const result = await deletePatient(patient.id)
-		if (result)
-			console.log('Deleted patient:', patient)
-		else
-			console.error('Error deleting patient:', patient)
-
 		setPatients(patients.filter(p => p.id !== patient.id))
 	}
 	
     return (
 		<>
-		<PatientTable 
-			patients={patients} 
-			events={events}
-			setEvents={setEvents} 
-			onSendReminder={onSendReminder}
-			onEditPatient={onEditPatient} 
-			onDeletePatient={onDeletePatient} 
-		/>
-
-		<PasswordProtect 
-			open={showPasswordDialog} 
-			onOpenChange={setShowPasswordDialog}
-			onAuthenticated={() => setShowPatientDialog(true)}
-		>
-			<PatientDialog 
-				open={showPatientDialog}
-				onOpenChange={setShowPatientDialog}
-				patientData={selectedPatient ?? undefined}
-				patientEvents={events.filter((event) => event.patientId === selectedPatient?.id)}
-				setPatientEvents={setEvents}
+		{loading ? (
+        	<LoadingSpinner message="Cargando pacientes..." />
+		) : (
+			<>
+			<PatientTable 
+				patients={patients} 
+				events={events}
+				files={files}
+				setEvents={setEvents} 
+				onSendReminder={onSendReminder}
+				onEditPatient={onEditPatient} 
+				onDeletePatient={onDeletePatient} 
 			/>
-		</PasswordProtect>
+
+			<PasswordProtect 
+				open={showPasswordDialog} 
+				onOpenChange={setShowPasswordDialog}
+				onAuthenticated={() => setShowPatientDialog(true)}
+			>
+				<PatientDialog 
+					open={showPatientDialog}
+					onOpenChange={setShowPatientDialog}
+					patientData={selectedPatient ?? undefined}
+				/>
+			</PasswordProtect>
+			</>
+		)}
 		</>
     )
 }

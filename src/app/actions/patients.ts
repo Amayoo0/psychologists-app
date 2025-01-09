@@ -81,7 +81,7 @@ export async function updatePatient(patientId: number, patientData: Partial<Pati
   try {
     const existingPatient = await prisma.patient.findUnique({
       where: {
-      id: patientId
+        id: patientId
       }
     })
 
@@ -93,7 +93,7 @@ export async function updatePatient(patientId: number, patientData: Partial<Pati
 
     const updatedPatient: Patient = await prisma.patient.update({
       where: {
-      id: patientId
+        id: patientId
       },
       data: updatedData
     })

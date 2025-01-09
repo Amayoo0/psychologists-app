@@ -19,7 +19,6 @@ const CalendarGrid = () => {
   const [showEventDialog, setShowEventDialog] = useState(false)
   const [eventsToShow, setEventsToShow] = useState<Event[]>([])
   const [days, setDays] = useState<Date[]>([])
-
   const gridRef = useRef<HTMLDivElement>(null)
   const [dragSelection, setDragSelection] = useState<DragSelection>({
     startTime: new Date(),
@@ -29,6 +28,7 @@ const CalendarGrid = () => {
     isDragging: false,
     dayIndex: 0
   })
+  const [eventDialogData, setEventDialogData] = useState<Partial<Event | null>>(null)
 
   // Scroll to the first work hour when the work hours change
   useEffect(() => {
@@ -48,7 +48,6 @@ const CalendarGrid = () => {
   // Load events when the date, view or days change
   useEffect(() => {
     function loadEvents() {
-      console.log('CalendarGrid.LoadEvents.events: ', events)
       const filteredEvents: Event[] = events.filter(event => {
         return event.startTime >= days[0] && event.endTime <= days[days.length - 1];
       });
@@ -56,7 +55,6 @@ const CalendarGrid = () => {
       if (filteredEvents) {
         setEventsToShow(filteredEvents);
       }
-      console.log("CalendarGrid.LoadEvents.filteredEvents: ", days[0], days[days.length - 1], filteredEvents)
     }
     loadEvents();
   }, [view, events, days]);
@@ -241,6 +239,11 @@ const CalendarGrid = () => {
           startTime: finalStartTime,
           endTime: finalEndTime
         }))
+        setEventDialogData({
+          startTime: finalStartTime,
+          endTime: finalEndTime,
+        })
+
         setShowEventDialog(true)
       }
     }
@@ -319,6 +322,12 @@ const CalendarGrid = () => {
             {/* Events */}
             {eventsToShow && <EventWeekView events={eventsToShow} date={date} cellSize={cellSize} showWeekends={showWeekends} />}
           </div>
+
+          <EventDialog 
+              open={showEventDialog}
+              onOpenChange={setShowEventDialog}
+              eventData={eventDialogData ?? undefined} 
+          />
         </div>
       </div>
     )
@@ -331,6 +340,7 @@ const CalendarGrid = () => {
       ) : (
         view === "month" ? renderMonthView() : renderWeekView()
       )}
+
     </>
   )
 }

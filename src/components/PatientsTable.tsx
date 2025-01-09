@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Patient, Event } from "@prisma/client";
+import { Patient, Event, File } from "@prisma/client";
 import { Button } from "./ui/button";
 import React from "react";
 import { format } from "date-fns";
@@ -10,6 +10,7 @@ import { useCalendar } from "./calendar/calendar-context";
 function PatientTable({ 
     patients,
     events,
+    files,
     setEvents,
     onSendReminder, 
     onEditPatient, 
@@ -17,25 +18,26 @@ function PatientTable({
 }: { 
     patients: Patient[], 
     events: Event[],
+    files: File[],
     setEvents: (events: Event[]) => void, 
     onSendReminder: (patient: Patient) => void, 
     onEditPatient: (patient: Patient) => void, 
     onDeletePatient: (patient: Patient) => void 
 }) {
-    const { isAuthenticated, setIsAuthenticated } = useCalendar();
+    const { isAuthenticated } = useCalendar();
     const [expandedPatientId, setExpandedPatientId] = useState<number | null>(null);
     const [showPasswordDialog, setShowPasswordDialog] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+    const [patientFiles, setPatientFiles] = useState<File[]>(files.filter((file) => file.patientId === selectedPatient?.id) ?? []);
 
     const toggleExpand = (patientId: number) => {
         setExpandedPatientId((prev) => (prev === patientId ? null : patientId));
     };
 
     const setPatientsEvents = (patientEvents: Event[]) => {
-        const uniqueEvents = patientEvents.filter(
-            (newEvent) => !events.some((existingEvent) => existingEvent.id === newEvent.id)
-        );
-        setEvents(uniqueEvents);
+        const eventsWithOtherPatientId = events.filter((event) => event.patientId !== selectedPatient?.id);
+
+        setEvents([...eventsWithOtherPatientId, ...patientEvents]);
     };
 
     const onShowDetails = (patient: Patient) => {
@@ -64,7 +66,7 @@ function PatientTable({
                     {patients.map((patient) => {
                         const patientEvents = events.filter((event) => event.patientId === patient.id).reverse();
                         const patientLastSession = patientEvents.length > 0 ? patientEvents[0].startTime : null;
-                        const patientFiles: any[] = [];
+                        const patientFiles = files.filter((file) => file.patientId === patient.id);
 
                         return (
                             <React.Fragment key={patient.id}>

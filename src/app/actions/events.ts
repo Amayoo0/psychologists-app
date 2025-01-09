@@ -80,7 +80,6 @@ export async function saveEvent(event: Partial<Event>, repeat: string, repetitio
         })
       )
     )
-    console.log('savedEvents[]: ', savedEvents)
     return savedEvents
 
   } catch (error) {
@@ -114,5 +113,32 @@ export async function deleteEvent(event: Event): Promise<boolean> {
   } catch (error) {
     console.error('Error deleting event:', error)
     return false
+  }
+}
+
+export async function updateEvent(eventId: string, event: Partial<Event>): Promise<Event | null> {
+  try {
+    const existingEvent = await prisma.event.findUnique({
+      where: {
+        id: eventId
+      }
+    })
+
+    if (!existingEvent) {
+      return null
+    }
+
+    const updatedData = { ...existingEvent, ...event }
+
+    const updatedEvent = await prisma.event.update({
+      where: {
+        id: eventId
+      },
+      data: updatedData
+    })
+    return updatedEvent
+  } catch (error) {
+    console.error('Error updating event:', error)
+    return null
   }
 }

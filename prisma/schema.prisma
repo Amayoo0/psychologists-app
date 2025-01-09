@@ -18,7 +18,8 @@ model User {
   authId    String  @unique
 
   patients  Patient[]
-  events  Event[]
+  events    Event[]
+  files     File[]
 }
 
 model Patient {
@@ -64,4 +65,7 @@ model File {
 
   patient   Patient  @relation(fields: [patientId], references: [id])
   patientId Int
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
 }

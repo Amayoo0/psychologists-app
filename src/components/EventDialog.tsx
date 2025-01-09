@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { currentUser } from "@clerk/nextjs/server"
 import { useUser } from "@clerk/nextjs"
 import { userAgent } from "next/server"
-import { saveEvent } from "@/app/actions/events"
+import { saveEvent, updateEvent } from "@/app/actions/events"
 import { prisma } from "@/lib/prisma"
 import { useCalendar } from "./calendar/calendar-context"
 
@@ -38,18 +38,33 @@ export function EventDialog({
   eventData,
 }: EventDialogProps) {
     const {patients, setEvents, events} = useCalendar();
-    const [title, setTitle] = useState(eventData?.title || "")
-    const [description, setDescription] = useState(eventData?.description || "")
-    const [type, setType] = useState(eventData?.type || "appointment")
-    const [patientId, setPatientId] = useState(eventData?.patientId || 0)
+    const [title, setTitle] = useState(eventData?.title ?? "")
+    const [description, setDescription] = useState(eventData?.description ?? "")
+    const [type, setType] = useState(eventData?.type ?? "appointment")
+    const [patientId, setPatientId] = useState(eventData?.patientId ?? 0)
     const [patient, setPatient] = useState<Patient>()
-    const [sessionUrl, setSessionUrl] = useState(eventData?.sessionUrl || "")
-    const [startTimeStr, setStartTimeStr] = useState(format(eventData?.startTime ? eventData.startTime : new Date(), "HH:mm"))
-    const [endTimeStr, setEndTimeStr] = useState(format(eventData?.endTime ? eventData.endTime : new Date(), "HH:mm"))
-    const [newStartTime, setNewStartTime] = useState(eventData?.startTime ? eventData.startTime : new Date())
-    const [newEndTime, setNewEndTime] = useState(eventData?.endTime ? eventData.endTime : new Date())
+    const [sessionUrl, setSessionUrl] = useState(eventData?.sessionUrl ?? "")
+    const [startTimeStr, setStartTimeStr] = useState(format(eventData?.startTime ?? new Date(), "HH:mm"))
+    const [endTimeStr, setEndTimeStr] = useState(format(eventData?.endTime ?? new Date(), "HH:mm"))
+    const [newStartTime, setNewStartTime] = useState(eventData?.startTime ?? new Date())
+    const [newEndTime, setNewEndTime] = useState(eventData?.endTime ?? new Date())
     const [repeat, setRepeat] = useState("no-repeat")
     const [repetitionCount, setRepetitionCount] = useState(1)
+
+
+    useEffect(() => {
+        if (eventData) {
+            setTitle(eventData.title || "");
+            setDescription(eventData.description || "");
+            setType(eventData.type || "appointment");
+            setPatientId(eventData.patientId || 0);
+            setSessionUrl(eventData.sessionUrl || "");
+            setStartTimeStr(format(eventData.startTime ?? new Date(), "HH:mm"));
+            setEndTimeStr(format(eventData.endTime ?? new Date(), "HH:mm"));
+            setNewStartTime(eventData.startTime ?? new Date());
+            setNewEndTime(eventData.endTime ?? new Date());
+        }
+    }, [eventData]);
 
     useEffect(() => {
         setStartTimeStr(format(newStartTime, "HH:mm"));
@@ -84,11 +99,16 @@ export function EventDialog({
         }
         console.log('saving event', event)
 
-        const savedEvents: Promise<Event[]> = saveEvent(event, repeat, repetitionCount)
-        setEvents([...await savedEvents as Event[], ...events])
+        if (eventData?.id) {
+            console.log('update(event): ', event)
+            const updatedEvent = await updateEvent(eventData.id, event)
+            const updatedEvents = events.map((e: Event) => e.id === updatedEvent?.id ? updatedEvent : e)
+            setEvents(updatedEvents)
+        } else {
+            const savedEvents: Promise<Event[]> = saveEvent(event, repeat, repetitionCount)
+            setEvents([...await savedEvents as Event[], ...events])
+        }
 
-
-        // Cierra el diálogo después de guardar el evento
         onOpenChange(false)
     }
 

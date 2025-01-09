@@ -1,4 +1,4 @@
-import { Patient, Event } from "@prisma/client";
+import { Patient, Event, File } from "@prisma/client";
 import EventTable from "./EventsTable";
 
 const PatientDetails = ({
@@ -10,7 +10,7 @@ const PatientDetails = ({
     patient: Patient;
     patientEvents?: Event[];
     setPatientEvents: (events: Event[]) => void;
-    patientFiles?: any[];
+    patientFiles?: File[];
 }) => {
     return (
                 <div className="p-6 bg-white rounded-lg shadow-md">
@@ -39,7 +39,7 @@ const PatientDetails = ({
                         {patientFiles?.length > 0 ? (
                             patientFiles.map((file) => (
                                 <li key={file.id} className="flex items-center space-x-2">
-                                    <span className="text-gray-900">{file.name}</span>
+                                    <span className="text-gray-900">{file.filename}</span>
                                     <a
                                         href={file.url}
                                         target="_blank"

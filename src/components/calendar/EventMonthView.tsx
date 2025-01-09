@@ -27,8 +27,6 @@ const EventMonthView = ({
         return <div key={`events-groupIndex-${groupIndex}`}>
             {group.map((e, i) => {
                 const weekOfMonth = Math.trunc(days.findIndex(day => day.getDate() === e.startTime.getDate()) / 7); // divided by 7 due to days always contains weekends
-                // console.log('weekOfMonth', weekOfMonth)
-                // console.log('cellSize', cellSize)
                 const width = 100 / (showWeekends ? 7 : 5) -0.5;
                 const top = weekOfMonth*cellSize + height*i + paddingTop;
                 const left = getDayEs(e.startTime) * (100 / (showWeekends ? 7 : 5)) +0.25;
