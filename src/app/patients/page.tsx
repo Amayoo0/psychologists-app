@@ -2,6 +2,7 @@
 import AppLayout from '../AppLayout'
 import PatientList from '@/components/patient/PatientList'
 import { CalendarProvider } from '@/components/calendar/calendar-context'
+import FloatingActionButton from '@/components/FloatingActionButton'
 
 
 export default function Home() {
@@ -9,6 +10,7 @@ export default function Home() {
     <AppLayout>
       <CalendarProvider>
         <PatientList/>
+        <FloatingActionButton/>
       </CalendarProvider>
     </AppLayout>
   )

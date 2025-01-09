@@ -1,47 +1,66 @@
 'use client'
 import { useState } from "react";
-import NewPatientDialog from "../PatientDialog";
+import PatientDialog from "../PatientDialog";
 import { Button } from "../ui/button";
 import { useCalendar } from "../calendar/calendar-context";
-import { Patient } from "@prisma/client";
+import { Patient, Event } from "@prisma/client";
 import { PasswordProtect } from "../PasswordProtect";
+import { on } from "events";
+import { deletePatient } from "@/app/actions/patients";
+import PatientTable from "../PatientsTable";
 
 const PatientList = () => {
-    const { patients, setPatients, events, setEvents } = useCalendar()
+    const { patients, setPatients, events, setEvents, isAuthenticated } = useCalendar()
 	const [showPatientDialog, setShowPatientDialog] = useState(false)
 	const [showPasswordDialog, setShowPasswordDialog] = useState(false)
 	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
 
-	const openPasswordDialog = (patient: Patient) => {
-		setShowPasswordDialog(true)
-		setSelectedPatient(patient)
+	const onEditPatient = (patient: Patient) => {
+		if (isAuthenticated) {
+			setShowPatientDialog(true)
+			setSelectedPatient(patient)
+		} else {
+			setShowPasswordDialog(true)
+			setSelectedPatient(patient)
+		}
+	}
+
+	const onSendReminder = (patient: Patient) => {
+		console.log('Send reminder to patient:', patient)
+	}
+
+	const onDeletePatient = async (patient: Patient) => {
+		const result = await deletePatient(patient.id)
+		if (result)
+			console.log('Deleted patient:', patient)
+		else
+			console.error('Error deleting patient:', patient)
+
+		setPatients(patients.filter(p => p.id !== patient.id))
 	}
 	
     return (
 		<>
-        <ul className="space-y-2">
-			{patients.map((patient) => (
-				<li key={patient.id} className="flex items-center justify-between p-2 bg-white rounded-lg shadow">
-				<span>{patient.name}</span>
-				<Button onClick={() => {
-					openPasswordDialog(patient)}
-					// if isAuthenticated setShowPatientDialog(true)
-				}>	
-					Ver detalles
-				</Button>
-				</li>
-			))}
-        </ul>
-		
+		<PatientTable 
+			patients={patients} 
+			events={events}
+			setEvents={setEvents} 
+			onSendReminder={onSendReminder}
+			onEditPatient={onEditPatient} 
+			onDeletePatient={onDeletePatient} 
+		/>
+
 		<PasswordProtect 
 			open={showPasswordDialog} 
 			onOpenChange={setShowPasswordDialog}
 			onAuthenticated={() => setShowPatientDialog(true)}
 		>
-			<NewPatientDialog 
+			<PatientDialog 
 				open={showPatientDialog}
 				onOpenChange={setShowPatientDialog}
-				patientData={selectedPatient ?? undefined}  
+				patientData={selectedPatient ?? undefined}
+				patientEvents={events.filter((event) => event.patientId === selectedPatient?.id)}
+				setPatientEvents={setEvents}
 			/>
 		</PasswordProtect>
 		</>

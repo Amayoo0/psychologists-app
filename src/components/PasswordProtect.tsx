@@ -4,6 +4,7 @@ import { use, useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useCalendar } from './calendar/calendar-context'
 
 interface PasswordProtectProps {
   open: boolean
@@ -22,8 +23,8 @@ export function PasswordProtect({
 	description,
 	children,
 }: PasswordProtectProps) {
+  const { isAuthenticated, setIsAuthenticated } = useCalendar()
   const [password, setPassword] = useState('')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   const handleAuthenticate = () => {
     if (password === 'password123') {

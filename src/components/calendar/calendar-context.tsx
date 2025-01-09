@@ -33,9 +33,11 @@ interface CalendarContextType {
     setEvents: (events: Event[]) => void
     patients: Patient[]
     setPatients: (patients: Patient[]) => void
-    loading: boolean,
+    loading: boolean
     loadedRange: { start: Date; end: Date }
-    loadMoreEvents: (viewStartDate: Date, viewEndDate: Date) => Promise<void>;
+    loadMoreEvents: (viewStartDate: Date, viewEndDate: Date) => Promise<void>
+    isAuthenticated: boolean
+    setIsAuthenticated: (isAuthenticated: boolean) => void
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined)
@@ -58,6 +60,8 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
         const now = new Date();
         return { start: subMonths(now, 3), end: addMonths(now, 3) };
     });
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+
 
 
     // Render -> useEffect -> loadEvents -> getEvents -> setEvents
@@ -126,6 +130,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
                 loading,
                 loadedRange,
                 loadMoreEvents,
+                isAuthenticated, setIsAuthenticated
             }}
         >
             {children}

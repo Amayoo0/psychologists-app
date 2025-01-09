@@ -1,5 +1,4 @@
 "use server"
-import { EventData } from '@/components/EventDialog'
 import { prisma } from '@/lib/prisma'
 import { currentUser, User } from '@clerk/nextjs/server'
 import { Event } from '@prisma/client'
@@ -36,7 +35,7 @@ export async function getEvents(startDate: Date, endDate: Date): Promise<Event[]
   }
 }
 
-export async function saveEvent(event: EventData, repeat: string, repetitionCount: number): Promise<Event[]> {
+export async function saveEvent(event: Partial<Event>, repeat: string, repetitionCount: number): Promise<Event[]> {
   try {
     const user = await currentUser()
     if (!user) {
@@ -72,10 +71,10 @@ export async function saveEvent(event: EventData, repeat: string, repetitionCoun
             title: event.title ? event.title : "",
             type: event.type,
             description: event.description,
-            startTime: addDays(event.startTime, shiftTimeInDays * i),
-            endTime: addDays(event.endTime, shiftTimeInDays * i),
+            startTime: addDays(event.startTime ?? new Date(), shiftTimeInDays * i),
+            endTime: addDays(event.endTime ?? new Date(), shiftTimeInDays * i),
             sessionUrl: event.sessionUrl,
-            patientId: event.patientId,
+            patientId: event.patientId ?? 0,
             userId: prismaUser.id
           }
         })
@@ -87,5 +86,33 @@ export async function saveEvent(event: EventData, repeat: string, repetitionCoun
   } catch (error) {
     console.error('Error saving events:', error)
     return []
+  }
+}
+
+export async function deleteEvent(event: Event): Promise<boolean> {
+  try {
+    const user = await currentUser()
+    if (!user) {
+      return false
+    }
+    const prismaUser = await prisma.user.findUnique({
+      where: {
+        authId: user.id
+      }
+    })
+    if (!prismaUser) {
+      return false
+    }
+
+    await prisma.event.delete({
+      where: {
+        id: event.id,
+        userId: prismaUser.id
+      }
+    })
+    return true
+  } catch (error) {
+    console.error('Error deleting event:', error)
+    return false
   }
 }

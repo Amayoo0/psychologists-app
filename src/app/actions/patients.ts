@@ -65,7 +65,6 @@ export async function savePatient(patient: Partial<Patient>) {
         initials: patient.initials ?? '',
         email: patient.email ?? null,
         phone: patient.phone ?? null,
-        lastSession: patient.lastSession,
 
         userId: prismaUser?.id
       }
@@ -103,5 +102,33 @@ export async function updatePatient(patientId: number, patientData: Partial<Pati
   } catch (error) {
     console.error('Error updating patient:', error)
     return null
+  }
+}
+
+export async function deletePatient(patientId: number): Promise<boolean> {
+  try {
+    const user = await currentUser()
+    if (!user) {
+      return false
+    }
+    const prismaUser = await prisma.user.findUnique({
+        where: {
+            authId: user.id
+        }
+    })
+
+    if (!prismaUser) {
+      return false
+    }
+    await prisma.patient.delete({
+      where: {
+        id: patientId,
+        userId: prismaUser.id,
+      }
+    })
+    return true
+  } catch (error) {
+    console.error('Error deleting patient:', error)
+    return false
   }
 }

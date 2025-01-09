@@ -23,20 +23,12 @@ import { saveEvent } from "@/app/actions/events"
 import { prisma } from "@/lib/prisma"
 import { useCalendar } from "./calendar/calendar-context"
 
-export type EventData = {
-    title?: string
-    type?: string
-    description?: string
-    startTime: Date
-    endTime: Date
-    sessionUrl?: string
-    patientId: number
-};
+
 
 interface EventDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  eventData?: EventData
+  eventData?: Partial<Event>
   repeat?: string
 }
 
@@ -81,7 +73,7 @@ export function EventDialog({
         let newEnd = new Date(newEndTime)
         newEnd.setHours(Number(endHour), Number(endMinute))
 
-        const event: EventData = {
+        const event: Partial<Event> = {
             title,
             type,
             description,
@@ -112,7 +104,7 @@ export function EventDialog({
                     placeholder="Añadir título"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="border-0 border-b p-0 text-lg font-medium focus-visible:ring-0"
+                    className="border-0 border-b pb-0 w-[95%] text-lg font-medium focus-visible:ring-0"
                 />
                 </DialogTitle>
             </DialogHeader>
