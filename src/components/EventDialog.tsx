@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, File, Users, Video } from 'lucide-react'
-import { format } from "date-fns"
+import { Calendar, File, Users, Video, X } from 'lucide-react'
+import { format, set } from "date-fns"
 import { useState, useEffect, use } from "react"
 import SearchableDropdown from "./SearchableDropdown"
 import { Patient, Event, PsyFile } from "@prisma/client"
@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { saveEvent, updateEvent } from "@/app/actions/events"
 import { useCalendar } from "./calendar/calendar-context"
 import { saveFile, updateFile } from "@/app/actions/files"
+import { cn } from "@/lib/utils"
 
 
 
@@ -48,7 +49,8 @@ export function EventDialog({
     const [repeat, setRepeat] = useState("no-repeat")
     const [repetitionCount, setRepetitionCount] = useState(1)
     const [eventFile, setEventFiles] = useState<PsyFile[]>(files.filter((f) => f.eventId === eventData?.id) ?? [])
-    const [filesToSave, setFilesToSave] = useState<FileList | null>(null)
+    const [filesToSave, setFilesToSave] = useState<File[] | null>(null)
+    const [filesToDelete, setFilesToDelete] = useState<number[]>([])
 
 
     useEffect(() => {
@@ -137,8 +139,23 @@ export function EventDialog({
             console.log('Files after saveFile call:', files)
         }
         
-        onOpenChange(false)
     }
+
+
+    const handleAddFile = async (fileList: FileList | null) => {
+        if (!fileList) return
+        
+        const files = Array.from(fileList)
+
+        if (eventFile.length + files.length - filesToDelete.length > 3) {
+            alert("No se pueden subir más de 3 archivos")
+            return
+        }
+        
+        setFilesToSave(files)
+        
+    }
+
 
     console.log('files:', files)
     console.log('eventFiles:', eventFile)
@@ -274,25 +291,69 @@ export function EventDialog({
                     />
                 </div>
                 <div className="flex items-center gap-4">
-                    <File className="h-4 w-4 text-muted-foreground" />
-                    <input
-                        type="file"
-                        multiple
-                        onChange={(e) => setFilesToSave(e.target.files)}
-                        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
-                    />
-                    <div className="mt-2">
-                        {Array.from(eventFile || []).map((file, index) => (
-                            <div key={index} className="text-sm text-gray-700">
-                                {file.filename}
-                            </div>
-                        ))}
+                        <File className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex flex-col w-full">
+                        {/* existing files */}
+                        <div className="m-1 flex flex-row">
+                            {eventFile.map((file, index) => (
+                                <div
+                                    key={index}
+                                    className={cn(
+                                        "relative flex flex-col items-center justify-center w-24 h-24 shadow-md bg-gray-50 text-gray-700",
+                                        filesToDelete.includes(file.id) ? "opacity-50" : ""
+                                    )}
+                                >
+                                    <File className="w-8 h-8 text-gray-500" />
+                                    <span className="mt-2 text-xs text-center truncate">{file.filename}</span>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => {
+                                            if (filesToDelete.includes(file.id)) 
+                                                setFilesToDelete(filesToDelete.filter(id => id !== file.id))
+                                            else 
+                                                setFilesToDelete([...filesToDelete, file.id])
+                                        }}
+                                        className="absolute top-1 right-1 flex items-center justify-center w-5 h-5"
+                                    >
+                                        <X className={cn("w-4 h-4",
+                                            filesToDelete.includes(file.id) ? "rotate-45 hover:text-green-600" : "hover:text-red-600")} 
+                                        />
+                                    </Button>
+                                </div>
+                            ))}
+                            {filesToSave?.map((file, index) => (
+                                <div
+                                    key={index}
+                                    className={cn(
+                                        "relative flex flex-col items-center justify-center w-24 h-24 shadow-md bg-gray-50 border-2 border-dashed border-green-500"
+                                    )}
+                                >
+                                    <File className="w-8 h-8 text-gray-500" />
+                                    <span className="mt-2 text-xs text-center truncate">{file.name}</span>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => setFilesToSave(filesToSave?.filter(f => f.name !== file.name))}
+                                        className="absolute top-1 right-1 flex items-center justify-center w-5 h-5"
+                                    >
+                                        <X className="w-4 h-4 hover:text-red-600"/>
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                        {/* New Files */}
+                        <input
+                            type="file"
+                            multiple
+                            onChange={(e) => handleAddFile(e.target.files)}
+                            className="w-[110px] cursor-pointer bg-white text-white hover:text-white hover:bg-white" 
+                        />
                     </div>
                 </div>
+
                 </div>
             </div>
             <DialogFooter>
-                <Button type="submit">
+                <Button type="submit" onClick={() => onOpenChange(false)}>
                     {repetitionCount > 1 ? `Guardar (${repetitionCount})` : "Guardar"}
                 </Button>
             </DialogFooter>
