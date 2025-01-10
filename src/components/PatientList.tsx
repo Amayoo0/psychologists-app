@@ -1,14 +1,12 @@
 'use client'
 import { useState } from "react";
-import PatientDialog from "../PatientDialog";
-import { Button } from "../ui/button";
-import { useCalendar } from "../calendar/calendar-context";
+import PatientDialog from "./PatientDialog";
+import { useCalendar } from "./calendar/calendar-context";
 import { Patient, Event } from "@prisma/client";
-import { PasswordProtect } from "../PasswordProtect";
-import { on } from "events";
+import { PasswordProtect } from "./PasswordProtect";
 import { deletePatient } from "@/app/actions/patients";
-import PatientTable from "../PatientsTable";
-import LoadingSpinner from "../LoadingSpinner";
+import PatientTable from "./PatientsTable";
+import LoadingSpinner from "./LoadingSpinner";
 
 const PatientList = () => {
     const { patients, setPatients, events, setEvents, isAuthenticated, files, setFiles, loading } = useCalendar()
