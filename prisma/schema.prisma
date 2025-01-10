@@ -19,7 +19,7 @@ model User {
 
   patients  Patient[]
   events    Event[]
-  files     File[]
+  files     PsyFile[]
 }
 
 model Patient {
@@ -35,7 +35,7 @@ model Patient {
 
 
   events  Event[]
-  file    File[]
+  file    PsyFile[]
 }
 
 model Event {
@@ -55,11 +55,11 @@ model Event {
   user        User     @relation(fields: [userId], references: [id])
   userId      Int
   
-  files     File[]
+  files     PsyFile[]
 }
 
 
-model File {
+model PsyFile {
   id        Int      @id @default(autoincrement())
   filename  String
   url       String

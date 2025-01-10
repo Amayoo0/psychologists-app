@@ -10,18 +10,15 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, Users, Video } from 'lucide-react'
+import { Calendar, File, Users, Video } from 'lucide-react'
 import { format } from "date-fns"
 import { useState, useEffect, use } from "react"
 import SearchableDropdown from "./SearchableDropdown"
-import { Patient, Event } from "@prisma/client"
+import { Patient, Event, PsyFile } from "@prisma/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
-import { currentUser } from "@clerk/nextjs/server"
-import { useUser } from "@clerk/nextjs"
-import { userAgent } from "next/server"
 import { saveEvent, updateEvent } from "@/app/actions/events"
-import { prisma } from "@/lib/prisma"
 import { useCalendar } from "./calendar/calendar-context"
+import { saveFile } from "@/app/actions/files"
 
 
 
@@ -50,6 +47,8 @@ export function EventDialog({
     const [newEndTime, setNewEndTime] = useState(eventData?.endTime ?? new Date())
     const [repeat, setRepeat] = useState("no-repeat")
     const [repetitionCount, setRepetitionCount] = useState(1)
+    const [files, setFiles] = useState<PsyFile[]>(eventData?.files ?? [])
+    const [filesToSave, setFilesToSave] = useState<FileList | null>(null)
 
 
     useEffect(() => {
@@ -63,6 +62,7 @@ export function EventDialog({
             setEndTimeStr(format(eventData.endTime ?? new Date(), "HH:mm"));
             setNewStartTime(eventData.startTime ?? new Date());
             setNewEndTime(eventData.endTime ?? new Date());
+            setFiles(eventData.files ?? []);
         }
     }, [eventData]);
 
@@ -98,17 +98,28 @@ export function EventDialog({
             patientId,
         }
         console.log('saving event', event)
-
+        
+        let newEvents: Event[] = []
         if (eventData?.id) {
             console.log('update(event): ', event)
-            const updatedEvent = await updateEvent(eventData.id, event)
-            const updatedEvents = events.map((e: Event) => e.id === updatedEvent?.id ? updatedEvent : e)
+            newEvents = await updateEvent(eventData.id, event)
+            const updatedEvents = events.map((e: Event) => e.id === newEvents[0].id ? newEvents : e)
             setEvents(updatedEvents)
         } else {
-            const savedEvents: Promise<Event[]> = saveEvent(event, repeat, repetitionCount)
-            setEvents([...await savedEvents as Event[], ...events])
+            newEvents = await saveEvent(event, repeat, repetitionCount)
+            setEvents([...newEvents, ...events])
         }
-
+        if (filesToSave) {
+            // TODO update files intead of adding new ones
+            let newFiles: PsyFile[] = []
+            newEvents.map(async (e, i) => {
+                const savedFiles = await saveFile(filesToSave, newEvents[i].id || "", patientId)
+                newFiles.push(...savedFiles)   
+            })
+            setFiles([...newFiles, ...files])
+            console.log('Files after saveFile call:', files)
+        }
+        
         onOpenChange(false)
     }
 
@@ -142,9 +153,9 @@ export function EventDialog({
                     value={format(newStartTime, "yyyy-MM-dd")}
                     className="w-30"
                     onChange={(e) => {
-                        setNewStartTime((prev) => new Date(new Date(e.target.value).setHours(prev.getHours(), prev.getMinutes())))
+                        setNewStartTime((prev: Date) => new Date(new Date(e.target.value).setHours(prev.getHours(), prev.getMinutes())))
                         if (type !== "event"){
-                            setNewEndTime((prev) => new Date(new Date(e.target.value).setHours(prev.getHours(), prev.getMinutes())))
+                            setNewEndTime((prev: Date) => new Date(new Date(e.target.value).setHours(prev.getHours(), prev.getMinutes())))
                         }
                     }}
                 />
@@ -169,7 +180,7 @@ export function EventDialog({
                         type="date"
                         value={format(newEndTime, "yyyy-MM-dd")}
                         className="w-35"
-                        onChange={(e) => setNewEndTime((prev) => new Date(new Date(e.target.value).setHours(prev.getHours(), prev.getMinutes())))}
+                        onChange={(e) => setNewEndTime((prev: Date) => new Date(new Date(e.target.value).setHours(prev.getHours(), prev.getMinutes())))}
                     />
                     <Input
                         type="time"
@@ -239,6 +250,15 @@ export function EventDialog({
                     className="border-0"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    />
+                </div>
+                <div className="flex items-center gap-4">
+                    <File className="h-4 w-4 text-muted-foreground" />
+                    <input
+                        type="file"
+                        multiple
+                        onChange={(e) => setFilesToSave(e.target.files)}
+                        className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
                     />
                 </div>
                 </div>
