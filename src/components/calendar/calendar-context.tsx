@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { Event, Patient, File } from '@prisma/client'
+import { Event, Patient, PsyFile } from '@prisma/client'
 import { getDayEs } from "./utils"
 import { getEvents } from "@/app/actions/events"
 import { addDays, addMonths, isAfter, isBefore, set, subMonths } from "date-fns"
@@ -34,8 +34,8 @@ interface CalendarContextType {
     setEvents: (events: Event[]) => void
     patients: Patient[]
     setPatients: (patients: Patient[]) => void
-    files: File[]
-    setFiles: (files: File[]) => void
+    files: PsyFile[]
+    setFiles: (files: PsyFile[]) => void
     loading: boolean
     loadedRange: { start: Date; end: Date }
     loadMoreEvents: (viewStartDate: Date, viewEndDate: Date) => Promise<void>
@@ -56,7 +56,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     const [workHours, setWorkHours] = useState<WorkHours>({ start: 9, end: 21 })
     const [events, setEvents] = useState<Event[]>([]);
     const [patients, setPatients] = useState<Patient[]>([]);
-    const [files, setFiles] = useState<File[]>([])
+    const [files, setFiles] = useState<PsyFile[]>([])
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingPatients, setLoadingPatients] = useState<boolean>(false);
     const [loadingEvents, setLoadingEvents] = useState<boolean>(false);
@@ -126,6 +126,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
             if (files) {
                 setFiles(files);
             }
+            console.log('files', files)
             setLoadingFiles(false);
         }
         loadFiles();

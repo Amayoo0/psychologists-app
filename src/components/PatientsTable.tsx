@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Patient, Event, File } from "@prisma/client";
+import { Patient, Event, PsyFile } from "@prisma/client";
 import { Button } from "./ui/button";
 import React from "react";
 import { format } from "date-fns";
@@ -18,7 +18,7 @@ function PatientTable({
 }: { 
     patients: Patient[], 
     events: Event[],
-    files: File[],
+    files: PsyFile[],
     setEvents: (events: Event[]) => void, 
     onSendReminder: (patient: Patient) => void, 
     onEditPatient: (patient: Patient) => void, 
@@ -28,7 +28,7 @@ function PatientTable({
     const [expandedPatientId, setExpandedPatientId] = useState<number | null>(null);
     const [showPasswordDialog, setShowPasswordDialog] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-    const [patientFiles, setPatientFiles] = useState<File[]>(files.filter((file) => file.patientId === selectedPatient?.id) ?? []);
+    const [patientFiles, setPatientFiles] = useState<PsyFile[]>(files.filter((file) => file.patientId === selectedPatient?.id) ?? []);
 
     const toggleExpand = (patientId: number) => {
         setExpandedPatientId((prev) => (prev === patientId ? null : patientId));

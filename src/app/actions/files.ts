@@ -18,7 +18,10 @@ export async function getFiles(): Promise<PsyFile[]> {
             authId: user.id
         }
     })
-    const files = await prisma.PsyFile.findMany(
+    if (!prismaUser) {
+        return []
+    }
+    const files = await prisma.psyFile.findMany(
       {
         where: {
           userId: prismaUser.id
@@ -32,11 +35,11 @@ export async function getFiles(): Promise<PsyFile[]> {
   }
 }
 
-export async function saveFile(filesList: FileList, eventId: string, patientId: number): Promise<PsyFile[]> {
+export async function saveFile(file: File, eventId: string, patientId: number): Promise<PsyFile | null> {
   try {
     const user = await currentUser()
     if (!user) {
-      return []
+      return null
     }
     const prismaUser = await prisma.user.findUnique({
         where: {
@@ -45,43 +48,92 @@ export async function saveFile(filesList: FileList, eventId: string, patientId: 
     })
 
     if (!prismaUser) {
-      return []
+      return null
     }
 
-    if (!filesList) {
+    if (!file) {
         console.log('No file to save')
+        return null
     } else {
-        console.log('File to save', filesList)
+        console.log('File to save', file)
     }
 
-    const bytes = await Promise.all(Array.from(filesList || []).map(async (f) => {
-        return f.arrayBuffer()
-    }))
-
-    const buffers = bytes.map((b) => Buffer.from(b))
-
-    const paths = Array.from(filesList || []).map((f) => {
-        return join('/', 'files', f.name)
-    })
-    const savedFiles: PsyFile[] = []
-    for (let i = 0; i < paths.length; i++) {
-        console.log('writing file', paths[i])
-        await fs.writeFile(paths[i], buffers[i])
-        const file: Partial<PsyFile> = {
-            filename: filesList?.[i].name,
-            url: paths[i],
-            eventId: eventId,
-            patientId: patientId,
-            userId: prismaUser.id
-        }
-        console.log('saving file', file)
-        const result = await prisma.PsyFile.create({data: file})
-        savedFiles.push(result)
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const path = join('/', 'files', file.name)
+  
+    console.log('writing file', path)
+    await fs.writeFile(path, buffer)
+    const fileToSave: Omit<PsyFile, 'id'> = {
+        filename: file.name,
+        url: path,
+        eventId: eventId,
+        patientId: patientId,
+        userId: prismaUser.id,
+        uploadedAt: new Date()
     }
+    console.log('saving file', file)
+    const savedFile = await prisma.psyFile.create({data: fileToSave})
 
-    return savedFiles
+    return savedFile
   } catch (error) {
     console.error('Error fetching events:', error)
-    return []
+    return null
+  }
+}
+
+
+export async function updateFile(fileId: number, updatedFile: File): Promise<PsyFile | null> {
+  try {
+    const user = await currentUser()
+    if (!user) {
+      return null
+    }
+    const prismaUser = await prisma.user.findUnique({
+      where: {
+        authId: user.id
+      }
+    })
+
+    if (!prismaUser) {
+      return null
+    }
+
+    const existingFile = await prisma.psyFile.findUnique({
+      where: {
+        id: fileId
+      }
+    })
+
+    if (!existingFile || existingFile.userId !== prismaUser.id) {
+      return null
+    }
+
+    const bytes = await updatedFile.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const path = join('/', 'files', updatedFile.name)
+
+    await fs.writeFile(path, buffer)
+
+    const updatedFileData: Omit<PsyFile, 'id'> = {
+      filename: updatedFile.name,
+      url: path,
+      eventId: existingFile.eventId,
+      patientId: existingFile.patientId,
+      userId: prismaUser.id,
+      uploadedAt: new Date()
+    }
+
+    const result = await prisma.psyFile.update({
+      where: {
+        id: fileId
+      },
+      data: updatedFileData
+    })
+
+    return result
+  } catch (error) {
+    console.error('Error updating file:', error)
+    return null
   }
 }

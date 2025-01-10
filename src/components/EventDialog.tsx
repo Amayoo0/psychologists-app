@@ -18,7 +18,7 @@ import { Patient, Event, PsyFile } from "@prisma/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { saveEvent, updateEvent } from "@/app/actions/events"
 import { useCalendar } from "./calendar/calendar-context"
-import { saveFile } from "@/app/actions/files"
+import { saveFile, updateFile } from "@/app/actions/files"
 
 
 
@@ -34,7 +34,7 @@ export function EventDialog({
   onOpenChange,
   eventData,
 }: EventDialogProps) {
-    const {patients, setEvents, events} = useCalendar();
+    const {patients, setEvents, events, files, setFiles} = useCalendar();
     const [title, setTitle] = useState(eventData?.title ?? "")
     const [description, setDescription] = useState(eventData?.description ?? "")
     const [type, setType] = useState(eventData?.type ?? "appointment")
@@ -47,7 +47,7 @@ export function EventDialog({
     const [newEndTime, setNewEndTime] = useState(eventData?.endTime ?? new Date())
     const [repeat, setRepeat] = useState("no-repeat")
     const [repetitionCount, setRepetitionCount] = useState(1)
-    const [files, setFiles] = useState<PsyFile[]>(eventData?.files ?? [])
+    const [eventFile, setEventFiles] = useState<PsyFile[]>(files.filter((f) => f.eventId === eventData?.id) ?? [])
     const [filesToSave, setFilesToSave] = useState<FileList | null>(null)
 
 
@@ -62,7 +62,7 @@ export function EventDialog({
             setEndTimeStr(format(eventData.endTime ?? new Date(), "HH:mm"));
             setNewStartTime(eventData.startTime ?? new Date());
             setNewEndTime(eventData.endTime ?? new Date());
-            setFiles(eventData.files ?? []);
+            setEventFiles(files.filter((f) => f.eventId === eventData?.id) ?? []);
         }
     }, [eventData]);
 
@@ -101,27 +101,48 @@ export function EventDialog({
         
         let newEvents: Event[] = []
         if (eventData?.id) {
+            // Update event
             console.log('update(event): ', event)
-            newEvents = await updateEvent(eventData.id, event)
-            const updatedEvents = events.map((e: Event) => e.id === newEvents[0].id ? newEvents : e)
-            setEvents(updatedEvents)
+            const updatedEvent = await updateEvent(eventData.id, event)
+            if (updatedEvent) {
+                newEvents = [updatedEvent]
+                const updatedEvents = events.map((e: Event) => e.id === updatedEvent.id ? updatedEvent : e)
+                setEvents(updatedEvents)
+            }
         } else {
+            // Save event
             newEvents = await saveEvent(event, repeat, repetitionCount)
             setEvents([...newEvents, ...events])
         }
         if (filesToSave) {
-            // TODO update files intead of adding new ones
-            let newFiles: PsyFile[] = []
-            newEvents.map(async (e, i) => {
-                const savedFiles = await saveFile(filesToSave, newEvents[i].id || "", patientId)
-                newFiles.push(...savedFiles)   
-            })
-            setFiles([...newFiles, ...files])
+            // Update existing files
+            const existingFiles = Array.from(filesToSave).filter(file => eventFile.some(ef => ef.filename === file.name));
+            for (const file of existingFiles) {
+                const existingFile = eventFile.find(ef => ef.filename === file.name);
+                if (existingFile) {
+                    await updateFile(existingFile.id, file);
+                }
+            }
+
+            // Save new files
+            const newFilesToSave = Array.from(filesToSave).filter(file => !eventFile.some(ef => ef.filename === file.name));
+            let newFiles: PsyFile[] = [];
+            for (const newFile of newFilesToSave) {
+                const savedFiles = await saveFile(newFile, newEvents[0].id || "", patientId);
+                if (savedFiles) 
+                    newFiles.push(savedFiles);
+            }
+            setFiles([...newFiles, ...files]);
+            
             console.log('Files after saveFile call:', files)
         }
         
         onOpenChange(false)
     }
+
+    console.log('files:', files)
+    console.log('eventFiles:', eventFile)
+    console.log('eventData:', eventData)
 
     
     return (
@@ -260,6 +281,13 @@ export function EventDialog({
                         onChange={(e) => setFilesToSave(e.target.files)}
                         className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
                     />
+                    <div className="mt-2">
+                        {Array.from(eventFile || []).map((file, index) => (
+                            <div key={index} className="text-sm text-gray-700">
+                                {file.filename}
+                            </div>
+                        ))}
+                    </div>
                 </div>
                 </div>
             </div>

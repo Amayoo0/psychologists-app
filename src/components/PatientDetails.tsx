@@ -1,4 +1,4 @@
-import { Patient, Event, File } from "@prisma/client";
+import { Patient, Event, PsyFile } from "@prisma/client";
 import EventTable from "./EventsTable";
 
 const PatientDetails = ({
@@ -10,7 +10,7 @@ const PatientDetails = ({
     patient: Patient;
     patientEvents?: Event[];
     setPatientEvents: (events: Event[]) => void;
-    patientFiles?: File[];
+    patientFiles?: PsyFile[];
 }) => {
     return (
                 <div className="p-6 bg-white rounded-lg shadow-md">

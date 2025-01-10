@@ -37,15 +37,7 @@ const EventMonthView = ({
                             <EventDialog
                                 open={showEventDialog}
                                 onOpenChange={setShowEventDialog}
-                                eventData={{
-                                    title: selectedEvent.title,
-                                    description: selectedEvent.description ? selectedEvent.description : undefined,
-                                    type: selectedEvent.type,
-                                    patientId: selectedEvent.patientId,
-                                    startTime: selectedEvent.startTime,
-                                    endTime: selectedEvent.endTime,
-                                    sessionUrl: selectedEvent.sessionUrl ? selectedEvent.sessionUrl : undefined,
-                                }}
+                                eventData={selectedEvent}
                             />
                         ): (
                             <div 
