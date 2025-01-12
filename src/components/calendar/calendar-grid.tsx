@@ -12,6 +12,7 @@ import HeaderWeekDays from "./HeaderWeekDays"
 import { Event } from '@prisma/client'
 import { EventMonthView } from "./EventMonthView"
 import LoadingSpinner from "../LoadingSpinner"
+import { he } from "date-fns/locale"
 
 
 const CalendarGrid = () => {
@@ -29,6 +30,8 @@ const CalendarGrid = () => {
     dayIndex: 0
   })
   const [eventDialogData, setEventDialogData] = useState<Partial<Event | null>>(null)
+  const minCellSizeMonthView = 100
+  const [cellSizeMonthView, setcellSizeMonthView] = useState(minCellSizeMonthView)
 
   // Scroll to the first work hour when the work hours change
   useEffect(() => {
@@ -109,7 +112,23 @@ const CalendarGrid = () => {
   
   
 
+  // Calculate cellSizeMonthView height based on the number of days to show
+  useEffect(() => {
+    const handleResize = () => {
+      if (gridRef.current) {
+        const gridRect = gridRef.current.getBoundingClientRect()
+        console.log('gridRect.height', gridRect.height)
+        let height = gridRect.height / Math.ceil(days.length / 7)
+        if (height < minCellSizeMonthView) height = minCellSizeMonthView
+        setcellSizeMonthView(height)
+      }
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [days, gridRef])
   const renderMonthView = () => {
+
     
     return (
       <div 
@@ -137,12 +156,13 @@ const CalendarGrid = () => {
           <div className="flex-1 overflow-y-auto flex relative">
             <div id="month-grid" className="grid flex-1" ref={gridRef} style={{
               gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)`,
+              gridAutoRows: `${cellSizeMonthView}px`
             }}>
               {days.map((day, i) => (
                 <div
                   key={`monthView-dayIndex-${i}`}
                   className={cn(
-                    "p-2 border-b border min-h-[100px]",
+                    `p-2 border-b border min-h-[${minCellSizeMonthView}px]`,
                     day.getMonth() !== date.getMonth() && "text-muted-foreground bg-muted/5",
                     !showWeekends && [5, 6].includes(getDayEs(day)) && "hidden"
                   )}
@@ -157,9 +177,9 @@ const CalendarGrid = () => {
                   </div>
                 </div>
               ))}
-              {eventsToShow && <EventMonthView events={eventsToShow} days={days} showWeekends={showWeekends} cellSize={100}/>}
             </div>
 
+            {eventsToShow && <EventMonthView events={eventsToShow} days={days} showWeekends={showWeekends} cellSize={cellSizeMonthView}/>}
           </div>
       </div>
     )
