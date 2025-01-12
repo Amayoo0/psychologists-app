@@ -47,6 +47,22 @@ const CalendarGrid = () => {
     }
   }, [workHours.start, gridRef, date, view]);
 
+  // Calculate cellSizeMonthView height based on the number of days to show
+  useEffect(() => {
+    const handleResize = () => {
+      if (gridRef.current) {
+        const gridRect = gridRef.current.getBoundingClientRect()
+        console.log('gridRect.height', gridRect.height)
+        let height = gridRect.height / Math.ceil(days.length / 7)
+        if (height < minCellSizeMonthView) height = minCellSizeMonthView
+        setcellSizeMonthView(height)
+      }
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [days, gridRef])
+
 
   // Load events when the date, view or days change
   useEffect(() => {
@@ -112,21 +128,6 @@ const CalendarGrid = () => {
   
   
 
-  // Calculate cellSizeMonthView height based on the number of days to show
-  useEffect(() => {
-    const handleResize = () => {
-      if (gridRef.current) {
-        const gridRect = gridRef.current.getBoundingClientRect()
-        console.log('gridRect.height', gridRect.height)
-        let height = gridRect.height / Math.ceil(days.length / 7)
-        if (height < minCellSizeMonthView) height = minCellSizeMonthView
-        setcellSizeMonthView(height)
-      }
-    }
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [days, gridRef])
   const renderMonthView = () => {
 
     
