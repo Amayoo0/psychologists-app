@@ -183,16 +183,18 @@ export function EventDialog({
                     onChange={(e) => setTitle(e.target.value)}
                     className="border-0 border-b pb-0  text-lg font-medium focus-visible:ring-0"
                 />
-                <Trash 
-                    size={25} 
-                    color="#bc0101" 
-                    onClick={() => {
-                        eventData?.id && deleteEvent(eventData.id)
-                        setEvents(events.filter((event) => event.id !== eventData?.id))
-                        onOpenChange(false)
-                    }}
-                    className="hover:animate-shake"
-                />
+                {eventData?.id && 
+                    <Trash 
+                        size={25} 
+                        color="#bc0101" 
+                        onClick={() => {
+                            eventData?.id && deleteEvent(eventData.id)
+                            setEvents(events.filter((event) => event.id !== eventData?.id))
+                            onOpenChange(false)
+                        }}
+                        className="hover:animate-shake"
+                    />
+                }
                 </DialogTitle>
             </DialogHeader>
             <Tabs defaultValue={type} className="mt-4" onValueChange={(value) => setType(value)}>
