@@ -8,13 +8,13 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden bg-gray-50">
       <main className="flex h-screen w-full">
         <Aside />
         <Separator orientation="vertical" />
         <div
           id="content"
-          className="px-10 py-5 flex flex-col flex-1 overflow-hidden"
+          className="pl-3 py-5 flex flex-col flex-1 overflow-hidden"
         >
           {children}
         </div>

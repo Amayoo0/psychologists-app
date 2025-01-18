@@ -88,7 +88,7 @@ export async function saveEvent(event: Partial<Event>, repeat: string, repetitio
   }
 }
 
-export async function deleteEvent(event: Event): Promise<boolean> {
+export async function deleteEvent(eventId: string): Promise<boolean> {
   try {
     const user = await currentUser()
     if (!user) {
@@ -105,7 +105,7 @@ export async function deleteEvent(event: Event): Promise<boolean> {
 
     await prisma.event.delete({
       where: {
-        id: event.id,
+        id: eventId,
         userId: prismaUser.id
       }
     })

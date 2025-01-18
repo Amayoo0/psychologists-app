@@ -82,7 +82,7 @@ const CalendarHeader = () => {
     }
 
     return (
-        <div id="calendar-header" className="flex justify-between pb-1 z-40 bg-background top-0">        
+        <div id="calendar-header" className="flex justify-between pb-1 z-40 top-0">        
             <div id="calendar-header-navigation" className="flex gap-2 items-center">
                 <Button size="icon" variant="outline" onClick={navigateToday}>
                     Hoy
@@ -95,7 +95,7 @@ const CalendarHeader = () => {
                 </Button>
                 <h1 className="text-xl font-semibold">{formatDate()}</h1>
             </div>
-            <div id="calendar-header-view-and-settings" className="flex gap-2 items-center">
+            <div id="calendar-header-view-and-settings" className="flex gap-2 items-center pr-2">
                 <Select value={view} onValueChange={(value: any) => setView(value)}>
                     <SelectTrigger>
                         <SelectValue placeholder="Elige vista" />
@@ -105,11 +105,9 @@ const CalendarHeader = () => {
                         <SelectItem value="month">Mes</SelectItem>
                     </SelectContent>
                 </Select>
-                {/* {view === "week" && ( */}
-                    <Button size="icon" variant="ghost" onClick={() => setIsConfigOpen(true)}>
-                        <Menu className="h-4 w-4"/>
-                    </Button>
-                {/* )} */}
+                <Button size="icon" variant="ghost" onClick={() => setIsConfigOpen(true)}>
+                    <Menu className="h-4 w-4"/>
+                </Button>
                 <ConfigDialog open={isConfigOpen} onOpenChange={setIsConfigOpen} />
             </div>
         </div>

@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma"
 import { currentUser } from "@clerk/nextjs/server"
 import { PsyFile } from "@prisma/client"
-import { join } from "path"
+import { dirname, join } from "path"
 import { promises as fs } from "fs"
 
 
@@ -35,59 +35,42 @@ export async function getFiles(): Promise<PsyFile[]> {
   }
 }
 
-export async function saveFile(file: File, eventId: string, patientId: number): Promise<PsyFile | null> {
+export async function getFilesByEvent(eventId: string | null): Promise<PsyFile[]> {
   try {
+    if (!eventId) return []
+
     const user = await currentUser()
     if (!user) {
-      return null
+      return []
     }
     const prismaUser = await prisma.user.findUnique({
-        where: {
-            authId: user.id
-        }
+      where: {
+        authId: user.id
+      }
     })
-
     if (!prismaUser) {
-      return null
+      return []
     }
-
-    if (!file) {
-        console.log('No file to save')
-        return null
-    } else {
-        console.log('File to save', file)
-    }
-
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const path = join('/', 'files', file.name)
-  
-    console.log('writing file', path)
-    await fs.writeFile(path, buffer)
-    const fileToSave: Omit<PsyFile, 'id'> = {
-        filename: file.name,
-        url: path,
-        eventId: eventId,
-        patientId: patientId,
+    const files = await prisma.psyFile.findMany({
+      where: {
         userId: prismaUser.id,
-        uploadedAt: new Date()
-    }
-    console.log('saving file', file)
-    const savedFile = await prisma.psyFile.create({data: fileToSave})
-
-    return savedFile
+        eventId: eventId
+      }
+    })
+    return files
   } catch (error) {
-    console.error('Error fetching events:', error)
-    return null
+    console.error('Error fetching files by event:', error)
+    return []
   }
 }
 
-
-export async function updateFile(fileId: number, updatedFile: File): Promise<PsyFile | null> {
+export async function saveFiles(fileList: File[], eventId: string, patientId: number): Promise<PsyFile[]> {
+  const savedFiles: PsyFile[] = []
   try {
     const user = await currentUser()
     if (!user) {
-      return null
+      alert('saveFiles.!user.return[]')
+      return []
     }
     const prismaUser = await prisma.user.findUnique({
       where: {
@@ -96,44 +79,91 @@ export async function updateFile(fileId: number, updatedFile: File): Promise<Psy
     })
 
     if (!prismaUser) {
-      return null
+      alert('saveFiles.!prismaUser.return[]')
+      return []
     }
 
-    const existingFile = await prisma.psyFile.findUnique({
+    console.log("action.file.saveFiles.filelist: ", fileList)
+
+    for (const file of fileList) {
+      if (!file) {
+        console.log('No file to save')
+        continue
+      } else {
+        console.log('File to save', file)
+      }
+
+      const bytes = await file.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      const path = join('/', 'files', eventId, file.name)
+
+      console.log('writing file', path)
+      const dir = dirname(path);
+      await fs.mkdir(dir, { recursive: true });
+      await fs.writeFile(path, buffer)
+      const fileToSave: Omit<PsyFile, 'id'> = {
+        filename: file.name,
+        url: path,
+        eventId: eventId,
+        patientId: patientId,
+        userId: prismaUser.id,
+        uploadedAt: new Date()
+      }
+      console.log('saving file', file)
+      const savedFile = await prisma.psyFile.create({ data: fileToSave })
+      savedFiles.push(savedFile)
+    }
+
+    return savedFiles
+  } catch (error) {
+    console.error('Error saving files:', error)
+    return []
+  }
+}
+
+export async function deleteFiles(fileIds: number[]): Promise<boolean> {
+  try {
+    const user = await currentUser()
+    if (!user) {
+      return false
+    }
+    const prismaUser = await prisma.user.findUnique({
       where: {
-        id: fileId
+        authId: user.id
       }
     })
 
-    if (!existingFile || existingFile.userId !== prismaUser.id) {
-      return null
+    if (!prismaUser) {
+      return false
     }
 
-    const bytes = await updatedFile.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const path = join('/', 'files', updatedFile.name)
+    for (const fileId of fileIds) {
+      const existingFile = await prisma.psyFile.findUnique({
+        where: {
+          id: fileId
+        }
+      })
 
-    await fs.writeFile(path, buffer)
+      if (!existingFile || existingFile.userId !== prismaUser.id) {
+        continue
+      }
 
-    const updatedFileData: Omit<PsyFile, 'id'> = {
-      filename: updatedFile.name,
-      url: path,
-      eventId: existingFile.eventId,
-      patientId: existingFile.patientId,
-      userId: prismaUser.id,
-      uploadedAt: new Date()
+      try {
+        await fs.unlink(existingFile.url)
+      } catch (error) {
+        continue
+      }
+
+      await prisma.psyFile.delete({
+        where: {
+          id: fileId
+        }
+      })
     }
 
-    const result = await prisma.psyFile.update({
-      where: {
-        id: fileId
-      },
-      data: updatedFileData
-    })
-
-    return result
+    return true
   } catch (error) {
-    console.error('Error updating file:', error)
-    return null
+    console.error('Error deleting files:', error)
+    return false
   }
 }

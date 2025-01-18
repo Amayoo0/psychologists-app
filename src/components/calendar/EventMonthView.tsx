@@ -3,7 +3,7 @@ import React from "react";
 import { Event } from '@prisma/client'
 import { getDayEs, groupOverlappingEvents, formatTime } from "./utils";
 import { EventDialog } from "../EventDialog";
-import { X } from "lucide-react";
+import { CircleCheckBig, CornerDownRight, X } from "lucide-react";
 
 
 const EventMonthView = ({
@@ -27,7 +27,7 @@ const EventMonthView = ({
             return '';
         } else {
             const paddingTop = 30;
-            const height = 20;
+            const height = 21;
             return <div key={`events-groupIndex-${groupIndex}`}>
                 {group.map((e, i) => {
                     const weekOfMonth = Math.trunc(days.findIndex(day => day.getDate() === e.startTime.getDate()) / 7); // divided by 7 due to days always contains weekends
@@ -46,7 +46,10 @@ const EventMonthView = ({
                             ): (
                                 <div 
                                     key={`EventWeekView-${e.id}`}
-                                    className="absolute left-0 right-0 z-30 inset-1"
+                                    className={cn(
+                                        "absolute left-0 right-0 inset-1 ",
+                                        (i+2) * height + paddingTop >= cellSize && "z-30"
+                                    )}
                                     style={{
                                         top: `${top}px`,
                                         height: `${height}px`,
@@ -62,16 +65,18 @@ const EventMonthView = ({
                                 >
                                     <div 
                                         className={cn(
-                                            "w-full h-full rounded-md p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight",
-                                            e.endTime < new Date() ? "bg-gray-300" : "bg-blue-500",
+                                            "w-full h-full rounded-md p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight justify-between flex border-b border-white",
+                                            e.endTime.getDate() < new Date().getDate() ? "bg-gray-400 hover:bg-gray-500" : "bg-blue-500 hover:bg-blue-600",
                                             (i+2) * height + paddingTop >= cellSize && !showHiddenEvents && "hidden",
-                                            showHiddenEvents && "z-50"
                                         )}
                                     >
-                                        {e.title}
-                                        <div className="text-xs">
-                                            {formatTime(e.startTime)} - {formatTime(e.endTime)}h
+                                        
+                                        <div className="flex flex-row space-x-1">
+                                            {(i+2) * height + paddingTop >= cellSize && showHiddenEvents && <CornerDownRight size={15}/>}
+                                            <span>{formatTime(e.startTime)}h</span>
+                                            <span>{e.title}</span>
                                         </div>
+                                        {e?.type === "task" && <CircleCheckBig size={15}/>}
                                     </div> 
                                 </div>
                             )}
@@ -80,7 +85,7 @@ const EventMonthView = ({
                 })}
                 {/* Show hidden items */}
                 {group.length >= (cellSize - paddingTop - height) / height &&
-                    <div key={`extend-groupIndex-${groupIndex}`} className="absolute left-0 right-0 z-50 inset-1 rounded-lg" style={{
+                    <div key={`extend-groupIndex-${groupIndex}`} className="absolute left-0 right-0 z-50 inset-1" style={{
                             top: `${Math.trunc(days.findIndex(day => day.getDate() === group[0].startTime.getDate()) / (showWeekends ? 7 : 5)) *cellSize + (!showHiddenEvents ? cellSize - paddingTop : 5)}px`,
                             height: "25px",
                             width: "25px",

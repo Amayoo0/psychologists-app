@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils"
 import { useCalendar } from "./calendar-context"
 import React, { useEffect, useRef, useState } from "react"
 import { EventDialog } from "../EventDialog"
-import { getEvents } from "@/app/actions/events"
 import { getDayEs, getMonth, isToday  } from "./utils"
 import { EventWeekView, EventWeekViewDragged, DragSelection } from "./EventWeekView"
 import TimeMarker from "./TimeMarker"
@@ -12,11 +11,10 @@ import HeaderWeekDays from "./HeaderWeekDays"
 import { Event } from '@prisma/client'
 import { EventMonthView } from "./EventMonthView"
 import LoadingSpinner from "../LoadingSpinner"
-import { he } from "date-fns/locale"
 
 
 const CalendarGrid = () => {
-  const { view, date, showWeekends, cellSize, setCellSize, workHours, events, loading, loadMoreEvents } = useCalendar()
+  const { view, date, showWeekends, cellSize, setCellSize, workHours, events, loading, loadMoreEvents, files, setFiles } = useCalendar()
   const [showEventDialog, setShowEventDialog] = useState(false)
   const [eventsToShow, setEventsToShow] = useState<Event[]>([])
   const [days, setDays] = useState<Date[]>([])
@@ -52,7 +50,6 @@ const CalendarGrid = () => {
     const handleResize = () => {
       if (gridRef.current) {
         const gridRect = gridRef.current.getBoundingClientRect()
-        console.log('gridRect.height', gridRect.height)
         let height = gridRect.height / Math.ceil(days.length / 7)
         if (height < minCellSizeMonthView) height = minCellSizeMonthView
         setcellSizeMonthView(height)
@@ -77,6 +74,10 @@ const CalendarGrid = () => {
     }
     loadEvents();
   }, [view, events, days]);
+
+  useEffect(() => {
+    console.log('Files updated:', files);
+  }, [files]);
 
 
   // Load days when view or date change
@@ -154,7 +155,7 @@ const CalendarGrid = () => {
           ))}
         </div>
          
-          <div className="flex-1 overflow-y-auto flex relative">
+          <div className="flex-1 overflow-y-auto flex relative bg-white">
             <div id="month-grid" className="grid flex-1" ref={gridRef} style={{
               gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)`,
               gridAutoRows: `${cellSizeMonthView}px`
@@ -278,14 +279,14 @@ const CalendarGrid = () => {
       >
         {/* Sticky Header */}
         <div id="sticky-header" className="sticky bg-background border-b flex top-0 z-10">
-            <div id="header-hours-column" className={`w-16 h-[${cellSize}px]`}/>
+            <div id="header-hours-column" className={`w-16 h-[${cellSize}px] bg-gray-50`}/>
             <HeaderWeekDays showWeekends={showWeekends} days={days} />
         </div>
 
         {/* Scrollable Content */}
         <div 
           id="scrollable-content" 
-          className="flex-1 overflow-y-auto flex relative"
+          className="flex-1 overflow-y-auto flex relative bg-white"
           ref={gridRef}
         >
           {/* Hours column */}
@@ -322,7 +323,7 @@ const CalendarGrid = () => {
                     <div 
                       key={dayIndex} 
                       className={cn(
-                        "border-r border-b c",
+                        "border-r border-b",
                         hour < workHours.start || hour >= workHours.end ? "bg-gray-100" : ""
                       )}
                       onMouseDown={(e) => handleMouseDown(e, dayIndex)}
@@ -341,7 +342,7 @@ const CalendarGrid = () => {
             )}
 
             {/* Events */}
-            {eventsToShow && <EventWeekView events={eventsToShow} date={date} cellSize={cellSize} showWeekends={showWeekends} />}
+            {eventsToShow && <EventWeekView events={eventsToShow} date={date} cellSize={cellSize} showWeekends={showWeekends}/>}
           </div>
 
           <EventDialog 

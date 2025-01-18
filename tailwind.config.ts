@@ -55,8 +55,20 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
-  	}
+  		},
+		animation: {
+			shake: 'shake 0.5s ease-in-out',
+		},
+  	},
+      keyframes: {
+		shake: {
+			'0%': { transform: 'rotate(0deg)' },
+			'25%': { transform: 'rotate(-10deg)' },
+			'50%': { transform: 'rotate(10deg)' },
+			'75%': { transform: 'rotate(-10deg)' },
+			'100%': { transform: 'rotate(0deg)' },
+		  },
+      },
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

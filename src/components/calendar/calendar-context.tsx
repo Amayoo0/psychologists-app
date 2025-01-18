@@ -2,9 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { Event, Patient, PsyFile } from '@prisma/client'
-import { getDayEs } from "./utils"
 import { getEvents } from "@/app/actions/events"
-import { addDays, addMonths, isAfter, isBefore, set, subMonths } from "date-fns"
+import { addMonths, isAfter, isBefore, set, subMonths } from "date-fns"
 import { getPatients } from "@/app/actions/patients"
 import { getFiles } from "@/app/actions/files"
 
@@ -106,9 +105,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     useEffect(() => {
         async function loadPatients() {
             setLoadingPatients(true);
-            const patients = await getPatients();
-            if (patients) {
-                setPatients(patients);
+            const fetchedPatients = await getPatients();
+            if (fetchedPatients) {
+                setPatients(fetchedPatients);
             }
             setLoadingPatients(false);
         }
@@ -122,9 +121,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     useEffect(() => {
         async function loadFiles() {
             setLoadingFiles(true);
-            const files = await getFiles();
-            if (files) {
-                setFiles(files);
+            const fetchedFiles = await getFiles();
+            if (fetchedFiles) {
+                setFiles(fetchedFiles);
             }
             console.log('files', files)
             setLoadingFiles(false);

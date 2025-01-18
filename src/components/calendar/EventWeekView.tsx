@@ -3,7 +3,6 @@ import React from "react";
 import { Event } from '@prisma/client'
 import { getDayEs, groupOverlappingEvents, formatTime } from "./utils";
 import { EventDialog } from "../EventDialog";
-import { set } from "date-fns";
 
 
 const EventWeekView = ({
@@ -37,20 +36,12 @@ const EventWeekView = ({
                         <EventDialog
                             open={showEventDialog}
                             onOpenChange={setShowEventDialog}
-                            eventData={{
-                                title: selectedEvent.title,
-                                description: selectedEvent.description ? selectedEvent.description : undefined,
-                                type: selectedEvent.type,
-                                patientId: selectedEvent.patientId,
-                                startTime: selectedEvent.startTime,
-                                endTime: selectedEvent.endTime,
-                                sessionUrl: selectedEvent.sessionUrl ? selectedEvent.sessionUrl : undefined,
-                            }}
+                            eventData={selectedEvent}
                         />
                     ): (
                     <div 
                         key={`EventWeekView-${e.id}`}
-                        className="absolute left-0 right-0 z-30 inset-1"
+                        className="absolute left-0 right-0 z-30 inset-1 border-r border-white"
                         style={{
                             top: `${top}px`,
                             height: `${height}px`,
@@ -65,7 +56,7 @@ const EventWeekView = ({
                         <div 
                             className={cn(
                                 "w-full h-full rounded-lg shadow-lg p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight",
-                                e.endTime < new Date() ? "bg-gray-300" : "bg-blue-500"
+                                e.endTime < new Date() ? "bg-gray-400 hover:bg-gray-500" : "bg-blue-500 hover:bg-blue-600",
                             )}
                         >
                             {e.title}
