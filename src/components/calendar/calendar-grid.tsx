@@ -164,7 +164,7 @@ const CalendarGrid = () => {
                 <div
                   key={`monthView-dayIndex-${i}`}
                   className={cn(
-                    `p-2 border-b border min-h-[${minCellSizeMonthView}px]`,
+                    `p-2 border-b border-r min-h-[${minCellSizeMonthView}px]`,
                     day.getMonth() !== date.getMonth() && "text-muted-foreground bg-muted/5",
                     !showWeekends && [5, 6].includes(getDayEs(day)) && "hidden"
                   )}
