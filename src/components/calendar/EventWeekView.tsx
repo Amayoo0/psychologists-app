@@ -19,16 +19,24 @@ const EventWeekView = ({
     const [showEventDialog, setShowEventDialog] = React.useState(false);
     const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
 
+    const minHeight = 21;
+    const rightMargin = 1.5;
+    const leftOverlapping = 2
     const overlappingGroups = groupOverlappingEvents(events);
   
     return overlappingGroups.flatMap((group) => {
-        const groupLength = group.length;
         return group.map((e, i) => {
             const dayOfWeek = getDayEs(e.startTime);
-            const height = ((e.endTime.getTime() - e.startTime.getTime()) / (1000 * 60 * 60)) * cellSize;
+            let height = ((e.endTime.getTime() - e.startTime.getTime()) / (1000 * 60 * 60)) * cellSize;
+            if (height < 21) height = minHeight
             const top = ((e.startTime.getHours() + e.startTime.getMinutes() / 60) ) * cellSize;
-            const width = 100 / (showWeekends ? 7 : 5) / groupLength;
-            const left = dayOfWeek * (100 / (showWeekends ? 7 : 5)) + width * i;
+            let width = 100 / (showWeekends ? 7 : 5);
+            const left = dayOfWeek * width + leftOverlapping * i;
+            width -= i * leftOverlapping + rightMargin;
+            // properties withour overlapping
+            // let width = 100 / (showWeekends ? 7 : 5) / groupLength;
+            // const left = dayOfWeek * (100 / (showWeekends ? 7 : 5)) + width * i;
+            // if (i === groupLength-1) width = width + leftOverlapping*i
 
             return (
                 <React.Fragment key={`EventWeekView-Fragment-${e.id}`}>
@@ -41,7 +49,7 @@ const EventWeekView = ({
                     ): (
                     <div 
                         key={`EventWeekView-${e.id}`}
-                        className="absolute left-0 right-0 z-30 inset-1 border-r border-white"
+                        className="absolute left-0 right-0 z-30 inset-1"
                         style={{
                             top: `${top}px`,
                             height: `${height}px`,
@@ -55,7 +63,7 @@ const EventWeekView = ({
                     >
                         <div 
                             className={cn(
-                                "w-full h-full rounded-lg shadow-lg p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight",
+                                "w-full h-full rounded-lg border border-white shadow-lg p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight",
                                 e.endTime < new Date() ? "bg-gray-400 hover:bg-gray-500" : "bg-blue-500 hover:bg-blue-600",
                             )}
                         >

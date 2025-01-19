@@ -137,7 +137,7 @@ const CalendarGrid = () => {
         id="calendar-grid-month-view" 
         className="flex flex-col z-10"
         style={{
-          height: `calc(100vh - 50px)`
+          height: `calc(100vh - 72px)`
         }}
       >
         <div id="month-header" className="grid" style={{
@@ -295,7 +295,7 @@ const CalendarGrid = () => {
               <div 
                 key={hour} 
                 className={cn(
-                  "border-b border-r pt-1 text-sm text-muted-foreground flex justify-end pr-4",
+                  "border-b border-r pt-1 text-sm  flex justify-end pr-4",
                   hour < workHours.start || hour >= workHours.end ? "bg-gray-100" : ""
                 )}
                 style={{height: `${cellSize}px`}}

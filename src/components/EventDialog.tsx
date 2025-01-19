@@ -41,7 +41,7 @@ export function EventDialog({
     const [description, setDescription] = useState(eventData?.description ?? "")
     const [type, setType] = useState(eventData?.type ?? "appointment")
     const [patientId, setPatientId] = useState(eventData?.patientId ?? 0)
-    const [patient, setPatient] = useState<Patient>()
+    const [patient, setPatient] = useState<Patient | null>()
     const [sessionUrl, setSessionUrl] = useState(eventData?.sessionUrl ?? "")
     const [startTimeStr, setStartTimeStr] = useState(format(eventData?.startTime ?? new Date(), "HH:mm"))
     const [endTimeStr, setEndTimeStr] = useState(format(eventData?.endTime ?? new Date(), "HH:mm"))
@@ -150,6 +150,7 @@ export function EventDialog({
             setFilesToDelete([])
         }
 
+        setPatient(null)
         onOpenChange(false)
     
     }

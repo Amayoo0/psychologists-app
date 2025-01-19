@@ -14,7 +14,7 @@ export default function AppLayout({
         <Separator orientation="vertical" />
         <div
           id="content"
-          className="pl-3 py-5 flex flex-col flex-1 overflow-hidden"
+          className="pl-3 pt-5 pb-2 flex flex-col flex-1"
         >
           {children}
         </div>
