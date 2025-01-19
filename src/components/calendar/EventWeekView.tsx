@@ -57,7 +57,7 @@ const EventWeekView = ({
                                     e.endTime < new Date() ? "bg-gray-400 hover:bg-gray-500" : "bg-blue-500 hover:bg-blue-600",
                                 )}
                                 >
-                                {e.title}
+                                <span className="truncate">{e.title == "" ? "(sin título)" : e.title}</span>
                                 <div className="text-xs">
                                     {formatTime(e.startTime)} - {formatTime(e.endTime)}h
                                 </div>
