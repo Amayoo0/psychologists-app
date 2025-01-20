@@ -125,7 +125,6 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
             if (fetchedFiles) {
                 setFiles(fetchedFiles);
             }
-            console.log('files', files)
             setLoadingFiles(false);
         }
         loadFiles();

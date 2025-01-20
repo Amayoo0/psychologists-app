@@ -14,7 +14,7 @@ export function groupOverlappingEvents(events: Event[] | null, view: string = "w
     const doEventsOverlap = (e1: Event, e2: Event): boolean => {
       if (view === "month")
         return (
-          e1.startTime.getDate() === e2.startTime.getDate()
+          e1.startTime.getDate() === e2.startTime.getDate() && e1.startTime.getMonth() === e2.startTime.getMonth()
         );
       else
         return (

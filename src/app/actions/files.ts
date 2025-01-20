@@ -89,8 +89,6 @@ export async function saveFiles(fileList: File[], eventId: string, patientId: nu
       if (!file) {
         console.log('No file to save')
         continue
-      } else {
-        console.log('File to save', file)
       }
 
       const bytes = await file.arrayBuffer()

@@ -75,10 +75,6 @@ const CalendarGrid = () => {
     loadEvents();
   }, [view, events, days]);
 
-  useEffect(() => {
-    console.log('Files updated:', files);
-  }, [files]);
-
 
   // Load days when view or date change
   useEffect(() => {

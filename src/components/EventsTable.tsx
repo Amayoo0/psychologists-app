@@ -22,7 +22,7 @@ function EventTable({
     }
 
     const onDeleteEvent = async (event: Event) => {
-        const result = await deleteEvent(event)
+        const result = await deleteEvent(event.id)
         const newEvents = events.filter(e => e.id !== event.id)
         setEvents(newEvents)
     }

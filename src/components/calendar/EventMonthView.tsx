@@ -31,7 +31,7 @@ const EventMonthView = ({
                 const height = 21;
                 return <div key={`events-groupIndex-${groupIndex}`}>
                     {group.map((e, i) => {
-                        const weekOfMonth = Math.trunc(days.findIndex(day => day.getDate() === e.startTime.getDate()) / 7); // divided by 7 due to days always contains weekends
+                        const weekOfMonth = Math.trunc(days.findIndex(day => day.getDate() === e.startTime.getDate() && day.getMonth() === e.startTime.getMonth()) / 7); // divided by 7 due to days always contains weekends
                         const width = 100 / (showWeekends ? 7 : 5) -0.5;
                         const top = weekOfMonth*cellSize + height*i + paddingTop;
                         const left = getDayEs(e.startTime) * (100 / (showWeekends ? 7 : 5)) +0.25;
@@ -60,7 +60,7 @@ const EventMonthView = ({
                                         <div 
                                             className={cn(
                                                 "w-full h-full rounded-md p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight justify-between flex border-b border-white",
-                                                e.endTime.getDate() < new Date().getDate() ? "bg-gray-400 hover:bg-gray-500" : "bg-blue-500 hover:bg-blue-600",
+                                                e.endTime < new Date(new Date().setHours(0, 0, 0, 0)) ? "bg-gray-400 hover:bg-gray-500" : "bg-blue-500 hover:bg-blue-600",
                                                 (i+2) * height + paddingTop >= cellSize && selectedGroup !== groupIndex  && "hidden",
 
                                             )}

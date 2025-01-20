@@ -65,19 +65,24 @@ export async function saveEvent(event: Partial<Event>, repeat: string, repetitio
     }
     
     let savedEvents: Event[] = await Promise.all(
-      Array.from({ length: repetitionCount }, (_, i) => 
-        prisma.event.create({
+      Array.from({ length: repetitionCount }, (_, i) => {
+        const startTime = addDays(event.startTime ?? new Date(), shiftTimeInDays * i)
+        const endTime = addDays(event.endTime ?? new Date(), shiftTimeInDays * i)
+        console.log('startTime', startTime)
+        console.log('endTime', endTime)
+        return prisma.event.create({
           data: {
             title: event.title ? event.title : "",
             type: event.type,
             description: event.description,
-            startTime: addDays(event.startTime ?? new Date(), shiftTimeInDays * i),
-            endTime: addDays(event.endTime ?? new Date(), shiftTimeInDays * i),
+            startTime: startTime,
+            endTime: endTime,
             sessionUrl: event.sessionUrl,
             patientId: event.patientId ?? 0,
             userId: prismaUser.id
           }
         })
+      }
       )
     )
     return savedEvents
