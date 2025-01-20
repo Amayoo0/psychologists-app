@@ -64,6 +64,8 @@ const CalendarGrid = () => {
   // Load events when the date, view or days change
   useEffect(() => {
     function loadEvents() {
+      // if days is out of the loadedRange dates it will calculate a new range
+      loadMoreEvents(days[0], days[days.length-1])
       const filteredEvents: Event[] = events.filter(event => {
         return event.startTime >= days[0] && event.endTime <= days[days.length - 1];
       });
@@ -71,6 +73,7 @@ const CalendarGrid = () => {
       if (filteredEvents) {
         setEventsToShow(filteredEvents);
       }
+      console.log('filteredEvents', filteredEvents)
     }
     loadEvents();
   }, [view, events, days]);

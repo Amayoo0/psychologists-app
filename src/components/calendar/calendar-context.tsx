@@ -62,7 +62,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     const [loadingFiles, setLoadingFiles] = useState<boolean>(false);
     const [loadedRange, setLoadedRange] = useState<{ start: Date; end: Date }>(() => {
         const now = new Date();
-        return { start: subMonths(now, 3), end: addMonths(now, 3) };
+        return { start: new Date(subMonths(now, 3).setHours(0,0,0,0)), end: new Date(addMonths(now, 3).setHours(23, 59, 59, 999)) };
     });
     const [isAuthenticated, setIsAuthenticated] = useState(false)
 
@@ -86,10 +86,8 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
         if (isBefore(viewStartDate, loadedRange.start) || isAfter(viewEndDate, loadedRange.end)) {
             setLoadingEvents(true);
             try {
-                const newStart = isBefore(viewStartDate, loadedRange.start)
-                    ? subMonths(viewStartDate, 3)
-                    : loadedRange.start;
-                const newEnd = addMonths(newStart, 6)
+                const newStart = new Date(subMonths(viewStartDate, 3).setHours(0,0,0,0))
+                const newEnd = new Date(addMonths(viewEndDate, 3).setHours(23, 59, 59, 999))
 
                 const fetchedEvents = await getEvents(newStart, newEnd);
                 setEvents(fetchedEvents);
