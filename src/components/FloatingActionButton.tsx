@@ -13,8 +13,7 @@ import PatientDialog from './PatientDialog'
 import { EventDialog } from './EventDialog'
 
 export default function FloatingActionButton() {
-    const [showEventDialog, setShowEventDialog] = useState(false)
-  
+  const [showEventDialog, setShowEventDialog] = useState(false)
   const [patientDialogOpen, setPatientDialogOpen] = useState(false)
 
   return (

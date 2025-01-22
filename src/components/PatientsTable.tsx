@@ -9,27 +9,19 @@ import { useCalendar } from "./calendar/calendar-context";
 
 function PatientTable({ 
     patients,
-    events,
-    files,
-    setEvents,
     onSendReminder, 
     onEditPatient, 
     onDeletePatient 
 }: { 
     patients: Patient[], 
-    events: Event[],
-    files: PsyFile[],
-    setEvents: (events: Event[]) => void, 
     onSendReminder: (patient: Patient) => void, 
     onEditPatient: (patient: Patient) => void, 
     onDeletePatient: (patient: Patient) => void 
 }) {
-    const { isAuthenticated } = useCalendar();
+    const { isAuthenticated, files, events, setEvents } = useCalendar();
     const [expandedPatientId, setExpandedPatientId] = useState<number | null>(null);
     const [showPasswordDialog, setShowPasswordDialog] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-    const [patientFiles, setPatientFiles] = useState<PsyFile[]>(files.filter((file) => file.patientId === selectedPatient?.id) ?? []);
-
     const toggleExpand = (patientId: number) => {
         setExpandedPatientId((prev) => (prev === patientId ? null : patientId));
     };

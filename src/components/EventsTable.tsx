@@ -45,7 +45,7 @@ function EventTable({
         {events.map((event) => {
             return (
             <tr key={event.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border-b">{event.title}</td>
+                <td className="px-4 py-2 border-b">{event.title !== '' ? event.title : '(Sin título)'}</td>
                 <td className="px-4 py-2 border-b">{event.type}</td>
                 <td className="px-4 py-2 border-b whitespace-nowrap">
                     {`${event.startTime.toLocaleDateString()} ${format(event.startTime, "HH:mm")}`}{" "}
@@ -65,6 +65,7 @@ function EventTable({
                     <Button
                         variant="destructive"
                         size="sm"
+                        className="hover:animate-shake"
                         onClick={() => onDeleteEvent(event)}
                     >
                         <Trash/>

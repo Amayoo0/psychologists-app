@@ -9,7 +9,7 @@ import PatientTable from "./PatientsTable";
 import LoadingSpinner from "./LoadingSpinner";
 
 const PatientList = () => {
-    const { patients, setPatients, events, setEvents, isAuthenticated, files, setFiles, loading } = useCalendar()
+    const { patients, setPatients, isAuthenticated, loading } = useCalendar()
 	const [showPatientDialog, setShowPatientDialog] = useState(false)
 	const [showPasswordDialog, setShowPasswordDialog] = useState(false)
 	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
@@ -38,12 +38,9 @@ const PatientList = () => {
 		{loading ? (
         	<LoadingSpinner message="Cargando pacientes..." />
 		) : (
-			<>
+			<div className="overflow-x-auto">
 			<PatientTable 
 				patients={patients} 
-				events={events}
-				files={files}
-				setEvents={setEvents} 
 				onSendReminder={onSendReminder}
 				onEditPatient={onEditPatient} 
 				onDeletePatient={onDeletePatient} 
@@ -60,7 +57,7 @@ const PatientList = () => {
 					patientData={selectedPatient ?? undefined}
 				/>
 			</PasswordProtect>
-			</>
+			</div>
 		)}
 		</>
     )

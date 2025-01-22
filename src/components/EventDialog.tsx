@@ -21,6 +21,7 @@ import { useCalendar } from "./calendar/calendar-context"
 import { deleteFiles, getFilesByEvent, saveFiles} from "@/app/actions/files"
 import { cn } from "@/lib/utils"
 import LoadingSpinner from "./LoadingSpinner"
+import { FilesView } from "./FilesView"
 
 
 
@@ -49,7 +50,7 @@ export function EventDialog({
     const [newEndTime, setNewEndTime] = useState(eventData?.endTime ?? new Date())
     const [repeat, setRepeat] = useState("no-repeat")
     const [repetitionCount, setRepetitionCount] = useState(1)
-    const [filesToSave, setFilesToSave] = useState<File[] | null>(null)
+    const [filesToSave, setFilesToSave] = useState<File[]>([])
     const [filesToDelete, setFilesToDelete] = useState<number[]>([])
     const [eventFiles, setEventFiles] = useState<PsyFile[]>([])
     const [loadingFiles, setLoadingFiles] = useState(false)
@@ -70,11 +71,12 @@ export function EventDialog({
                 setLoadingFiles(true);
                 setEventFiles(await getFilesByEvent(eventData.id ?? null));
                 setLoadingFiles(false);
-                // setEventFiles(files.filter(file => file.eventId === eventData.id))
+                setFilesToDelete([]);
+                setFilesToSave([]);
             }
         };
         fetchData();
-    }, [eventData]);
+    }, [eventData, files]);
 
     useEffect(() => {
         setStartTimeStr(format(newStartTime, "HH:mm"));
@@ -318,62 +320,17 @@ export function EventDialog({
                         
                             
                                 <div className="flex flex-col w-full">
-                                    {/* existing files */}
-                                    <div className="m-1 flex flex-row">
-                                        {eventFiles?.map((file, index) => (
-                                            <div
-                                                key={index}
-                                                className={cn(
-                                                    "relative flex flex-col items-center justify-center w-24 h-24 shadow-md bg-gray-50 text-gray-700",
-                                                    filesToDelete.includes(file.id) ? "opacity-50" : ""
-                                                )}
-                                            >
-                                                <File className="w-8 h-8 text-gray-500" />
-                                                <span className="mt-2 text-xs text-center truncate">{file.filename}</span>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    onClick={() => {
-                                                        if (filesToDelete.includes(file.id)){
-                                                            if (eventFiles.length + (filesToSave?.length || 0) - filesToDelete.length >= 3) {
-                                                                alert("No se pueden subir más de 3 archivos")
-                                                            } else{
-                                                                setFilesToDelete((prevFiles) => prevFiles.filter(id => id !== file.id))
-                                                            }
-                                                        } else if(filesToSave?.some(f => f.name === file.filename)){
-                                                            setFilesToSave((prevFiles) => (prevFiles ? prevFiles.filter((f) => f.name !== file.filename) : null))
-                                                        }else{
-                                                            console.log('Agregando fichero a FilesToDelete: ', file.id)
-                                                            setFilesToDelete((prevFiles) => [...prevFiles, file.id])
-                                                        }
-                                                    }}
-                                                    className="absolute top-1 right-1 flex items-center justify-center w-5 h-5"
-                                                >
-                                                    <X className={cn("w-4 h-4",
-                                                        filesToDelete.includes(file.id) ? "rotate-45 hover:text-green-600" : "hover:text-red-600")} 
-                                                    />
-                                                </Button>
-                                            </div>
-                                        ))}
-                                        {filesToSave?.map((file, index) => (
-                                            <div
-                                                key={index}
-                                                className={cn(
-                                                    "relative flex flex-col items-center justify-center w-24 h-24 shadow-md bg-gray-50 border-2 border-dashed border-green-500"
-                                                )}
-                                            >
-                                                <File className="w-8 h-8 text-gray-500" />
-                                                <span className="mt-2 text-xs text-center truncate">{file.name}</span>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    onClick={() => setFilesToSave((prevFiles) => (prevFiles ? prevFiles.filter(f => f.name !== file.name) : null))}
-                                                    className="absolute top-1 right-1 flex items-center justify-center w-5 h-5"
-                                                >
-                                                    <X className="w-4 h-4 hover:text-red-600"/>
-                                                </Button>
-                                            </div>
-                                        ))}
+                                    
+                                    <div className="m-1 grid grid-cols-3 gap-0 max-w-[300px]">
+                                        {((eventFiles.length > 0 || filesToSave) && <FilesView 
+                                                eventFiles={eventFiles} 
+                                                filesToSave={filesToSave ?? []} 
+                                                filesToDelete={filesToDelete}
+                                                setFilesToDelete={setFilesToDelete}
+                                                setFilesToSave={setFilesToSave}
+                                                maxPatientFiles={3}
+                                            />
+                                        )}
                                     </div>
                                     {/* New Files */}
                                     <input
