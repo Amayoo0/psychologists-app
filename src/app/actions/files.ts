@@ -2,10 +2,14 @@
 import { prisma } from "@/lib/prisma"
 import { currentUser } from "@clerk/nextjs/server"
 import { PsyFile } from "@prisma/client"
-import { dirname, join } from "path"
 import { promises as fs } from "fs"
+import { S3 } from "aws-sdk"
 
-
+const s3 = new S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'eu-north-1',
+});
 
 export async function getFiles(): Promise<PsyFile[]> {
   try {
@@ -83,25 +87,36 @@ export async function saveFiles(fileList: File[], eventId: string, patientId: nu
       return []
     }
 
-    console.log("action.file.saveFiles.filelist: ", fileList)
-
     for (const file of fileList) {
       if (!file) {
         console.log('No file to save')
         continue
       }
 
-      const bytes = await file.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      const path = join('/', 'files', eventId, file.name)
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
-      console.log('writing file', path)
-      const dir = dirname(path);
-      await fs.mkdir(dir, { recursive: true });
-      await fs.writeFile(path, buffer)
+      const params = {
+        Bucket: 'spycho-app-bucket',
+        Key: file.name,
+        Body: buffer,
+        ContentType: file.type
+      };
+
+      try {
+          const upload = s3.upload(params);
+          upload.on('httpUploadProgress', (p) => {
+              console.log(p.loaded / p.total);
+          });
+          await upload.promise();
+          console.log(`File uploaded successfully: ${file.name}`);
+      } catch (err) {
+          console.error(err);
+      }
+
       const fileToSave: Omit<PsyFile, 'id'> = {
         filename: file.name,
-        url: path,
+        url: 'psycho-app-bucket',
         eventId: eventId,
         patientId: patientId,
         userId: prismaUser.id,
