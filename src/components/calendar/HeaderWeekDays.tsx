@@ -4,9 +4,10 @@ import { getDayEs, isToday } from "./utils"
 const HeaderWeekDays = ({
     showWeekends,
     days,
-}: {showWeekends: boolean, days: Date[]}) => {
+    isMobile,
+}: {showWeekends: boolean, days: Date[], isMobile: boolean}) => {
     return (
-        <div className="grid flex-1 pr-[14px]" style={{ gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)` }}>
+        <div className={`grid flex-1 ${isMobile ? 'pr-[4px]': 'pr-[15px]'}`} style={{ gridTemplateColumns: `repeat(${showWeekends ? 7 : 5}, 1fr)` }}>
         {days.map((day, i) => (
             (!showWeekends && [5, 6].includes(getDayEs(day))) ? null : (
             <div key={i} className="border-r border-l text-center py-2">

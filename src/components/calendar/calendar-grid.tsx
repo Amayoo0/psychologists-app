@@ -279,7 +279,7 @@ const CalendarGrid = () => {
         {/* Sticky Header */}
         <div id="sticky-header" className="sticky bg-background border-b flex top-0 z-10">
             <div id="header-hours-column" className={`w-16 h-[${cellSize}px] bg-gray-50`}/>
-            <HeaderWeekDays showWeekends={showWeekends} days={days} />
+            <HeaderWeekDays showWeekends={showWeekends} days={days} isMobile={window.innerWidth <= 600}/>
         </div>
 
         {/* Scrollable Content */}
