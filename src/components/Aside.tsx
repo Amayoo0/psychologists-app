@@ -11,6 +11,7 @@ import { Separator } from "./ui/separator"
 import { usePathname } from 'next/navigation';
 import { Avatar } from './ui/avatar';
 import { useClerk, useUser } from '@clerk/nextjs'
+import { Portal } from '@radix-ui/react-tooltip';
 
 const Aside = () => {
 	const navItems = NavItems();
@@ -40,10 +41,7 @@ const Aside = () => {
 	const toggleSidebar = () => {
 		setIsSidebarExpanded(!isSidebarExpanded);
 	};
-	const { isLoaded, isSignedIn, user } = useUser()
-	if (!isSignedIn){
-		return null
-	}
+	const { user } = useUser()
 	  return (
 			<div
 			className={cn(
@@ -56,19 +54,19 @@ const Aside = () => {
 					<div id="right" className="flex flex-row items-center pt-3 py-2">
 						<Avatar>
 							<div className="w-full h-full bg-foreground text-background flex items-center justify-center font-medium text-xl">
-								{user.emailAddresses.toString().slice(0, 2).toUpperCase()}
+								{user?.emailAddresses.toString().slice(0, 2).toUpperCase()}
 							</div>	
 						</Avatar>
 						{isSidebarExpanded ? (
 							<div className="pl-2 flex flex-col">
-								<h2 className="text-md font-bold">{user.emailAddresses.toString()}</h2>
+								<h2 className="text-md font-bold">{user?.emailAddresses.toString().split('@')[0]}</h2>
 								<span className="text-xs italic">Gratis</span>
 							</div>
 						): ('') }
 					</div>
-					{isSidebarExpanded ? (
+					{isSidebarExpanded && (
 						<Separator className='w-full'/>
-					): ('')}
+					)}
 	
 					{/* NavItems */}
 					<div id="navItems" className='py-2'>
@@ -112,7 +110,7 @@ const Aside = () => {
 				<div className="mt-[calc(calc(90vh)-40px)] relative">
 					<button
 					type="button"
-					className="absolute bottom-32 right-[-12px] flex h-6 w-6 items-center justify-center border border-muted-foreground/20 rounded-full bg-accent shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out"
+					className="z-50 absolute bottom-32 right-[-12px] flex h-6 w-6 items-center justify-center border border-muted-foreground/20 rounded-full bg-accent shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out"
 					onClick={toggleSidebar}
 					>
 					{isSidebarExpanded ? (
@@ -166,13 +164,16 @@ const Aside = () => {
 					</div>
 				  </a>
 				</TooltipTrigger>
-				<TooltipContent
-				  side="left"
-				  className="px-3 py-1.5 text-[15px] bg-white z-50"
-				  sideOffset={10}
-				>
-				  <span>{label}</span>
-				</TooltipContent>
+				<Portal>
+					<TooltipContent
+						side="left"
+						className="px-3 py-1.5 text-[15px] bg-white"
+						sideOffset={10}
+					>
+						<span className='z-40'>{label}</span>
+					</TooltipContent>
+				</Portal>
+				
 			  </Tooltip>
 			</TooltipProvider>
 		  )}
