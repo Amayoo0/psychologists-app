@@ -60,17 +60,19 @@ model Event {
 
 
 model PsyFile {
-  id        Int      @id @default(autoincrement())
-  filename  String
-  url       String
-  uploadedAt DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  filename      String
+  url           String
+  uploadedAt    DateTime @default(now())
+  encrypted_key Bytes?
+  encrypted_iv  Bytes?
 
-  patient   Patient  @relation(fields: [patientId], references: [id])
-  patientId Int
+  patient       Patient  @relation(fields: [patientId], references: [id])
+  patientId     Int
 
-  user        User     @relation(fields: [userId], references: [id])
-  userId      Int
+  user          User     @relation(fields: [userId], references: [id])
+  userId        Int
 
-  event     Event?    @relation(fields: [eventId], references: [id])
-  eventId   String?
+  event         Event?    @relation(fields: [eventId], references: [id])
+  eventId       String?
 }

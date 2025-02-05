@@ -3,12 +3,24 @@ import { prisma } from "@/lib/prisma"
 import { currentUser } from "@clerk/nextjs/server"
 import { PsyFile } from "@prisma/client"
 import { promises as fs } from "fs"
-import { S3 } from "aws-sdk"
+import { S3Client, GetObjectCommand, S3, PutObjectCommand } from "@aws-sdk/client-s3";
+import { createCipheriv, randomBytes, createDecipheriv } from "crypto"
+import { Readable } from "stream";
 
 const s3 = new S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: 'eu-north-1',
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
 });
 
 export async function getFiles(): Promise<PsyFile[]> {
@@ -95,20 +107,31 @@ export async function saveFiles(fileList: File[], eventId: string, patientId: nu
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
+      console.log("SaveFile.buffer", buffer);
+
+      //Encrypt data
+      const algorithm = 'aes-256-cbc';
+      const key = randomBytes(32);
+      const iv = randomBytes(16);
+  
+      const cipher = createCipheriv(algorithm, key, iv);
+      let encrypted = cipher.update(buffer);
+      encrypted = Buffer.concat([encrypted, cipher.final()]);
+      console.log("SaveFile.encryptedBuffer", encrypted);
+      //End Encrypt
 
       const params = {
-        Bucket: 'spycho-app-bucket',
+        Bucket: process.env.AWS_BUCKET_NAME ?? '',
         Key: file.name,
-        Body: buffer,
+        Body: encrypted,
         ContentType: file.type
       };
 
+      console.log("trying to send putobjectcommand")
+
       try {
-          const upload = s3.upload(params);
-          upload.on('httpUploadProgress', (p) => {
-              console.log(p.loaded / p.total);
-          });
-          await upload.promise();
+          const response = await s3.send(new PutObjectCommand(params));
+          console.log("SaveFile.send.response", response);
           console.log(`File uploaded successfully: ${file.name}`);
       } catch (err) {
           console.error(err);
@@ -120,8 +143,11 @@ export async function saveFiles(fileList: File[], eventId: string, patientId: nu
         eventId: eventId,
         patientId: patientId,
         userId: prismaUser.id,
-        uploadedAt: new Date()
+        uploadedAt: new Date(),
+        encrypted_key: key,
+        encrypted_iv: iv,
       }
+
       console.log('saving file', file)
       const savedFile = await prisma.psyFile.create({ data: fileToSave })
       savedFiles.push(savedFile)
@@ -178,5 +204,48 @@ export async function deleteFiles(fileIds: number[]): Promise<boolean> {
   } catch (error) {
     console.error('Error deleting files:', error)
     return false
+  }
+}
+
+export async function downloadFileFromS3(filename: string, key: string, iv: string) {
+  console.log("Downloading: ", filename, key, iv)
+  try {
+    const command = new GetObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME!,
+      Key: filename,
+    });
+
+    const { Body, ContentType } = await s3.send(command);
+
+    if (!Body || !(Body instanceof Readable)) {
+      throw new Error("El archivo no se pudo descargar correctamente");
+    }
+
+    // Convertir el stream a un Buffer
+    const chunks: Buffer[] = [];
+    for await (const chunk of Body) {
+      chunks.push(chunk as Buffer);
+    }
+    const fileBuffer = Buffer.concat(chunks);
+
+    console.log("File Readed from S3: ", fileBuffer)
+
+    const decipher = createDecipheriv("aes-256-cbc", Buffer.from(key, "hex"), Buffer.from(iv, "hex"));
+    let decrypted = Buffer.concat([decipher.update(fileBuffer), decipher.final()]);
+    console.log("File decrypted: ", decrypted)
+
+
+    // Convertir a Base64 para enviarlo al frontend
+    const fileBase64 = decrypted.toString("base64");
+
+    return {
+      success: true,
+      fileBase64,
+      contentType: ContentType || "application/octet-stream",
+      filename,
+    };
+  } catch (error) {
+    console.error("Error descargando archivo de S3:", error);
+    return { success: false, error: "Error al descargar el archivo" };
   }
 }

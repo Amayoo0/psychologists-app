@@ -2,6 +2,7 @@ import { PsyFile } from "@prisma/client"
 import { Button } from "./ui/button"
 import { cn } from "@/lib/utils"
 import { X, File, Download } from "lucide-react"
+import { downloadFileFromS3 } from "@/app/actions/files"
 
 export function FilesView ({
     eventFiles,
@@ -56,13 +57,22 @@ export function FilesView ({
                 <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = file.url; // Assuming `file.url` contains the download URL
-                        link.download = file.filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
+                    onClick={async () => {
+                        const response = await downloadFileFromS3(file.filename, file.encrypted_key, file.encrypted_iv);
+                        const byteCharacters = atob(response.fileBase64);
+                        const byteNumbers = new Array(byteCharacters.length).fill(0).map((_, i) => byteCharacters.charCodeAt(i));
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: response.contentType });
+
+                        // Create URL and force download
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = response.filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
                     }}
                     className="absolute top-1 left-1 flex items-center justify-center w-5 h-5"
                 >
