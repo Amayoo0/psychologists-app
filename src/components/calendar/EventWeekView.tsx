@@ -121,13 +121,17 @@ const EventWeekViewDragged = ({
         width: width,
         }}
     >
-        <div className="absolute inset-1 bg-blue-500 rounded-lg shadow-lg">
-        <div className="p-1 text-white">
-            <div className="text-sm font-medium">(Sin título)</div>
-            <div className="text-xs">
-                {startTimeFormatted} - {endTimeFormatted} h
+        <div className="absolute inset-1 bg-blue-500 rounded-lg shadow-lg border-white border">
+            <div className="p-1 text-white">
+            {height > 30 && (
+                <div className="text-sm font-medium">(Sin título)</div>
+            )}
+            {height > 50 && (
+                <div className="text-xs">
+                    {startTimeFormatted} - {endTimeFormatted} h
+                </div>
+            )}
             </div>
-        </div>
         </div>
     </div>
     )
