@@ -51,6 +51,7 @@ function PatientTable({
                         <th className="px-4 py-2 border-b">Iniciales</th>
                         <th className="px-4 py-2 border-b">Última Sesión</th>
                         <th className="px-4 py-2 border-b">Eventos</th>
+                        <th className="px-4 py-2 border-b">Ficheros</th>
                         <th className="px-4 py-2 border-b">Acciones</th>
                     </tr>
                 </thead>
@@ -58,7 +59,7 @@ function PatientTable({
                     {patients.map((patient) => {
                         const patientEvents = events.filter((event) => event.patientId === patient.id).reverse();
                         const patientLastSession = patientEvents.length > 0 ? patientEvents[0].startTime : null;
-                        const patientFiles = files.filter((file) => file.patientId === patient.id);
+                        const [patientFiles, setPatientFiles] = useState<PsyFile[]>(files.filter((file) => file.patientId === patient.id));
 
                         return (
                             <React.Fragment key={patient.id}>
@@ -69,12 +70,13 @@ function PatientTable({
                                     <td className="px-4 py-2 border-b">{patient.initials}</td>
                                     <td className="px-4 py-2 border-b">
                                         {patientLastSession
-                                            ? `${patientLastSession.toLocaleDateString()} - ${format(patientLastSession, "HH:mm")}`
+                                            ? format(patientLastSession, "EEEE d MMM, yyyy")
                                             : "No disponible"}
                                     </td>
                                     <td className="px-4 py-2 border-b">{patientEvents.length}</td>
+                                    <td className="px-4 py-2 border-b">{patientFiles.length}</td>
                                     <td className="px-4 py-2 border-b space-x-2">
-                                        <Button
+                                        {/* <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={(e) => {
@@ -83,7 +85,7 @@ function PatientTable({
                                             }}
                                         >
                                             Enviar Recordatorio
-                                        </Button>
+                                        </Button> */}
                                         <Button
                                             variant="secondary"
                                             size="sm"
@@ -114,6 +116,7 @@ function PatientTable({
                                                 patientEvents={patientEvents}
                                                 setPatientEvents={setPatientsEvents}
                                                 patientFiles={patientFiles}
+                                                setPatientFiles={setPatientFiles}
                                             />
                                         </td>
                                     </tr>

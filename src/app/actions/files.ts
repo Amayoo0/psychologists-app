@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { currentUser } from "@clerk/nextjs/server"
 import { PsyFile } from "@prisma/client"
 import { promises as fs } from "fs"
-import { S3Client, GetObjectCommand, S3, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, S3, PutObjectCommand, DeleteObjectCommand, waitUntilObjectNotExists } from "@aws-sdk/client-s3";
 import { createCipheriv, randomBytes, createDecipheriv } from "crypto"
 import { Readable } from "stream";
 
@@ -80,7 +80,34 @@ export async function getFilesByEvent(eventId: string | null): Promise<PsyFile[]
   }
 }
 
-export async function saveFiles(fileList: File[], eventId: string, patientId: number): Promise<PsyFile[]> {
+export async function getFilesByPatient(patientId: number): Promise<PsyFile[]> {
+  try {
+    const user = await currentUser()
+    if (!user) {
+      return []
+    }
+    const prismaUser = await prisma.user.findUnique({
+      where: {
+        authId: user.id
+      }
+    })
+    if (!prismaUser) {
+      return []
+    }
+    const files = await prisma.psyFile.findMany({
+      where: {
+        userId: prismaUser.id,
+        patientId: patientId
+      }
+    })
+    return files
+  } catch (error) {
+    console.error('Error fetching files by patient:', error)
+    return []
+  }
+}
+
+export async function saveFiles(fileList: File[], eventId: string | null, patientId: number): Promise<PsyFile[]> {
   const savedFiles: PsyFile[] = []
   try {
     const user = await currentUser()
@@ -160,11 +187,12 @@ export async function saveFiles(fileList: File[], eventId: string, patientId: nu
   }
 }
 
-export async function deleteFiles(fileIds: number[]): Promise<boolean> {
+export async function deleteFiles(fileIds: number[]): Promise<number[]> {
+  let deletedFilesIds: number[] = []
   try {
     const user = await currentUser()
     if (!user) {
-      return false
+      return []
     }
     const prismaUser = await prisma.user.findUnique({
       where: {
@@ -173,7 +201,7 @@ export async function deleteFiles(fileIds: number[]): Promise<boolean> {
     })
 
     if (!prismaUser) {
-      return false
+      return []
     }
 
     for (const fileId of fileIds) {
@@ -187,23 +215,39 @@ export async function deleteFiles(fileIds: number[]): Promise<boolean> {
         continue
       }
 
-      try {
-        await fs.unlink(existingFile.url)
-      } catch (error) {
-        continue
-      }
+      //Delete s3 file
+      const command = new DeleteObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME!,
+        Key: existingFile.filename,
+      });
 
-      await prisma.psyFile.delete({
+      await s3.send(command);
+      
+      await waitUntilObjectNotExists(
+        {
+          client: s3,
+          maxWaitTime: 10
+        },
+        { 
+          Bucket: process.env.AWS_BUCKET_NAME!,
+          Key: existingFile.filename 
+        },
+      );
+
+      //Delete prisma instance
+      const result = await prisma.psyFile.delete({
         where: {
           id: fileId
         }
       })
+      if (result) deletedFilesIds.push(fileId)
+
     }
 
-    return true
+    return deletedFilesIds
   } catch (error) {
     console.error('Error deleting files:', error)
-    return false
+    return []
   }
 }
 

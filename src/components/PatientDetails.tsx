@@ -1,28 +1,49 @@
 import { Patient, Event, PsyFile } from "@prisma/client";
 import EventTable from "./EventsTable";
 import { FilesView } from "./FilesView";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { set } from "date-fns";
 import { useCalendar } from "./calendar/calendar-context";
 import { Button } from "./ui/button";
 import { Save, Upload } from "lucide-react";
 import { EventDialog } from "./EventDialog";
+import { FilesViewTable } from "./FilesViewTable";
+import { deleteFiles, getFilesByPatient, saveFiles } from "@/app/actions/files";
 
 const PatientDetails = ({
     patient,
     patientEvents,
     setPatientEvents,
     patientFiles = [],
+    setPatientFiles,
 }: {
     patient: Patient;
     patientEvents?: Event[];
     setPatientEvents: (events: Event[]) => void;
     patientFiles?: PsyFile[];
+    setPatientFiles: (files: PsyFile[]) => void;
 }) => {
     const {files, setFiles} = useCalendar()
     const [filesToSave, setFilesToSave] = useState<File[]>([])
     const [filesToDelete, setFilesToDelete] = useState<number[]>([])
     const [showEventDialog, setShowEventDialog] = useState(false)
+
+    useEffect(() => {
+        // Clean input
+        const inputElement = document.getElementById('file-input') as HTMLInputElement;
+        if (inputElement) {
+            inputElement.value = '';
+        }
+
+    },[filesToSave]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setPatientFiles(await getFilesByPatient(patient.id));
+        }
+        fetchData();
+    }, [files]);
+
    
     return (
         <>
@@ -63,8 +84,17 @@ const PatientDetails = ({
                     <input type="file"
                         multiple
                         onChange={(e) => {
-                            const filesList = Array.from(e.target.files ?? [])                                    
-                            setFilesToSave((prevFiles) => ([...(prevFiles || []), ...filesList]))
+                            const filesList = Array.from(e.target.files ?? [])  
+                            const existingFileNames = filesToSave.map(file => file.name);
+                            const existingFiles = filesList.filter(file => existingFileNames.includes(file.name));
+                            if (existingFiles.length > 0) {
+                                const existingFileNames = existingFiles.map(file => file.name).join(', ');
+                                alert(`Los siguientes archivos ya existen y no se volverán a cargar: ${existingFileNames}`);
+                            }
+                            setFilesToSave((prevFiles) => {
+                                const newFiles = filesList.filter(file => !prevFiles.some(prevFile => prevFile.name === file.name));
+                                return [...(prevFiles || []), ...newFiles];
+                            })
                         }}
                         className="hidden"
                         id="file-input"
@@ -83,8 +113,15 @@ const PatientDetails = ({
                                 id="files-buttons-control-save"
                                 size="icon"
                                 variant="ghost"
-                                onClick={() => {
-                                    console.error("Save files not implemented yet")
+                                onClick={async () => {
+                                    if (filesToSave.length > 0){
+                                        const savedFiles = await saveFiles(filesToSave, null, patient.id)
+                                        setFiles([...files, ...savedFiles])
+                                    }
+                                    if (filesToDelete.length > 0){
+                                        const deletedFiles = await deleteFiles(filesToDelete)
+                                        setFiles(files.filter(file => !deletedFiles.includes(file.id)))
+                                    }
                                     setFilesToSave([]);
                                     setFilesToDelete([]);
                                 }}
@@ -97,14 +134,15 @@ const PatientDetails = ({
                 <ul className="list-disc list-inside space-y-2 w-full">
                     
                         {((patientFiles.length > 0 || filesToSave.length > 0) 
-                            ?   <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))" }}>
-                                    <FilesView 
-                                        eventFiles={files.filter((file) => file.patientId === patient.id)} 
+                            ?   
+                                <div>
+                                    <FilesViewTable
+                                        patientFiles={patientFiles}
                                         filesToSave={filesToSave ?? []} 
                                         filesToDelete={filesToDelete}
                                         setFilesToDelete={setFilesToDelete}
                                         setFilesToSave={setFilesToSave}
-                                        maxPatientFiles={100}
+                                        patientEvents={patientEvents ?? []}
                                     />
                                 </div>
                             :   <p className="text-gray-500 text-sm">No hay ficheros relacionados.</p>

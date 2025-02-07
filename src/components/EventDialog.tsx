@@ -139,16 +139,16 @@ export function EventDialog({
             const newFilesToSave = Array.from(filesToSave).filter(file => !eventFiles.some(ef => ef.filename === file.name));
             const savedFiles: PsyFile[] = await saveFiles(newFilesToSave, newEvents[0]?.id || eventData?.id || "", patientId);
             if (savedFiles){
-                setEventFiles([...eventFiles, ...savedFiles]) 
+                setEventFiles([...eventFiles, ...savedFiles])
+                console.log("SetFiles se va a ejecutar con los datos", files, savedFiles);
+                setFiles([...files, ...savedFiles])
             }
             setFilesToSave([])
         }
         if (filesToDelete) {
             // Delete files
-            const result = await deleteFiles(filesToDelete);
-            if (result) {
-                setFiles(files.filter((file) => !filesToDelete.includes(file.id)));
-            }
+            const deletedFiles = await deleteFiles(filesToDelete);
+            setFiles(files.filter((file) => !deletedFiles.includes(file.id)));
             setFilesToDelete([])
         }
 

@@ -35,6 +35,38 @@ export async function getEvents(startDate: Date, endDate: Date): Promise<Event[]
   }
 }
 
+export async function getEventsByPatient(patientId: number): Promise<Event[]> {
+  try {
+    const user = await currentUser()
+    if (!user) {
+      return []
+    }
+    const prismaUser = await prisma.user.findUnique({
+      where: {
+        authId: user.id
+      }
+    })
+    if (!prismaUser) {
+      return []
+    }
+    const events = await prisma.event.findMany({
+      where: {
+        AND: [
+          { userId: prismaUser.id },
+          { patientId: patientId },
+        ]
+      },
+      orderBy: {
+        startTime: 'asc'
+      }
+    })
+    return events
+  } catch (error) {
+    console.error('Error fetching events by patient:', error)
+    return []
+  }
+}
+
 export async function saveEvent(event: Partial<Event>, repeat: string, repetitionCount: number): Promise<Event[]> {
   try {
     const user = await currentUser()
