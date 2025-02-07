@@ -19,6 +19,47 @@ export function FilesView ({
     setFilesToDelete: React.Dispatch<React.SetStateAction<number[]>>,
     maxPatientFiles: number,
 }) {
+
+    function crossIconAction(file: PsyFile){
+        if (filesToDelete.includes(file.id)){
+            if (eventFiles.length + (filesToSave?.length || 0) - filesToDelete.length >= maxPatientFiles) {
+                alert("No se pueden subir más de 3 archivos")
+            } else{
+                setFilesToDelete((prevFiles) => prevFiles.filter(id => id !== file.id))
+            }
+        } else if(filesToSave?.some(f => f.name === file.filename)){
+            setFilesToSave((prevFiles) => prevFiles ? prevFiles.filter((f) => f.name !== file.filename) : [])
+        }else{
+            console.log('Agregando fichero a FilesToDelete: ', file.id)
+            setFilesToDelete((prevFiles) => [...prevFiles, file.id])
+        }
+    }
+
+    async function downloadFileAction(file: PsyFile){
+        const response = await downloadFileFromS3(
+            file.filename,
+            typeof file.encrypted_key === "string" ? file.encrypted_key : "",
+            typeof file.encrypted_iv === "string" ? file.encrypted_iv : ""
+        );
+        if (!response.fileBase64) {
+            throw new Error("File base64 data is undefined");
+        }
+        const byteCharacters = atob(response.fileBase64);
+        const byteNumbers = new Array(byteCharacters.length).fill(0).map((_, i) => byteCharacters.charCodeAt(i));
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: response.contentType });
+
+        // Create URL and force download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = response.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+
     return <>
         {/* existing files */}
         {eventFiles?.map((file, index) => (
@@ -34,20 +75,7 @@ export function FilesView ({
                 <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => {
-                        if (filesToDelete.includes(file.id)){
-                            if (eventFiles.length + (filesToSave?.length || 0) - filesToDelete.length >= maxPatientFiles) {
-                                alert("No se pueden subir más de 3 archivos")
-                            } else{
-                                setFilesToDelete((prevFiles) => prevFiles.filter(id => id !== file.id))
-                            }
-                        } else if(filesToSave?.some(f => f.name === file.filename)){
-                            setFilesToSave((prevFiles) => prevFiles ? prevFiles.filter((f) => f.name !== file.filename) : [])
-                        }else{
-                            console.log('Agregando fichero a FilesToDelete: ', file.id)
-                            setFilesToDelete((prevFiles) => [...prevFiles, file.id])
-                        }
-                    }}
+                    onClick={() => crossIconAction(file)}
                     className="absolute top-1 right-1 flex items-center justify-center w-5 h-5"
                 >
                     <X className={cn("w-4 h-4",
@@ -57,23 +85,7 @@ export function FilesView ({
                 <Button
                     type="button"
                     variant="ghost"
-                    onClick={async () => {
-                        const response = await downloadFileFromS3(file.filename, file.encrypted_key, file.encrypted_iv);
-                        const byteCharacters = atob(response.fileBase64);
-                        const byteNumbers = new Array(byteCharacters.length).fill(0).map((_, i) => byteCharacters.charCodeAt(i));
-                        const byteArray = new Uint8Array(byteNumbers);
-                        const blob = new Blob([byteArray], { type: response.contentType });
-
-                        // Create URL and force download
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = response.filename;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        window.URL.revokeObjectURL(url);
-                    }}
+                    onClick={async () => downloadFileAction(file)}
                     className="absolute top-1 left-1 flex items-center justify-center w-5 h-5"
                 >
                     <Download className="w-4 h-4"/>
