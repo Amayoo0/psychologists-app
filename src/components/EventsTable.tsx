@@ -4,7 +4,7 @@ import { EventDialog } from "./EventDialog";
 import { useState } from "react";
 import { deleteEvent } from "@/app/actions/events";
 import { ChevronDown, Pencil, Trash } from "lucide-react";
-import { format } from "date-fns";
+import { addHours, format } from "date-fns";
 
 function EventTable({ 
 	events,
@@ -81,7 +81,10 @@ function EventTable({
         <EventDialog
             open={showEventDialog}
             onOpenChange={setShowEventDialog}
-            eventData={selectedEvent ?? undefined}
+            eventData={selectedEvent ?? {
+                startTime: new Date(),
+                endTime: addHours(new Date(), 1),
+            }}
         />
         </div>
     );

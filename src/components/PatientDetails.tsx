@@ -2,10 +2,10 @@ import { Patient, Event, PsyFile } from "@prisma/client";
 import EventTable from "./EventsTable";
 import { FilesView } from "./FilesView";
 import { useEffect, useState } from "react";
-import { set } from "date-fns";
+import { addHours, set } from "date-fns";
 import { useCalendar } from "./calendar/calendar-context";
 import { Button } from "./ui/button";
-import { Save, Upload } from "lucide-react";
+import { Plus, Save, Upload } from "lucide-react";
 import { EventDialog } from "./EventDialog";
 import { FilesViewTable } from "./FilesViewTable";
 import { deleteFiles, getFilesByPatient, saveFiles } from "@/app/actions/files";
@@ -71,14 +71,17 @@ const PatientDetails = ({
                             variant="ghost"
                             onClick={() => setShowEventDialog(true)}
                         >
-                            <Upload/>
+                            <Plus/>
                         </Button>
                     </div>
                 </div>
-                <EventTable
-                    events={patientEvents ?? []}
-                    setEvents={setPatientEvents}
-                />
+                {((patientEvents && patientEvents.length > 0) 
+                    ?   <EventTable
+                            events={patientEvents}
+                            setEvents={setPatientEvents}
+                        />
+                    :   <p className="text-gray-500 text-sm">No hay eventos relacionados.</p>
+                )}
                 <div id="files-buttons-control" className="flex flex-row items-center">
                     <h4 className="text-lg font-semibold mt-6 mb-4 pr-4">Ficheros Relacionados</h4>
                     <input type="file"
@@ -153,7 +156,10 @@ const PatientDetails = ({
             <EventDialog
                 open={showEventDialog}
                 onOpenChange={setShowEventDialog}
-                eventData={{}}
+                eventData={{
+                    startTime: new Date(),
+                    endTime: addHours(new Date(), 1),
+                }}
             />
         </>
     )

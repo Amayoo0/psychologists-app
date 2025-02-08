@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Patient, Event, PsyFile } from "@prisma/client";
 import { Button } from "./ui/button";
 import React from "react";
@@ -25,6 +25,22 @@ function PatientTable({
     const toggleExpand = (patientId: number) => {
         setExpandedPatientId((prev) => (prev === patientId ? null : patientId));
     };
+
+    const [patientFilesMap, setPatientFilesMap] = useState<{ [key: number]: PsyFile[] }>(
+        patients.reduce((acc, patient) => {
+            acc[patient.id] = files.filter((file) => file.patientId === patient.id);
+            return acc;
+        }, {} as { [key: number]: PsyFile[] })
+    );
+
+    useEffect(() => {
+        setPatientFilesMap(
+            patients.reduce((acc, patient) => {
+                acc[patient.id] = files.filter((file) => file.patientId === patient.id);
+                return acc;
+            }, {} as { [key: number]: PsyFile[] })
+        );
+    }, [files, patients]);
 
     const setPatientsEvents = (patientEvents: Event[]) => {
         const eventsWithOtherPatientId = events.filter((event) => event.patientId !== selectedPatient?.id);
@@ -59,8 +75,14 @@ function PatientTable({
                     {patients.map((patient) => {
                         const patientEvents = events.filter((event) => event.patientId === patient.id).reverse();
                         const patientLastSession = patientEvents.length > 0 ? patientEvents[0].startTime : null;
-                        const [patientFiles, setPatientFiles] = useState<PsyFile[]>(files.filter((file) => file.patientId === patient.id));
-
+                        // const [patientFiles, setPatientFiles] = useState<PsyFile[]>(files.filter((file) => file.patientId === patient.id));
+                        const patientFiles = patientFilesMap[patient.id];
+                        const setPatientFiles = (newFiles: PsyFile[]) => {
+                            setPatientFilesMap((prev) => ({
+                                ...prev,
+                                [patient.id]: newFiles,
+                            }));
+                        };
                         return (
                             <React.Fragment key={patient.id}>
                                 <tr
@@ -74,7 +96,7 @@ function PatientTable({
                                             : "No disponible"}
                                     </td>
                                     <td className="px-4 py-2 border-b">{patientEvents.length}</td>
-                                    <td className="px-4 py-2 border-b">{patientFiles.length}</td>
+                                    <td className="px-4 py-2 border-b">{patientFiles?.length}</td>
                                     <td className="px-4 py-2 border-b space-x-2">
                                         {/* <Button
                                             variant="outline"

@@ -111,13 +111,6 @@ export default function PatientDialog({
 						onChange={(e) => setPhone(e.target.value)}
 					/>
 				</div>
-				<div className="flex items-center gap-4">
-					<File className="h-4 w-4 text-muted-foreground" />
-					<Input
-						type="text"
-						placeholder="Ficheros"
-					/>
-				</div>
 			</div>
 			
 			<DialogFooter>

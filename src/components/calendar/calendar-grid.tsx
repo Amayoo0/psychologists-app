@@ -11,6 +11,7 @@ import HeaderWeekDays from "./HeaderWeekDays"
 import { Event } from '@prisma/client'
 import { EventMonthView } from "./EventMonthView"
 import LoadingSpinner from "../LoadingSpinner"
+import { addHours } from "date-fns"
 
 
 const CalendarGrid = () => {
@@ -347,7 +348,10 @@ const CalendarGrid = () => {
           <EventDialog 
               open={showEventDialog}
               onOpenChange={setShowEventDialog}
-              eventData={eventDialogData ?? undefined} 
+              eventData={eventDialogData ?? {
+                  startTime: new Date(),
+                  endTime: addHours(new Date(), 1),
+              }} 
           />
         </div>
       </div>

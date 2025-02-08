@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import PatientDialog from './PatientDialog'
 import { EventDialog } from './EventDialog'
+import { addHours } from 'date-fns'
 
 export default function FloatingActionButton() {
   const [showEventDialog, setShowEventDialog] = useState(false)
@@ -38,7 +39,10 @@ export default function FloatingActionButton() {
       <EventDialog
         open={showEventDialog}
         onOpenChange={setShowEventDialog}
-        eventData={{}}
+        eventData={{
+            startTime: new Date(),
+            endTime: addHours(new Date(), 1),
+        }}
       />
       <PatientDialog
         open={patientDialogOpen}

@@ -91,6 +91,11 @@ export function EventDialog({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
+        if (!patientId) {
+            alert("Por favor, asocie el evento a un paciente.")
+            return
+        }
+
         const [startHour, startMinute] = startTimeStr.split(':')
         const [endHour, endMinute] = endTimeStr.split(':')
         
