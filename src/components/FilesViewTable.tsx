@@ -51,10 +51,13 @@ export function FilesViewTable ({
     }
 
     async function downloadFileAction(file: PsyFile){
+        if (!file.encrypted_iv || !file.encrypted_key) {
+            throw new Error("Encrypted key or IV is null");
+        }
         const response = await downloadFileFromS3(
-            file.filename,
-            typeof file.encrypted_key === "string" ? file.encrypted_key : "",
-            typeof file.encrypted_iv === "string" ? file.encrypted_iv : ""
+            file.id,
+            file.encrypted_key,
+            file.encrypted_iv
         );
         if (!response.fileBase64) {
             throw new Error("File base64 data is undefined");

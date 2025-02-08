@@ -37,13 +37,18 @@ export async function getFiles(): Promise<PsyFile[]> {
     if (!prismaUser) {
         return []
     }
-    const files = await prisma.psyFile.findMany(
+    let files = await prisma.psyFile.findMany(
       {
         where: {
           userId: prismaUser.id
         }
       }
     )
+
+    files.forEach(file => {
+      file.filename = file.filename.split('}')[1]
+    });
+
     return files
   } catch (error) {
     console.error('Error fetching events:', error)
@@ -67,12 +72,17 @@ export async function getFilesByEvent(eventId: string | null): Promise<PsyFile[]
     if (!prismaUser) {
       return []
     }
-    const files = await prisma.psyFile.findMany({
+    let files = await prisma.psyFile.findMany({
       where: {
         userId: prismaUser.id,
         eventId: eventId
       }
     })
+
+    files.forEach(file => {
+      file.filename = file.filename.split('}')[1]
+    });
+
     return files
   } catch (error) {
     console.error('Error fetching files by event:', error)
@@ -94,12 +104,17 @@ export async function getFilesByPatient(patientId: number): Promise<PsyFile[]> {
     if (!prismaUser) {
       return []
     }
-    const files = await prisma.psyFile.findMany({
+    let files = await prisma.psyFile.findMany({
       where: {
         userId: prismaUser.id,
         patientId: patientId
       }
     })
+    
+    files.forEach(file => {
+      file.filename = file.filename.split('}')[1]
+    });
+
     return files
   } catch (error) {
     console.error('Error fetching files by patient:', error)
@@ -147,9 +162,11 @@ export async function saveFiles(fileList: File[], eventId: string | null, patien
       console.log("SaveFile.encryptedBuffer", encrypted);
       //End Encrypt
 
+      const filename = eventId ? `{${patientId}-${eventId}}${file.name}` : `{${patientId}}${file.name}`
+
       const params = {
         Bucket: process.env.AWS_BUCKET_NAME ?? '',
-        Key: file.name,
+        Key: filename,
         Body: encrypted,
         ContentType: file.type
       };
@@ -159,14 +176,14 @@ export async function saveFiles(fileList: File[], eventId: string | null, patien
       try {
           const response = await s3.send(new PutObjectCommand(params));
           console.log("SaveFile.send.response", response);
-          console.log(`File uploaded successfully: ${file.name}`);
+          console.log(`File uploaded successfully: ${filename}`);
       } catch (err) {
           console.error(err);
       }
-
+      console.log("Saving file to DB with key and iv", key, iv)
       const fileToSave: Omit<PsyFile, 'id'> = {
-        filename: file.name,
-        url: 'psycho-app-bucket',
+        filename: filename,
+        url: 'psycho-app',
         eventId: eventId,
         patientId: patientId,
         userId: prismaUser.id,
@@ -203,22 +220,21 @@ export async function deleteFiles(fileIds: number[]): Promise<number[]> {
     if (!prismaUser) {
       return []
     }
-
-    for (const fileId of fileIds) {
-      const existingFile = await prisma.psyFile.findUnique({
-        where: {
-          id: fileId
+    const filesToDelete = await prisma.psyFile.findMany({
+      where: {
+        id: {
+          in: fileIds
         }
-      })
-
-      if (!existingFile || existingFile.userId !== prismaUser.id) {
+      }
+    });
+    
+    for (const file of filesToDelete) {
+      if (file.userId !== prismaUser.id) {
         continue
       }
-
-      //Delete s3 file
       const command = new DeleteObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME!,
-        Key: existingFile.filename,
+        Key: file.filename,
       });
 
       await s3.send(command);
@@ -229,19 +245,17 @@ export async function deleteFiles(fileIds: number[]): Promise<number[]> {
           maxWaitTime: 10
         },
         { 
-          Bucket: process.env.AWS_BUCKET_NAME!,
-          Key: existingFile.filename 
+          Bucket: process.env.AWS_BUCKET_NAME!, 
+          Key: file.filename 
         },
       );
 
-      //Delete prisma instance
       const result = await prisma.psyFile.delete({
         where: {
-          id: fileId
+          id: file.id
         }
       })
-      if (result) deletedFilesIds.push(fileId)
-
+      if (result) deletedFilesIds.push(file.id)
     }
 
     return deletedFilesIds
@@ -251,12 +265,20 @@ export async function deleteFiles(fileIds: number[]): Promise<number[]> {
   }
 }
 
-export async function downloadFileFromS3(filename: string, key: string, iv: string) {
-  console.log("Downloading: ", filename, key, iv)
+export async function downloadFileFromS3(fileId: number, keyBuffer: Buffer, ivBuffer: Buffer) {
   try {
+    const file = await prisma.psyFile.findUnique({
+      where: {
+        id: fileId
+      }
+    });
+    if (!file) {
+      return { success: false, error: "Archivo no encontrado" };
+    }
+
     const command = new GetObjectCommand({
       Bucket: process.env.AWS_BUCKET_NAME!,
-      Key: filename,
+      Key: file.filename,
     });
 
     const { Body, ContentType } = await s3.send(command);
@@ -274,7 +296,7 @@ export async function downloadFileFromS3(filename: string, key: string, iv: stri
 
     console.log("File Readed from S3: ", fileBuffer)
 
-    const decipher = createDecipheriv("aes-256-cbc", Buffer.from(key, "hex"), Buffer.from(iv, "hex"));
+    const decipher = createDecipheriv("aes-256-cbc", keyBuffer, ivBuffer);
     let decrypted = Buffer.concat([decipher.update(fileBuffer), decipher.final()]);
     console.log("File decrypted: ", decrypted)
 
@@ -284,9 +306,9 @@ export async function downloadFileFromS3(filename: string, key: string, iv: stri
 
     return {
       success: true,
-      fileBase64,
+      fileBase64: fileBase64,
       contentType: ContentType || "application/octet-stream",
-      filename,
+      filename: file.filename.split('}')[1],
     };
   } catch (error) {
     console.error("Error descargando archivo de S3:", error);
