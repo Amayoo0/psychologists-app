@@ -141,7 +141,12 @@ export function EventDialog({
             }
         }
         if (filesToSave) {
-            const newFilesToSave = Array.from(filesToSave).filter(file => !eventFiles.some(ef => ef.filename === file.name));
+            const newFilesToSave = filesToSave.filter(file => !eventFiles.some(ef => ef.filename === file.name));
+            if (newFilesToSave.length !== filesToSave.length) {
+                const filesNotInNewFilesToSave = filesToSave.filter(file => !newFilesToSave.includes(file));
+                const filesNotInNewFilesToSaveStr = filesNotInNewFilesToSave.map(file => file.name).join(', ');
+                alert(`Los siguientes archivos ya existen y no se volverán a cargar: ${filesNotInNewFilesToSaveStr}.`);
+            }
             const savedFiles: PsyFile[] = await saveFiles(newFilesToSave, newEvents[0]?.id || eventData?.id || "", patientId);
             if (savedFiles){
                 setEventFiles([...eventFiles, ...savedFiles])

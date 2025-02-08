@@ -118,8 +118,20 @@ const PatientDetails = ({
                                 variant="ghost"
                                 onClick={async () => {
                                     if (filesToSave.length > 0){
-                                        const savedFiles = await saveFiles(filesToSave, null, patient.id)
-                                        setFiles([...files, ...savedFiles])
+                                        let existingFiles = '';
+                                        let newFilesToSave = filesToSave;
+                                        filesToSave.forEach(file => {
+                                            if (patientFiles.some(existingFile => existingFile.filename === file.name && existingFile.patientId === patient.id && existingFile.eventId === null)) {
+                                                existingFiles += file.name + ', ';
+                                                newFilesToSave = newFilesToSave.filter(prevFile => prevFile.name !== file.name);
+                                            }
+                                        });
+                                        if (existingFiles.length > 0) {
+                                            alert(`Los siguientes archivos ya existen y no se volverán a cargar: ${existingFiles.slice(0, -2)}.`);
+                                        }
+                                        const savedFiles = await saveFiles(newFilesToSave, null, patient.id)
+                                        const newFiles = [...files, ...savedFiles];
+                                        setFiles(newFiles);
                                     }
                                     if (filesToDelete.length > 0){
                                         const deletedFiles = await deleteFiles(filesToDelete)
