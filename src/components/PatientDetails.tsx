@@ -27,6 +27,7 @@ const PatientDetails = ({
     const [filesToSave, setFilesToSave] = useState<File[]>([])
     const [filesToDelete, setFilesToDelete] = useState<number[]>([])
     const [showEventDialog, setShowEventDialog] = useState(false)
+    const [newEventPatientId, setNewEventPatientId] = useState<number | undefined>(patient.id)
 
     useEffect(() => {
         // Clean input
@@ -69,7 +70,11 @@ const PatientDetails = ({
                         <Button
                             size="icon"
                             variant="ghost"
-                            onClick={() => setShowEventDialog(true)}
+                            onClick={() => {
+                                setNewEventPatientId(patient.id)
+                                console.log("newEventPatientId", newEventPatientId)
+                                setShowEventDialog(true)
+                            }}
                         >
                             <Plus/>
                         </Button>
@@ -171,6 +176,7 @@ const PatientDetails = ({
                 eventData={{
                     startTime: new Date(),
                     endTime: addHours(new Date(), 1),
+                    patientId: newEventPatientId,
                 }}
             />
         </>

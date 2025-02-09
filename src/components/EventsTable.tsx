@@ -34,7 +34,8 @@ function EventTable({
         <table className="min-w-full border-collapse bg-white shadow">
             <thead className="sticky top-0">
             <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
-                <th className="px-4 py-2 border-b">Título</th>
+                <th className="px-4 py-2 border-b max-w-[40px] w-[40px]">Nº</th>
+                <th className="px-4 py-2 border-b max-w-[400px] w-[400px]">Título</th>
                 <th className="px-4 py-2 border-b">Tipo</th>
                 <th className="px-4 py-2 border-b flex flex-row gap-1 items-center">Fecha <ChevronDown size={16}/></th> 
                 <th className="px-4 py-2 border-b">Sala de reunión</th>
@@ -42,38 +43,46 @@ function EventTable({
             </tr>
             </thead>
             <tbody>
-        {[...events].reverse().map((event) => {
+        {[...events]
+            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+            .map((event, index) => {
             return (
             <tr key={event.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border-b">{event.title !== '' ? event.title : '(Sin título)'}</td>
+                <td className="px-4 py-2 border-b max-w-[40px] w-[40px]">{index + 1}</td>
+
+                <td className="px-4 py-2 border-b max-w-[400px] w-[400px] truncate overflow-hidden whitespace-nowrap">{event.title !== '' ? event.title : '(Sin título)'}</td>
                 <td className="px-4 py-2 border-b">
-                    {event.type === "appointment" ? "Cita" : event.type === "event" ? "Evento" : "Tarea"}
+                {event.type === "appointment" ? "Cita" : event.type === "event" ? "Evento" : "Tarea"}
                 </td>
-               
+            
                 <td className="px-4 py-2 border-b whitespace-nowrap">
-                    {event.type === "event"
-                        ? `${format(event.startTime, "dd/MM/yyyy")} - ${format(event.endTime, "dd/MM/yyyy")}`
-                        : `${format(event.startTime, "EEEE d MMM, yyyy")} ${format(event.startTime, "HH:mm")}`}
+                {event.type === "event"
+                    ? `${format(event.startTime, "dd/MM/yyyy")} - ${format(event.endTime, "dd/MM/yyyy")}`
+                    : `${format(event.startTime, "EEEE d MMM, yyyy")} ${format(event.startTime, "HH:mm")}`}
                 </td>
-                <td className="px-4 py-2 border-b">{event.sessionUrl}</td>
+                <td className="px-4 py-2 border-b max-w-[400px] w-[400px] truncate overflow-hidden whitespace-nowrap">
+                <a href={event.sessionUrl ?? "#"} target="_blank" rel="noreferrer">
+                    {event.sessionUrl}
+                </a>
+                </td>
                 <td className="px-4 py-2 border-b space-x-2 whitespace-nowrap">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEditEvent(event)}
-                    >
-                        <Pencil/>
-                    </Button>
-                    <Button
-                        variant="destructive"
-                        size="sm"
-                        className="hover:animate-shake"
-                        onClick={() => onDeleteEvent(event)}
-                    >
-                        <Trash/>
-                    </Button>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEditEvent(event)}
+                >
+                    <Pencil/>
+                </Button>
+                <Button
+                    variant="destructive"
+                    size="sm"
+                    className="hover:animate-shake"
+                    onClick={() => onDeleteEvent(event)}
+                >
+                    <Trash/>
+                </Button>
                 </td>
-                </tr>
+            </tr>
             )})}
             </tbody>
         </table>

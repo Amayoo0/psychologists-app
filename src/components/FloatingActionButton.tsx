@@ -32,7 +32,6 @@ export default function FloatingActionButton() {
           <DropdownMenuItem onSelect={() => setPatientDialogOpen(true)}>
             Nuevo Paciente
           </DropdownMenuItem>
-          <DropdownMenuItem>Otros</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -42,6 +41,7 @@ export default function FloatingActionButton() {
         eventData={{
             startTime: new Date(),
             endTime: addHours(new Date(), 1),
+            patientId: undefined,
         }}
       />
       <PatientDialog

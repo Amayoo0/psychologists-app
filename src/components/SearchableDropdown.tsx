@@ -14,6 +14,7 @@ interface SearchableDropdownProps {
   selectedVal: string | number
   handleChange: (value: string) => void
   placeholder?: string
+  required: boolean
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -23,7 +24,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   filterBy,
   selectedVal,
   handleChange,
-  placeholder = "Buscar..."
+  placeholder = "Buscar...",
+  required
 }) => {
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
@@ -72,6 +74,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         }}
         placeholder={placeholder}
         className="w-full"
+        required={required}
       />
       {isOpen && (
         <ScrollArea className="absolute max-h-32 overflow-y-auto z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">

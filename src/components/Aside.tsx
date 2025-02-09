@@ -59,7 +59,7 @@ const Aside = () => {
 						</Avatar>
 						{isSidebarExpanded ? (
 							<div className="pl-2 flex flex-col">
-								<h2 className="text-md font-bold">{user?.emailAddresses.toString().split('@')[0]}</h2>
+								<h2 className="text-md font-bold">{user?.emailAddresses.toString().split('@')[0].charAt(0).toUpperCase()! + user?.emailAddresses.toString().split('@')[0].slice(1)}</h2>
 								<span className="text-xs italic">Gratis</span>
 							</div>
 						): ('') }

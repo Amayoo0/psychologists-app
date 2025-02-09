@@ -91,6 +91,7 @@ export default function PatientDialog({
 						placeholder="Iniciales"
 						value={initials}
 						onChange={(e) => setInitials(e.target.value)}
+						required
 					/>
 				</div>
 				<div className="flex items-center gap-4">

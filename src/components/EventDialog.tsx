@@ -73,6 +73,9 @@ export function EventDialog({
                 setLoadingFiles(false);
                 setFilesToDelete([]);
                 setFilesToSave([]);
+                if (eventData.patientId) {
+                    setPatient(patients.find((p) => p.id === eventData.patientId) || null);
+                }
             }
         };
         fetchData();
@@ -90,11 +93,6 @@ export function EventDialog({
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-
-        if (!patientId) {
-            alert("Por favor, asocie el evento a un paciente.")
-            return
-        }
 
         const [startHour, startMinute] = startTimeStr.split(':')
         const [endHour, endMinute] = endTimeStr.split(':')
@@ -194,7 +192,7 @@ export function EventDialog({
                     placeholder="Añadir título"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="border-0 border-b pb-0  text-lg font-medium focus-visible:ring-0"
+                    className="border border-b pb-0  md:text-lg xl:text-xl font-medium"
                 />
                 {eventData?.id && 
                     <Trash 
@@ -211,7 +209,7 @@ export function EventDialog({
                 </DialogTitle>
             </DialogHeader>
             <Tabs defaultValue={type} className="mt-4" onValueChange={(value) => setType(value)}>
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-3" autoFocus>
                 <TabsTrigger value="event">Evento</TabsTrigger>
                 <TabsTrigger value="task">Tarea</TabsTrigger>
                 <TabsTrigger value="appointment">Cita</TabsTrigger>
@@ -311,6 +309,7 @@ export function EventDialog({
                                 selectedVal={patient ? patient.initials : ""}
                                 handleChange={(val) => setPatientId(Number(val))}
                                 placeholder="Seleccionar paciente"
+                                required
                             />
                         </div>
                     </div>
@@ -347,7 +346,7 @@ export function EventDialog({
                                         type="file"
                                         multiple
                                         onChange={(e) => handleAddFile(e.target.files)}
-                                        className="w-[110px] cursor-pointer bg-white text-white hover:text-white hover:bg-white" 
+                                        className="w-[125px] cursor-pointer bg-white text-white hover:text-white hover:bg-white" 
                                     />
                                 </div>
                             </div>

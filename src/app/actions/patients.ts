@@ -120,6 +120,18 @@ export async function deletePatient(patientId: number): Promise<boolean> {
     if (!prismaUser) {
       return false
     }
+    await prisma.psyFile.deleteMany({
+      where: {
+        patientId: patientId,
+        userId: prismaUser.id
+      }
+    })
+    await prisma.event.deleteMany({
+      where: {
+        patientId: patientId,
+        userId: prismaUser.id
+      }
+    })
     await prisma.patient.delete({
       where: {
         id: patientId,

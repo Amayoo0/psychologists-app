@@ -1,10 +1,11 @@
+'use client'
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NavItems } from "@/components/NavItems";
 import AppLayout from "../AppLayout";
 
 // Componente reutilizable para las tarjetas de navegación
-function NavCard({ item }: { item: { name: string; icon: React.ElementType } }) {
+function NavCard({ item }: { item: { name: string; icon: React.ElementType, href: string } }) {
   return (
     <Card>
       <CardHeader>
@@ -15,7 +16,7 @@ function NavCard({ item }: { item: { name: string; icon: React.ElementType } }) 
       </CardHeader>
       <CardContent>
         <p>Accede a tu {item.name.toLowerCase()} aquí.</p>
-        <Button variant="outline" className="mt-4">
+        <Button variant="outline" className="mt-4" onClick={() => window.location.href = item.href}>
           Ver {item.name}
         </Button>
       </CardContent>
