@@ -7,11 +7,9 @@ import AppLayout from "../AppLayout";
 export default function Home() {
     return (
         <AppLayout>
-            <CalendarProvider>
-                <CalendarHeader/>
-                <CalendarGrid/>
-                <FloatingActionButton/>
-            </CalendarProvider>
+            <CalendarHeader/>
+            <CalendarGrid/>
+            <FloatingActionButton/>
         </AppLayout>
     )
 }

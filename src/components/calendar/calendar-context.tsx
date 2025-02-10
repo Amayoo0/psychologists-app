@@ -6,8 +6,9 @@ import { getEvents } from "@/app/actions/events"
 import { addMonths, isAfter, isBefore, set, subMonths } from "date-fns"
 import { getPatients } from "@/app/actions/patients"
 import { getFiles } from "@/app/actions/files"
+import { getSettings } from "@/app/actions/settings"
 
-type ViewType = "week" | "month" | "schedule"
+export type ViewType = "week" | "month"
 interface WorkHours {
     start: number
     end: number
@@ -40,6 +41,9 @@ interface CalendarContextType {
     loadMoreEvents: (viewStartDate: Date, viewEndDate: Date) => Promise<void>
     isAuthenticated: boolean
     setIsAuthenticated: (isAuthenticated: boolean) => void
+    internalPassword: string
+    setInternalPassword: (password: string) => void
+    salt: string
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined)
@@ -65,6 +69,8 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
         return { start: new Date(subMonths(now, 3).setHours(0,0,0,0)), end: new Date(addMonths(now, 3).setHours(23, 59, 59, 999)) };
     });
     const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [internalPassword, setInternalPassword] = useState("")
+    const [salt] = useState("aComplexSaltValue123!@#")
 
 
 
@@ -128,6 +134,22 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
         loadFiles();
     }, []);
 
+    useEffect(() => {
+        async function loadSettings() {
+            const fetchedSettings = await getSettings();
+            if (fetchedSettings) {
+                setShowWeekends(fetchedSettings.showWeekends);
+                setCellSize(fetchedSettings.cellSize);
+                setWorkHours({ start: fetchedSettings.workDayStart, end: fetchedSettings.workDayEnd });
+                setView(fetchedSettings.preferredView as ViewType);
+                setInternalPassword(fetchedSettings.internalPassword);
+                console.log('fetchedSettings', fetchedSettings);
+            }
+        }
+        loadSettings();
+    }, []);
+
+
     return (
         <CalendarContext.Provider 
             value={{
@@ -144,7 +166,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
                 loading,
                 loadedRange,
                 loadMoreEvents,
-                isAuthenticated, setIsAuthenticated
+                isAuthenticated, setIsAuthenticated,
+                internalPassword, setInternalPassword,
+                salt,
             }}
         >
             {children}

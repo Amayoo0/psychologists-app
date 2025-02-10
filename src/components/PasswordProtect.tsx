@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useCalendar } from './calendar/calendar-context'
+import { createHash } from 'crypto'
 
 interface PasswordProtectProps {
   open: boolean
@@ -23,11 +24,15 @@ export function PasswordProtect({
 	description,
 	children,
 }: PasswordProtectProps) {
-  const { isAuthenticated, setIsAuthenticated } = useCalendar()
+  const { isAuthenticated, setIsAuthenticated, internalPassword, salt } = useCalendar()
   const [password, setPassword] = useState('')
 
   const handleAuthenticate = () => {
-    if (password === 'password123') {
+	const hash = createHash('sha256');
+	hash.update(password + salt);
+	const hashedPassword = hash.digest('hex');
+	console.log(hashedPassword)
+    if (hashedPassword === internalPassword) {
       onAuthenticated?.();
       setIsAuthenticated(true)
     } else {

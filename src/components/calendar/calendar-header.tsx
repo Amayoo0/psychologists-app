@@ -4,7 +4,7 @@ import { useCalendar } from "./calendar-context";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import ConfigDialog from "../ConfigDialog";
+import { SettingsDialog } from "../SettingsDialog";
 
 
 const CalendarHeader = () => {
@@ -99,7 +99,8 @@ const CalendarHeader = () => {
                 <Button size="icon" variant="ghost" onClick={() => setIsConfigOpen(true)}>
                     <Menu className="h-4 w-4"/>
                 </Button>
-                <ConfigDialog open={isConfigOpen} onOpenChange={setIsConfigOpen} />
+                {/* <ConfigDialog open={isConfigOpen} onOpenChange={setIsConfigOpen} /> */}
+                <SettingsDialog open={isConfigOpen} onOpenChange={setIsConfigOpen} selectedTab="weekly"/>
             </div>
         </div>
     )

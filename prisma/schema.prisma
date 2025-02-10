@@ -20,6 +20,7 @@ model User {
   patients  Patient[]
   events    Event[]
   files     PsyFile[]
+  settings  Settings?
 }
 
 model Patient {
@@ -75,4 +76,17 @@ model PsyFile {
 
   event         Event?    @relation(fields: [eventId], references: [id])
   eventId       String?
+}
+
+model Settings {
+  id                Int     @id @default(autoincrement())
+  showWeekends      Boolean
+  preferredView     String
+  workDayStart      Int
+  workDayEnd        Int
+  cellSize          Int
+  internalPassword  String
+
+  user              User    @relation(fields: [userId], references: [id])
+  userId            Int     @unique
 }

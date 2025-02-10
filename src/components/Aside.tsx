@@ -12,6 +12,7 @@ import { usePathname } from 'next/navigation';
 import { Avatar } from './ui/avatar';
 import { useClerk, useUser } from '@clerk/nextjs'
 import { Portal } from '@radix-ui/react-tooltip';
+import { SettingsDialog } from './SettingsDialog';
 
 const Aside = () => {
 	const navItems = NavItems();
@@ -28,6 +29,7 @@ const Aside = () => {
 		}
 		return true; // default state if window is not defined
 	});
+	const [showSettingsDialog, setShowSettingsDialog] = useState(false);
 
 	useEffect(() => {
 		if (typeof window !== 'undefined') {
@@ -43,6 +45,7 @@ const Aside = () => {
 	};
 	const { user } = useUser()
 	  return (
+		<>
 			<div
 			className={cn(
 				isSidebarExpanded ? 'basis-1/3 lg:basis-1/4 xl:basis-1/5' : '200px',
@@ -67,7 +70,7 @@ const Aside = () => {
 					{isSidebarExpanded && (
 						<Separator className='w-full'/>
 					)}
-	
+
 					{/* NavItems */}
 					<div id="navItems" className='py-2'>
 						{navItems.map((item, idx) => {
@@ -94,7 +97,7 @@ const Aside = () => {
 						/>
 					</div>
 					
-	
+
 					{/* Bottom */}
 					<div id="settings" className='sticky mt-auto whitespace-nowrap mb-4 transition duration-200 block'>
 						<SideNavItem
@@ -103,10 +106,11 @@ const Aside = () => {
 							path={pathname}
 							active= {false}
 							isSidebarExpanded={isSidebarExpanded}
+							onClick={() => setShowSettingsDialog(true)}
 						/>
 					</div>
 				</aside>
-	
+
 				<div className="mt-[calc(calc(90vh)-40px)] relative">
 					<button
 					type="button"
@@ -121,6 +125,12 @@ const Aside = () => {
 					</button>
 				</div>
 			</div>
+			<SettingsDialog
+				open={showSettingsDialog}
+				onOpenChange={setShowSettingsDialog}
+				selectedTab="general"
+			/>
+		</>
 	  );
 	}
 	
@@ -130,17 +140,24 @@ const Aside = () => {
 	  path: string;
 	  active: boolean;
 	  isSidebarExpanded: boolean;
-	}> = ({ label, icon: Icon, path, active, isSidebarExpanded }) => {	  
+	  onClick?: () => void;
+	}> = ({ label, icon: Icon, path, active, isSidebarExpanded, onClick }) => {	  
 	  return (
 		<>
 		  {isSidebarExpanded ? (
 			<a
-			  href={path}
+			  href={onClick ? '#' : path}
 			  className={`h-full relative flex items-center whitespace-nowrap rounded-md ${
 				active
 				  ? 'font-base bg-neutral-200 shadow-sm text-neutral-700 dark:bg-neutral-800 dark:text-white'
 				  : 'hover:bg-neutral-200 hover:text-neutral-700 text-neutral-500 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
 			  }`}
+			  onClick={(e) => {
+				if (onClick) {
+				  e.preventDefault();
+				  onClick();
+				}
+			  }}
 			>
 			  <div className="relative font-base text-[17px] py-1.5 px-2 flex flex-row items-center space-x-2.5 rounded-md duration-100">
 					<Icon/>

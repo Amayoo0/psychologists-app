@@ -8,10 +8,8 @@ import FloatingActionButton from '@/components/FloatingActionButton'
 export default function Home() {
   return (
     <AppLayout>
-      <CalendarProvider>
         <PatientList/>
         <FloatingActionButton/>
-      </CalendarProvider>
     </AppLayout>
   )
 }
