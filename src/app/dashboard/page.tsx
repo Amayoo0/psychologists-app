@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NavItems } from "@/components/NavItems";
 import AppLayout from "../AppLayout";
+import InternalPasswordCheck from "@/components/InternalPasswordCheck";
 
 // Componente reutilizable para las tarjetas de navegación
 function NavCard({ item }: { item: { name: string; icon: React.ElementType, href: string } }) {
@@ -24,19 +25,18 @@ function NavCard({ item }: { item: { name: string; icon: React.ElementType, href
   );
 }
 
-export default function DashboardPage() {
+export default function Home() {
   const navItems = NavItems();
 
   return (
     <AppLayout>
-      <main className="px-6 py-4">
-        <h1 className="text-3xl font-bold mb-6">Tablero</h1>
+        <h1 className="px-6 py-4 text-3xl font-bold mb-6">Tablero</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {navItems.map((item, index) => (
             <NavCard key={index} item={item} />
           ))}
         </div>
-      </main>
+        <InternalPasswordCheck />
     </AppLayout>
   );
 }

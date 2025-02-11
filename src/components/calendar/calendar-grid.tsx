@@ -15,7 +15,17 @@ import { addHours } from "date-fns"
 
 
 const CalendarGrid = () => {
-  const { view, date, showWeekends, cellSize, setCellSize, workHours, events, loading, loadMoreEvents, files, setFiles } = useCalendar()
+  const { view, setView, 
+    date, 
+    showWeekends,
+    cellSize, setCellSize, 
+    workHours, 
+    events, 
+    loadMoreEvents,
+    loading, 
+    files, setFiles,
+    preferredView,
+  } = useCalendar()
   const [showEventDialog, setShowEventDialog] = useState(false)
   const [eventsToShow, setEventsToShow] = useState<Event[]>([])
   const [days, setDays] = useState<Date[]>([])
@@ -127,7 +137,11 @@ const CalendarGrid = () => {
     loadMoreEvents(days[0], days[days.length - 1])
   }, [view, date])
   
-  
+  useEffect(() => {
+    if (preferredView) {
+      setView(preferredView);
+    }
+  }, [preferredView]);
 
   const renderMonthView = () => {
 

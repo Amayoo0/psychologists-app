@@ -3,6 +3,7 @@ import AppLayout from '../AppLayout'
 import PatientList from '@/components/PatientList'
 import { CalendarProvider } from '@/components/calendar/calendar-context'
 import FloatingActionButton from '@/components/FloatingActionButton'
+import InternalPasswordCheck from '@/components/InternalPasswordCheck'
 
 
 export default function Home() {
@@ -10,6 +11,7 @@ export default function Home() {
     <AppLayout>
         <PatientList/>
         <FloatingActionButton/>
+        <InternalPasswordCheck />
     </AppLayout>
   )
 }

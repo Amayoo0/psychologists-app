@@ -169,12 +169,18 @@ const Aside = () => {
 			  <Tooltip>
 				<TooltipTrigger>
 				  <a
-					href={path}
+					href={onClick ? '#' : path}
 					className={`h-full relative flex items-center whitespace-nowrap rounded-md ${
 					  active
 						? 'font-base text-[19px] bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-white'
 						: 'hover:bg-neutral-200 hover:text-neutral-700 text-neutral-500 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white'
 					}`}
+					onClick={(e) => {
+						if (onClick) {
+						  e.preventDefault();
+						  onClick();
+						}
+					}}
 				  >
 					<div className="relative font-base py-1.5 px-2 flex flex-row items-center rounded-md duration-100">
 						<Icon/>

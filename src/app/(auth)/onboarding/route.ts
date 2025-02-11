@@ -22,12 +22,23 @@ export async function GET(request: Request){
         if (prismaUser){
             return NextResponse.redirect(new URL('/dashboard', new URL(request.url).origin))
         }
-        await prisma.user.create({
+        const newPrismaUser = await prisma.user.create({
             data: {
                 authId: user.id,
                 email: email,
                 name: name
             },
+        })
+        await prisma.settings.create({
+            data: {
+                userId: newPrismaUser.id,
+                showWeekends: true,
+                preferredView: 'month',
+                workDayStart: 540,
+                workDayEnd: 1080,
+                cellSize: 60,
+                internalPassword: '',
+            }
         })
         return NextResponse.redirect(new URL('/dashboard', new URL(request.url).origin))
     } catch {

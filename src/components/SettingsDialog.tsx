@@ -9,6 +9,7 @@ import {
     DialogContent,
     DialogDescription,
     DialogHeader,
+    DialogOverlay,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
@@ -46,48 +47,65 @@ export function SettingsDialog({
         loading
     } = useCalendar()
     
-    const [settings, setSettings] = useState({
-        showWeekends: showWeekends, 
-        cellSize: cellSize,
-        workDayStart: workHours.start,
-        workDayEnd: workHours.end,
-        preferredView: preferredView,
-        internalPassword: internalPassword
-    })
-
-    const handleSave = async () => {
-        setShowWeekends(settings.showWeekends)
-        setCellSize(settings.cellSize)
-        setWorkHours({ start: settings.workDayStart, end: settings.workDayEnd })
-        setPreferredView(settings.preferredView)
-
+    const handleSave = async (newPassword?: string) => {
+        const settings = {
+            showWeekends: showWeekends, 
+            cellSize: cellSize,
+            workDayStart: workHours.start,
+            workDayEnd: workHours.end,
+            preferredView: preferredView,
+            internalPassword: newPassword,
+        }
         await saveSettings(settings)
 
         console.log(settings)
+        onOpenChange(false)
     }
-    useEffect(() => {
-        if (!open) {
-            handleSave();
-        }
-    }, [open]);
     
     async function updateInternalPassword(newPassword: string) {
         const hash = createHash('sha256');
         hash.update(newPassword + salt);
         const hashedPassword = hash.digest('hex');
         setInternalPassword(hashedPassword)
-        await saveSettings({internalPassword: hashedPassword})
-        console.log("Password updated", hashedPassword)
-        console.log("settings.internalPassword", settings.internalPassword)
-        open = false;
+        handleSave(hashedPassword);
+    }
+
+    function onSavePasswordClick() {
+        const currentPasswordInput = document.getElementById('current') as HTMLInputElement;
+        
+        if (selectedTab !== "security") {
+            const currentPassword = currentPasswordInput.value;
+            const hash = createHash('sha256');
+            hash.update(currentPassword + salt);
+            const hashedCurrentPassword = hash.digest('hex');
+            console.log("hashedCurrentPassword", hashedCurrentPassword)
+
+            if (hashedCurrentPassword !== internalPassword) {
+                alert("Contraseña actual incorrecta");
+                return;
+            }
+        }
+        const newPasswordInput = document.getElementById('new') as HTMLInputElement;
+        const confirmPasswordInput = document.getElementById('confirm') as HTMLInputElement;
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        if (!newPassword || !confirmPassword) {
+            alert("Por favor, cree una nueva contraseña y confírmela");
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            alert("Nueva contraseña y confirmación no coinciden");
+            return;
+        }
+
+        updateInternalPassword(newPassword)
     }
 
     const formatTime = (time: number) => {
         const hours = Math.floor(time / 60).toString().padStart(2, '0');
         const minutes = (time % 60).toString().padStart(2, '0');
-        console.log("time", time)
-        console.log("hours", hours)
-        console.log("minutes", minutes )
         return `${hours}:${minutes}`;
     }
 
@@ -97,22 +115,56 @@ export function SettingsDialog({
     }
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px] sm:min-h-[456px]">
+        <Dialog 
+            open={open}
+            onOpenChange={(isOpen) => {
+                // SOLO permitir cerrar si NO estamos en la pestaña de seguridad
+                if (selectedTab !== "security") {
+                    onOpenChange(isOpen);
+                }
+            }}
+        >
+            <DialogOverlay 
+                className="fixed inset-0 bg-black/50" 
+                onClick={(e) => {
+                    if (selectedTab === "security") {
+                        e.preventDefault(); // Prevenir el comportamiento predeterminado
+                        e.stopPropagation(); // Detener la propagación del evento
+                    } else {
+                        onOpenChange(false); // Cerrar el modal si NO está en "security"
+                    }
+                }}
+            />
+            <DialogContent 
+                className="sm:max-w-[500px] sm:min-h-[456px]"
+                onEscapeKeyDown={(e) => {
+                    if (selectedTab === "security") {
+                        e.preventDefault(); // Bloquea el cierre con la tecla Escape
+                        alert('Debes crear una nueva contraseña antes de continuar');
+                    }
+                }}
+            >
                 <DialogHeader>
-                    <DialogTitle>Configuración del Calendario</DialogTitle>
-                    <DialogDescription>Configure sus preferencias de calendario y configuraciones de seguridad.</DialogDescription>
+                    <DialogTitle>{selectedTab !== "security" 
+                        ? "Configuración del Calendario"
+                        : "¡Bienvenid@ a PsyApp!"}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {selectedTab !== "security" 
+                        ? "Configure sus preferencias de calendario y configuraciones de seguridad."
+                        : "Antes de continuar. Crea una clave segura para proteger la información de tus pacientes."}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <Tabs defaultValue={selectedTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="general">
+                        <TabsTrigger value="general" disabled={selectedTab === "security"}>
                             <span className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
                                 General
                             </span>
                         </TabsTrigger>
-                        <TabsTrigger value="weekly">
+                        <TabsTrigger value="weekly" disabled={selectedTab === "security"}>
                             <span className="flex items-center gap-2">
                                 <Clock className="h-4 w-4" />
                                 Semanal
@@ -136,15 +188,15 @@ export function SettingsDialog({
                                         <div className="text-sm text-muted-foreground">Mostrar días de fin de semana en el calendario</div>
                                     </div>
                                     <Switch
-                                        checked={settings.showWeekends}
-                                        onCheckedChange={(checked) => setSettings({ ...settings, showWeekends: checked })}
+                                        checked={showWeekends}
+                                        onCheckedChange={(checked) => setShowWeekends(checked)}
                                         />
                                 </div>
                                 <div className="space-y-2">
                                 <Label htmlFor="prefered-view" className="text-right">
                                     Vista Preferida
                                 </Label>
-                                <Select value={settings.preferredView} onValueChange={(value: any) => setSettings({ ...settings, preferredView: value })}>
+                                <Select value={preferredView} onValueChange={(value: any) => setPreferredView(value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Elige vista" />
                                     </SelectTrigger>
@@ -156,7 +208,7 @@ export function SettingsDialog({
                                 </div>
                             </div>
                             <div className="flex justify-end pt-[74px]">
-                                <Button onClick={() => open=false}>Guardar</Button>
+                                <Button onClick={() => handleSave()}>Guardar</Button>
                             </div>
                         </TabsContent>
 
@@ -168,8 +220,8 @@ export function SettingsDialog({
                                         <Input
                                             id="start"
                                             type="time"
-                                            value={formatTime(settings.workDayStart)}
-                                            onChange={(e) => setSettings({ ...settings, workDayStart: parseTime(e.target.value) })}
+                                            value={formatTime(workHours.start)}
+                                            onChange={(e) => setWorkHours({ start: parseTime(e.target.value), end: workHours.end })}
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -177,8 +229,8 @@ export function SettingsDialog({
                                         <Input
                                             id="end"
                                             type="time"
-                                            value={formatTime(settings.workDayEnd)}
-                                            onChange={(e) => setSettings({ ...settings, workDayEnd: parseTime(e.target.value) })}
+                                            value={formatTime(workHours.end)}
+                                            onChange={(e) => setWorkHours({ start: workHours.start, end: parseTime(e.target.value) })}
                                         />
                                     </div>
                                 </div>
@@ -189,12 +241,9 @@ export function SettingsDialog({
                                         type="number"
                                         min={40}
                                         max={120}
-                                        value={settings.cellSize}
+                                        value={cellSize}
                                         onChange={(e) =>
-                                            setSettings({
-                                                ...settings,
-                                                cellSize: Number.parseInt(e.target.value, 10),
-                                            })
+                                            setCellSize(Number.parseInt(e.target.value, 10))
                                         }
                                         />
                                     <div className="text-sm text-muted-foreground">
@@ -203,17 +252,19 @@ export function SettingsDialog({
                                 </div>
                             </div>
                             <div className="flex justify-end">
-                                <Button onClick={() => open=false}>Guardar</Button>
+                                <Button onClick={() => handleSave()}>Guardar</Button>
                             </div>
                         </TabsContent>
 
                         <TabsContent value="security" className="space-y-4 py-4">
                             <div className="space-y-4 rounded-lg border p-4">
                                 <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="current">Contraseña actual</Label>
-                                        <Input id="current" type="password" />
-                                    </div>
+                                    {selectedTab !== "security" && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="current">Contraseña actual</Label>
+                                            <Input id="current" type="password" />
+                                        </div>
+                                    )}
                                     <div className="space-y-2">
                                         <Label htmlFor="new">Nueva contraseña</Label>
                                         <Input id="new" type="password" />
@@ -226,39 +277,8 @@ export function SettingsDialog({
                                 </div>
                             </div>
                             <div className="flex justify-end">
-                                        <Button onClick={() => {
-                                                const currentPasswordInput = document.getElementById('current') as HTMLInputElement;
-                                                const currentPassword = currentPasswordInput.value;
-                                                
-                                                const hash = createHash('sha256');
-                                                hash.update(currentPassword + salt);
-                                                const hashedCurrentPassword = hash.digest('hex');
-                                                console.log("hashedCurrentPassword", hashedCurrentPassword)
-
-                                                if (hashedCurrentPassword !== internalPassword) {
-                                                    alert("Contraseña actual incorrecta");
-                                                    return;
-                                                }
-                                                const newPasswordInput = document.getElementById('new') as HTMLInputElement;
-                                                const confirmPasswordInput = document.getElementById('confirm') as HTMLInputElement;
-                                                const newPassword = newPasswordInput.value;
-                                                const confirmPassword = confirmPasswordInput.value;
-                                                
-                                                console.log("newPassword", newPassword)
-                                                console.log("confirmPassword", confirmPassword)
-                                                
-                                                if (newPassword !== confirmPassword) {
-                                                    alert("Nueva contraseña y confirmación no coinciden");
-                                                    return;
-                                                }
-
-                                                updateInternalPassword(newPassword)
-                                                currentPasswordInput.value = '';
-                                                newPasswordInput.value = '';
-                                                confirmPasswordInput.value = '';
-                                            }
-                                        }>Guardar</Button>
-                                    </div>
+                                <Button onClick={() => onSavePasswordClick()}>Guardar</Button>
+                            </div>
                         </TabsContent>
                     </>
                     }

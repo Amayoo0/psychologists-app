@@ -3,6 +3,7 @@ import CalendarGrid from "@/components/calendar/calendar-grid";
 import CalendarHeader from "@/components/calendar/calendar-header";
 import FloatingActionButton from "@/components/FloatingActionButton";
 import AppLayout from "../AppLayout";
+import InternalPasswordCheck from "@/components/InternalPasswordCheck";
 
 export default function Home() {
     return (
@@ -10,6 +11,7 @@ export default function Home() {
             <CalendarHeader/>
             <CalendarGrid/>
             <FloatingActionButton/>
+            <InternalPasswordCheck />
         </AppLayout>
     )
 }

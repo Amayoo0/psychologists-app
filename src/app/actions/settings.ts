@@ -47,12 +47,41 @@ export async function saveSettings(newSettings: Partial<Settings>): Promise<Sett
             where: {
                 userId: prismaUser.id,
             },
-            data: newSettings,
+            data: {
+                ...newSettings,
+            },
         });
         console.log('updatedSettings', updatedSettings);
         return updatedSettings;
     } catch (error) {
         console.error('Error saving settings:', error);
         throw new Error('Could not save settings');
+    }
+}
+
+
+export async function getInternalPassword(): Promise<string | null> {
+    try {
+        const user = await currentUser()
+        if (!user) {
+            return null
+        }
+        const prismaUser = await prisma.user.findUnique({
+            where: {
+                authId: user.id
+            }
+        })
+        if (!prismaUser) {
+            return null
+        }
+        const settings = await prisma.settings.findUnique({
+            where: {
+                userId: prismaUser.id,
+            },
+        });
+        return settings ? settings.internalPassword : null;
+    } catch (error) {
+        console.error('Error retrieving internal password:', error);
+        throw new Error('Could not retrieve internal password');
     }
 }
