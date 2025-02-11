@@ -57,10 +57,10 @@ const Aside = () => {
 					<div id="right" className="flex flex-row items-center pt-3 py-2">
 						<Avatar>
 							<div className="w-full h-full bg-foreground text-background flex items-center justify-center font-medium text-xl">
-								{user?.emailAddresses.toString().slice(0, 2).toUpperCase()}
+								{user?.emailAddresses?.toString().slice(0, 2).toUpperCase()}
 							</div>	
 						</Avatar>
-						{isSidebarExpanded ? (
+						{isSidebarExpanded  && user?.emailAddresses ? (
 							<div className="pl-2 flex flex-col">
 								<h2 className="text-md font-bold">{user?.emailAddresses.toString().split('@')[0].charAt(0).toUpperCase()! + user?.emailAddresses.toString().split('@')[0].slice(1)}</h2>
 								<span className="text-xs italic">Gratis</span>

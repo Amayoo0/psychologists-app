@@ -35,7 +35,7 @@ const CalendarGrid = () => {
   // Scroll to the first work hour when the work hours change
   useEffect(() => {
     if (gridRef.current) {
-      const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start}"]`);
+      const firstWorkHourElement = gridRef.current.querySelector(`[data-hour="${workHours.start/60}"]`);
       if (firstWorkHourElement) {
         const offsetTop = (firstWorkHourElement as HTMLElement).offsetTop;
         gridRef.current.scrollTo({
@@ -296,7 +296,7 @@ const CalendarGrid = () => {
                 key={hour} 
                 className={cn(
                   "border-b border-r pt-1 text-sm  flex justify-end pr-4",
-                  hour < workHours.start || hour >= workHours.end ? "bg-gray-100" : ""
+                  hour < workHours.start/60 || hour >= workHours.end/60 ? "bg-gray-100" : ""
                 )}
                 style={{height: `${cellSize}px`}}
                 data-hour={hour}
@@ -324,7 +324,7 @@ const CalendarGrid = () => {
                       key={dayIndex} 
                       className={cn(
                         "border-r border-b",
-                        hour < workHours.start || hour >= workHours.end ? "bg-gray-100" : ""
+                        hour < workHours.start/60 || hour >= workHours.end/60 ? "bg-gray-100" : ""
                       )}
                       onMouseDown={(e) => handleMouseDown(e, dayIndex)}
                     />

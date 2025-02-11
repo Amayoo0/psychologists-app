@@ -44,6 +44,8 @@ interface CalendarContextType {
     internalPassword: string
     setInternalPassword: (password: string) => void
     salt: string
+    preferredView: ViewType
+    setPreferredView: (view: ViewType) => void
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined)
@@ -56,7 +58,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     const [showDeclinedEvents, setShowDeclinedEvents] = useState(true)
     const [showCompletedTasks, setShowCompletedTasks] = useState(true)
     const [cellSize, setCellSize] = useState(60)
-    const [workHours, setWorkHours] = useState<WorkHours>({ start: 9, end: 21 })
+    const [workHours, setWorkHours] = useState<WorkHours>({ start: 540, end: 1080 })
     const [events, setEvents] = useState<Event[]>([]);
     const [patients, setPatients] = useState<Patient[]>([]);
     const [files, setFiles] = useState<PsyFile[]>([])
@@ -64,12 +66,14 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     const [loadingPatients, setLoadingPatients] = useState<boolean>(false);
     const [loadingEvents, setLoadingEvents] = useState<boolean>(false);
     const [loadingFiles, setLoadingFiles] = useState<boolean>(false);
+    const [loadingSettings, setLoadingSettings] = useState<boolean>(false);
     const [loadedRange, setLoadedRange] = useState<{ start: Date; end: Date }>(() => {
         const now = new Date();
         return { start: new Date(subMonths(now, 3).setHours(0,0,0,0)), end: new Date(addMonths(now, 3).setHours(23, 59, 59, 999)) };
     });
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [internalPassword, setInternalPassword] = useState("")
+    const [preferredView, setPreferredView] = useState<ViewType>("month")
     const [salt] = useState("aComplexSaltValue123!@#")
 
 
@@ -119,8 +123,8 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
     }, []);
 
     useEffect(() => {
-        setLoading(loadingPatients || loadingEvents || loadingFiles);
-    }, [loadingPatients, loadingEvents, loadingFiles]);
+        setLoading(loadingPatients || loadingEvents || loadingFiles || loadingSettings);
+    }, [loadingPatients, loadingEvents, loadingFiles, loadingSettings]);
 
     useEffect(() => {
         async function loadFiles() {
@@ -136,15 +140,20 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
 
     useEffect(() => {
         async function loadSettings() {
+            setLoadingSettings(true);
             const fetchedSettings = await getSettings();
             if (fetchedSettings) {
-                setShowWeekends(fetchedSettings.showWeekends);
-                setCellSize(fetchedSettings.cellSize);
-                setWorkHours({ start: fetchedSettings.workDayStart, end: fetchedSettings.workDayEnd });
-                setView(fetchedSettings.preferredView as ViewType);
-                setInternalPassword(fetchedSettings.internalPassword);
+                setShowWeekends((prev) => fetchedSettings.showWeekends ?? prev);
+                setCellSize((prev) => fetchedSettings.cellSize ?? prev);
+                setWorkHours((prev) => ({
+                    start: fetchedSettings.workDayStart ?? prev.start,
+                    end: fetchedSettings.workDayEnd ?? prev.end,
+                }));
+                setPreferredView((prev) => fetchedSettings.preferredView as ViewType ?? prev);
+                setInternalPassword((prev) => fetchedSettings.internalPassword ?? prev);
                 console.log('fetchedSettings', fetchedSettings);
             }
+            setLoadingSettings(false);
         }
         loadSettings();
     }, []);
@@ -169,6 +178,7 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
                 isAuthenticated, setIsAuthenticated,
                 internalPassword, setInternalPassword,
                 salt,
+                preferredView, setPreferredView,
             }}
         >
             {children}
