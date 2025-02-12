@@ -2,13 +2,63 @@ import { Event } from '@prisma/client'
 
 export type EventGroup = Event[][];
 
-export type EventMap = Map<String, Event[]>;
+export type EventMap = Map<string, Event[]>;
 
 export function isMultiDay(event: Event) {
   const startDate = event.startTime.toDateString();
   const endDate = event.endTime.toDateString();
   return startDate !== endDate;
 };
+
+/**
+ * Applies prioritization of a single-day event in each array of events,
+ * according to the information in the `priorityDays` map.
+ *
+ * @param eventsMap A Map with string keys (Date.toDateString()) and Event[] values
+ * @param priorityDays A Map where the key is the day from which to start prioritization
+ *                     and the value is the number of days (including that day) that should have prioritization.
+ *
+ * The idea is that for each day that is within a prioritization window,
+ * the first single-day event (i.e., for which isMultiDay is false) is found
+ * and reordered to be at the head of the array.
+ */
+export function applyPrioritization(
+  eventsMap: Map<string, Event[]>,
+  priorityDays: Map<string, number>
+): Map<string, Event[]> {
+  // Iterate through each day (key and array of events)
+  for (const [dateStr, events] of eventsMap.entries()) {
+    const currentDay = new Date(dateStr);
+    let shouldPrioritize = false;
+
+    // Check if the current day is within any prioritization window
+    for (const [startStr, daysCount] of priorityDays.entries()) {
+      const startDay = new Date(startStr);
+      const endDay = new Date(startStr);
+      // The window is from [startDay, startDay + (daysCount - 1) days]
+      endDay.setDate(endDay.getDate() + daysCount - 1);
+      if (currentDay >= startDay && currentDay <= endDay) {
+        shouldPrioritize = true;
+        break;
+      }
+    }
+
+    // If this day should have prioritization…
+    if (shouldPrioritize) {
+      // Find the first event that is single-day (isMultiDay === false)
+      const indexSingleDay = events.findIndex(event => !isMultiDay(event));
+      if (indexSingleDay !== -1) {
+        // Remove the event from its current position
+        const [prioritizedEvent] = events.splice(indexSingleDay, 1);
+        // And insert it at the beginning of the array
+        events.unshift(prioritizedEvent);
+      }
+      // If there are no single-day events, leave the array unchanged
+    }
+  }
+  return eventsMap;
+}
+
 
 export function groupOverlappingEvents(events: Event[] | null, view: string = "month"): EventMap {
   const eventMap: EventMap = new Map();
@@ -17,7 +67,7 @@ export function groupOverlappingEvents(events: Event[] | null, view: string = "m
     return eventMap;
   }
 
-  events.forEach((event) => {
+  events.forEach((event) =>   {
     const eventStartDate = new Date(event.startTime);
     const eventEndDate = new Date(event.endTime);
 
@@ -36,54 +86,69 @@ export function groupOverlappingEvents(events: Event[] | null, view: string = "m
       eventMap.get(dateKey)?.push(event);
     }
   });
-
-  // Ordenar los eventos dentro de cada grupo
-  // eventMap.forEach((group, dateKey) => {
-  //   group.sort((a, b) => {
-  //     // Los multi-day deben ir primero
-  //     if (isMultiDay(a) && !isMultiDay(b)) return -1;
-  //     if (!isMultiDay(a) && isMultiDay(b)) return 1;
-  //     if (isMultiDay(a) && isMultiDay(b)) return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-
-  //     // Si ambos son del mismo tipo, ordenar por hora de inicio
-  //     return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-  //   });
-  // });
   
-  
-  // Sort events by start time. Single-day events first
-  let blankGap = false;
-  let blankGapOriginated: String = "";
+  // Sort events by start time. Multi-day events first
+  let groupThatAllowPriorization: Map<string, number> = new Map();
   eventMap.forEach((group, dateKey) => {
     group.sort((a, b) => {
-      // Los single-day deben ir primero
-      if (isMultiDay(a) && !isMultiDay(b)) {
-        if (blankGap && dateKey !== blankGapOriginated){
-          blankGap = false;
-          return 1;
-        } 
-        return -1;
-      }
-      if (!isMultiDay(a) && isMultiDay(b)) {
-        if (blankGap && dateKey !== blankGapOriginated){
-          blankGap = false;
-          return -1;
-        } 
-        return 1;
-      }
+      if (isMultiDay(a) && !isMultiDay(b)) return -1;
+      if (!isMultiDay(a) && isMultiDay(b)) return 1;
       if (isMultiDay(a) && isMultiDay(b)) {
-        if (b.endTime.getDate() < a.endTime.getDate() && b.endTime.getMonth() === a.endTime.getMonth()) {
-          blankGap = true;
-          blankGapOriginated = dateKey
+        // register the gap between the two multi-day events
+        const dayDifference = Math.floor((a.endTime.getTime() - b.endTime.getTime()) / (1000 * 60 * 60 * 24));
+        if (dayDifference !== 0) {
+          const nextDay = new Date(b.endTime);
+          nextDay.setDate(nextDay.getDate() + 1);
+          groupThatAllowPriorization.set(nextDay.toDateString(), dayDifference);
         }
+        return dayDifference
       }
 
-      // Si ambos son del mismo tipo, ordenar por hora de inicio
+      // Si ambos son single, ordenar por hora de inicio
       return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
     });
   });
+  applyPrioritization(eventMap, groupThatAllowPriorization);
   return eventMap;
 }
+
+export function groupOverlappingEventsWeek(events: Event[] | null): EventGroup {
+  // Sort events by start date to facilitate grouping
+  const groups: EventGroup = [];
+  
+  if (!events) return groups;
+  
+  const sortedEvents = [...events].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+
+  // Function to check if two events overlap
+  const doEventsOverlap = (e1: Event, e2: Event): boolean => {
+    return (
+      e1.startTime < e2.endTime && // e1 starts before e2 ends
+      e1.endTime > e2.startTime // e1 ends after e2 starts
+    );
+  };
+
+  // Iterate over events and group overlapping ones
+  sortedEvents.forEach((event) => {
+    let addedToGroup = false;
+
+    // Try to add the event to an existing group
+    for (const group of groups) {
+      if (group.some((e) => doEventsOverlap(e, event))) {
+        group.push(event);
+        addedToGroup = true;
+        break;
+      }
+    }
+
+    // If it couldn't be added to any group, create a new one
+    if (!addedToGroup) {
+      groups.push([event]);
+    }
+  });
+
+  return groups;
+};
 
 
 
