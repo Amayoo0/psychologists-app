@@ -1,49 +1,95 @@
 import { Event } from '@prisma/client'
 
-type EventGroup = Event[][];
+export type EventGroup = Event[][];
 
-export function groupOverlappingEvents(events: Event[] | null, view: string = "week"): EventGroup {
-    // Sort events by start date to facilitate grouping
-    const groups: EventGroup = [];
-    
-    if (!events) return groups;
-    
-    const sortedEvents = [...events].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-  
-    // Function to check if two events overlap
-    const doEventsOverlap = (e1: Event, e2: Event): boolean => {
-      if (view === "month")
-        return (
-          e1.startTime.getDate() === e2.startTime.getDate() && e1.startTime.getMonth() === e2.startTime.getMonth()
-        );
-      else
-        return (
-          e1.startTime < e2.endTime && // e1 starts before e2 ends
-          e1.endTime > e2.startTime // e1 ends after e2 starts
-        );
-    };
-  
-    // Iterate over events and group overlapping ones
-    sortedEvents.forEach((event) => {
-      let addedToGroup = false;
-  
-      // Try to add the event to an existing group
-      for (const group of groups) {
-        if (group.some((e) => doEventsOverlap(e, event))) {
-          group.push(event);
-          addedToGroup = true;
-          break;
-        }
-      }
-  
-      // If it couldn't be added to any group, create a new one
-      if (!addedToGroup) {
-        groups.push([event]);
-      }
-    });
-  
-    return groups;
+export type EventMap = Map<String, Event[]>;
+
+export function isMultiDay(event: Event) {
+  const startDate = event.startTime.toDateString();
+  const endDate = event.endTime.toDateString();
+  return startDate !== endDate;
 };
+
+export function groupOverlappingEvents(events: Event[] | null, view: string = "month"): EventMap {
+  const eventMap: EventMap = new Map();
+
+  if (!events) {
+    return eventMap;
+  }
+
+  events.forEach((event) => {
+    const eventStartDate = new Date(event.startTime);
+    const eventEndDate = new Date(event.endTime);
+
+    // Iterate through each day of the event
+    for (
+        let d = new Date(eventStartDate.getFullYear(), eventStartDate.getMonth(), eventStartDate.getDate()); 
+        d <= new Date(eventEndDate.getFullYear(), eventEndDate.getMonth(), eventEndDate.getDate()); 
+        d.setDate(d.getDate() + 1)
+      ) {
+      const dateKey = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toDateString(); // Normalize to date only
+
+      if (!eventMap.has(dateKey)) {
+        eventMap.set(dateKey, []);
+      }
+
+      eventMap.get(dateKey)?.push(event);
+    }
+  });
+
+  // Ordenar los eventos dentro de cada grupo
+  // eventMap.forEach((group, dateKey) => {
+  //   group.sort((a, b) => {
+  //     // Los multi-day deben ir primero
+  //     if (isMultiDay(a) && !isMultiDay(b)) return -1;
+  //     if (!isMultiDay(a) && isMultiDay(b)) return 1;
+  //     if (isMultiDay(a) && isMultiDay(b)) return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+
+  //     // Si ambos son del mismo tipo, ordenar por hora de inicio
+  //     return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+  //   });
+  // });
+  
+  
+  // Sort events by start time. Single-day events first
+  let blankGap = false;
+  eventMap.forEach((group, dateKey) => {
+    group.sort((a, b) => {
+      // Los single-day deben ir primero
+      if (isMultiDay(a) && !isMultiDay(b)) {
+        if (blankGap){
+          blankGap = false;
+          return 1;
+        } 
+        return -1;
+      }
+      if (!isMultiDay(a) && isMultiDay(b)) {
+        if (blankGap){
+          blankGap = false;
+          return -1;
+        } 
+        return 1;
+      }
+      if (isMultiDay(a) && isMultiDay(b)) {
+        console.log("b.endTime.getDate()", b.endTime.getDate());
+        console.log("a.endTime.getDate()", a.endTime.getDate());
+        if (b.endTime.getDate() < a.endTime.getDate() && b.endTime.getMonth() === a.endTime.getMonth()) {
+          console.log("blankGap detected");
+          blankGap = true;
+        }else{
+          console.log("blankGap not detected");
+        }
+
+      }
+
+      // Si ambos son del mismo tipo, ordenar por hora de inicio
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    });
+  });
+  return eventMap;
+}
+
+
 
 export function getDayEs(date: Date): number {
     const day = date.getDay();
