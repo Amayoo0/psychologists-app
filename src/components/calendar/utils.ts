@@ -53,33 +53,29 @@ export function groupOverlappingEvents(events: Event[] | null, view: string = "m
   
   // Sort events by start time. Single-day events first
   let blankGap = false;
+  let blankGapOriginated: String = "";
   eventMap.forEach((group, dateKey) => {
     group.sort((a, b) => {
       // Los single-day deben ir primero
       if (isMultiDay(a) && !isMultiDay(b)) {
-        if (blankGap){
+        if (blankGap && dateKey !== blankGapOriginated){
           blankGap = false;
           return 1;
         } 
         return -1;
       }
       if (!isMultiDay(a) && isMultiDay(b)) {
-        if (blankGap){
+        if (blankGap && dateKey !== blankGapOriginated){
           blankGap = false;
           return -1;
         } 
         return 1;
       }
       if (isMultiDay(a) && isMultiDay(b)) {
-        console.log("b.endTime.getDate()", b.endTime.getDate());
-        console.log("a.endTime.getDate()", a.endTime.getDate());
         if (b.endTime.getDate() < a.endTime.getDate() && b.endTime.getMonth() === a.endTime.getMonth()) {
-          console.log("blankGap detected");
           blankGap = true;
-        }else{
-          console.log("blankGap not detected");
+          blankGapOriginated = dateKey
         }
-
       }
 
       // Si ambos son del mismo tipo, ordenar por hora de inicio

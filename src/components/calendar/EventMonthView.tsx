@@ -25,7 +25,6 @@ const EventMonthView = ({
     const [selectedGroup, setSelectedGroup] = React.useState<String | null>(null);
 
     const overlappingGroups: EventMap = groupOverlappingEvents(events, "month");
-    console.log('overlappingGroups', overlappingGroups);
   
     return <>
         {Array.from(overlappingGroups.entries()).map(([date, group]) => {
@@ -34,31 +33,27 @@ const EventMonthView = ({
             
             const paddingTop = 30;
             const height = 21;
+            const eventDate = new Date(String(date));
             return (
                 <div key={`events-groupIndex-${date}`}>
                     {group.flatMap((e, i) => {
-                        const weekOfMonth = Math.trunc(days.findIndex(day => day.getDate() === e.startTime.getDate() && day.getMonth() === e.startTime.getMonth()) / 7); // divided by 7 due to days always contains weekends
+                        const weekOfMonth = Math.trunc(days.findIndex(day => day.getDate() === eventDate.getDate() && day.getMonth() === eventDate.getMonth()) / 7); // divided by 7 due to days always contains weekends
                         const startIdx = days.findIndex(day => day.toDateString() === e.startTime.toDateString());
                         const endIdx = days.findIndex(day => day.toDateString() === e.endTime.toDateString());
-
-                        const weekStart = Math.trunc(startIdx / 7);
-                        const weekEnd = Math.trunc(endIdx / 7);
 
                         const width = 100 / (showWeekends ? 7 : 5);
                         const left = getDayEs(e.startTime) * (100 / (showWeekends ? 7 : 5)) + 0.25;
                         let top = weekOfMonth*cellSize + height*i + paddingTop;
 
 
-                        const eventDate = new Date(String(date));
+                        
                         // if multi-day event && is the first day of the event
-                        if (isMultiDay(e) && e.startTime.getDate() === eventDate.getDate() && e.startTime.getMonth() === eventDate.getMonth()) {
-                            return Array.from({ length: weekEnd - weekStart + 1 }).map((_, weekOffset) => {
-                                const currentWeek = weekStart + weekOffset;
-                                const currentTop = currentWeek * cellSize + paddingTop + height*i;
-                                const isStartWeek = weekOffset === 0;
-                                const isEndWeek = currentWeek === weekEnd;
-    
+                        if (isMultiDay(e)){
+                            if (getDayEs(eventDate) === 0) { 
                                 let eventWidth;
+                                const weekEnd = Math.trunc(endIdx / 7);
+                                const isStartWeek = weekOfMonth === 0;
+                                const isEndWeek = weekOfMonth === weekEnd;
                                 if (showWeekends) {
                                     eventWidth = isStartWeek ? (isEndWeek ? width * (endIdx - startIdx + 1) : width * (7 - getDayEs(e.startTime))) : (isEndWeek ? width * (getDayEs(e.endTime) + 1) : width * 7);
                                 } else {
@@ -66,18 +61,18 @@ const EventMonthView = ({
                                     const endDay = Math.min(getDayEs(e.endTime), 4);
                                     eventWidth = isStartWeek ? (isEndWeek ? width * (endDay - startDay + 1) : width * (5 - startDay)) : (isEndWeek ? width * (endDay + 1) : width * 5);
                                 }
-    
+                                console.log("multi-day event", e)
                                 return (
                                     <div
-                                        key={`EventMonthView-${e.id}-week-${currentWeek}-multi-day`}
+                                        key={`EventMonthView-${e.id}-week-${weekOfMonth}-multi-day`}
                                         className={cn(
                                             "absolute left-0 right-0 inset-1 multi-day-event",
                                             "z-20"
                                         )}
                                         style={{
-                                            top: `${currentTop}px`,
+                                            top: `${top}px`,
                                             height: `${height}px`,
-                                            left: `${isStartWeek ? left : 0}%`,
+                                            left: `${left}%`,
                                             width: `calc(${eventWidth}% - 15px)`
                                         }}
                                         onClick={() => {
@@ -90,9 +85,12 @@ const EventMonthView = ({
                                         </div>
                                     </div>
                                 );
-                            });
+                            } else {
+                                return null;
+                            }
                         }
                         // single-day event
+                        console.log("single-day event", e)
                         return (
                             <React.Fragment key={`EventMonthView-Fragment-${e.id}`}>
                                 <div 
@@ -105,7 +103,7 @@ const EventMonthView = ({
                                             top: `${top}px`,
                                             height: `${height}px`,
                                             left: `${left}%`,
-                                            width: `calc(${width}% - 0px)`
+                                            width: `calc(${width}% - 15px)`
                                         }}
                                         onClick={() => {
                                             if ((i + 2) * height + paddingTop < cellSize || selectedGroup === date) {
@@ -132,7 +130,7 @@ const EventMonthView = ({
                                         </div> 
                                     </div>
                             </React.Fragment>
-                        );
+                        )
                     })}
                     {/* Show hidden items */}
                     {group.length >= (cellSize - paddingTop - height) / height &&
@@ -169,6 +167,7 @@ const EventMonthView = ({
                 eventData={selectedEvent}
             />
         }
+        {console.log('overlappingGroups', overlappingGroups)}
     </>
 };
 
