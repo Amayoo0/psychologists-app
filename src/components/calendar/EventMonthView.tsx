@@ -25,6 +25,7 @@ const EventMonthView = ({
     const [selectedGroup, setSelectedGroup] = React.useState<String | null>(null);
 
     const overlappingGroups: EventMap = groupOverlappingEvents(events, "month");
+    console.log("EventMonthView.OverlappingGroup: ", overlappingGroups)
   
     return <>
         {Array.from(overlappingGroups.entries()).map(([date, group]) => {
@@ -49,8 +50,9 @@ const EventMonthView = ({
                         
                         // if multi-day event && is the first day of the event
                         if (isMultiDay(e)){
-                            if (getDayEs(eventDate) === 0) { 
+                            if (eventDate.getDate() === e.startTime.getDate() || getDayEs(eventDate) === 0) { 
                                 let eventWidth;
+                                const left = getDayEs(eventDate) * (100 / (showWeekends ? 7 : 5)) + 0.25;
                                 const weekEnd = Math.trunc(endIdx / 7);
                                 const isStartWeek = weekOfMonth === 0;
                                 const isEndWeek = weekOfMonth === weekEnd;

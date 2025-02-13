@@ -59,9 +59,54 @@ export function applyPrioritization(
   return eventsMap;
 }
 
+export function applyMultiplePrioritization(
+  eventsMap: Map<string, Event[]>,
+  priorityDays: Map<string, Set<number>>
+): Map<string, Event[]> {
+  console.log("applyMultiplePrioritization.eventMap", eventsMap)
+  console.log("applyMultiplePrioritization.priorityDays", priorityDays)
+  // Recorremos cada grupo (fecha) en el eventsMap
+  for (const [dateKey, events] of eventsMap.entries()) {
+    // Si no hay prioridades definidas para este día, lo dejamos como está
+    if (!priorityDays.has(dateKey)) continue;
+    
+    // Obtenemos las posiciones prioritarias (huecos) ordenadas de menor a mayor
+    const priorityPositions = Array.from(priorityDays.get(dateKey)!).sort((a, b) => a - b);
+    
+    // Para cada posición prioritaria, intentamos colocar un single-day event
+    for (const pos of priorityPositions) {
+      // Solo actuamos si la posición está dentro del array
+      if (pos < events.length) {
+        // Si ya hay un evento single-day en esa posición, no hacemos nada
+        if (!isMultiDay(events[pos])) continue;
+        
+        // Buscamos, a partir de pos+1, el primer evento single-day
+        let candidateIndex = -1;
+        for (let j = pos + 1; j < events.length; j++) {
+          if (!isMultiDay(events[j])) {
+            candidateIndex = j;
+            break;
+          }
+        }
+        
+        // Si encontramos un candidato, lo movemos a la posición prioritaria
+        if (candidateIndex !== -1) {
+          const [candidate] = events.splice(candidateIndex, 1);
+          events.splice(pos, 0, candidate);
+        }
+      }
+    }
+    
+    // El array "events" ya quedó modificado en su orden para esta fecha
+  }
+  console.log("applyMultiplesPriorization.eventMap", eventsMap)
+  return eventsMap;
+}
+
+
 
 export function groupOverlappingEvents(events: Event[] | null, view: string = "month"): EventMap {
-  const eventMap: EventMap = new Map();
+  let eventMap: EventMap = new Map();
 
   if (!events) {
     return eventMap;
@@ -88,27 +133,44 @@ export function groupOverlappingEvents(events: Event[] | null, view: string = "m
   });
   
   // Sort events by start time. Multi-day events first
-  let groupThatAllowPriorization: Map<string, number> = new Map();
-  eventMap.forEach((group, dateKey) => {
+  eventMap.forEach((group) => {
     group.sort((a, b) => {
       if (isMultiDay(a) && !isMultiDay(b)) return -1;
       if (!isMultiDay(a) && isMultiDay(b)) return 1;
-      if (isMultiDay(a) && isMultiDay(b)) {
-        // register the gap between the two multi-day events
-        const dayDifference = Math.floor((a.endTime.getTime() - b.endTime.getTime()) / (1000 * 60 * 60 * 24));
-        if (dayDifference !== 0) {
-          const nextDay = new Date(b.endTime);
-          nextDay.setDate(nextDay.getDate() + 1);
-          groupThatAllowPriorization.set(nextDay.toDateString(), dayDifference);
-        }
-        return dayDifference
-      }
-
-      // Si ambos son single, ordenar por hora de inicio
       return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
     });
   });
-  applyPrioritization(eventMap, groupThatAllowPriorization);
+
+  let groupThatAllowPriorization: Map<string, Set<number>> = new Map()
+  eventMap.forEach((group) => {
+    const multiDayEvents = group.filter(event => isMultiDay(event));
+    for (let i = 0; i < multiDayEvents.length; i++){
+      for (let j = i; j < multiDayEvents.length; j++){
+        const a = new Date(multiDayEvents[i].endTime.toDateString())
+        const b = new Date(multiDayEvents[j].endTime.toDateString())
+
+        let diffEnds: number = Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffEnds < 0){
+          // The second event ends before the first one. Not interested in this case.
+          continue
+        }
+        // Adds priorization in next days starting at the end of a
+        let dayToPrior = new Date(a)
+        dayToPrior.setDate(dayToPrior.getDate() + 1);
+        while( diffEnds > 0 && getDayEs(dayToPrior) > 0 ){
+          if (!groupThatAllowPriorization.has(dayToPrior.toDateString())) {
+            groupThatAllowPriorization.set(dayToPrior.toDateString(), new Set<number>());
+          }
+          groupThatAllowPriorization.get(dayToPrior.toDateString())?.add(i)
+          diffEnds--;
+          dayToPrior.setDate(dayToPrior.getDate() + 1);
+        }
+      } 
+    }
+  });
+  console.log("groupThatAllowPriorization23:",groupThatAllowPriorization)
+  eventMap = applyMultiplePrioritization(eventMap, groupThatAllowPriorization);
+  console.log("EventMap", eventMap);
   return eventMap;
 }
 
