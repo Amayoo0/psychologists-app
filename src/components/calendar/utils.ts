@@ -2,7 +2,12 @@ import { Event } from '@prisma/client'
 
 export type EventGroup = Event[][];
 
-export type EventMap = Map<string, Event[]>;
+export type ExtendedEvent = Event & {isHidden: boolean};
+
+export type EventMap = Map<string, ExtendedEvent[]>;
+
+
+
 
 export function isMultiDay(event: Event) {
   const startDate = event.startTime.toDateString();
@@ -60,9 +65,9 @@ export function applyPrioritization(
 }
 
 export function applyMultiplePrioritization(
-  eventsMap: Map<string, Event[]>,
+  eventsMap: Map<string, ExtendedEvent[]>,
   priorityDays: Map<string, Set<number>>
-): Map<string, Event[]> {
+): Map<string, ExtendedEvent[]> {
   console.log("applyMultiplePrioritization.eventMap", eventsMap)
   console.log("applyMultiplePrioritization.priorityDays", priorityDays)
   // Recorremos cada grupo (fecha) en el eventsMap
@@ -105,7 +110,7 @@ export function applyMultiplePrioritization(
 
 
 
-export function groupOverlappingEvents(events: Event[] | null, view: string = "month"): EventMap {
+export function groupOverlappingEvents(events: ExtendedEvent[] | null, view: string = "month"): EventMap {
   let eventMap: EventMap = new Map();
 
   if (!events) {

@@ -24,9 +24,16 @@ const EventMonthView = ({
     const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
     const [selectedGroup, setSelectedGroup] = React.useState<string | null>(null);
 
-    const overlappingGroups: EventMap = groupOverlappingEvents(events, "month");
+    const extendedEvents: ExtendedEvent[] = events.map(event => ({
+        ...event,
+        isHidden: false
+    }));
+
+    const overlappingGroups: EventMap = groupOverlappingEvents(extendedEvents, "month");
     console.log("EventMonthView.OverlappingGroup: ", overlappingGroups)
-  
+    type ExtendedEvent = Event & { isHidden: boolean };
+
+    
     return <>
         {Array.from(overlappingGroups.entries()).map(([date, group]) => {
             // return null if the group is on the weekend and weekends are hidden
@@ -46,14 +53,40 @@ const EventMonthView = ({
                         // if multi-day event
                         if (isMultiDay(e)){
                             // if is the first time the event is printed OR we are in monday which implies the event could have more than one week
-                            if (eventDate.getDate() === e.startTime.getDate() || getDayEs(eventDate) === 0) { 
-                                const eventWidth = Math.min((new Date(e.endTime.toDateString()).getDate() - eventDate.getDate() +1), (showWeekends ? 7 : 5) - getDayEs(eventDate))*dayWidth
+                            if (eventDate.getDate() === e.startTime.getDate() || getDayEs(eventDate) === 0 || ( e.isHidden && selectedGroup === date)) {
+                            // Calculate the start of the group's week
+                            const startOfWeekDate = new Date(eventDate);
+                            startOfWeekDate.setDate(eventDate.getDate() - getDayEs(eventDate));
+
+                            // Normalize event dates to midnight to avoid issues with hours
+                            const normalizedEventStart = new Date(e.startTime.toDateString());
+                            const normalizedEventEnd = new Date(e.endTime.toDateString());
+
+                            // For the width, use the later of the event start date and the start of the week
+                            const eventWidthStartTime =
+                            normalizedEventStart.getTime() < startOfWeekDate.getTime()
+                                ? startOfWeekDate.getTime()
+                                : normalizedEventStart.getTime();
+
+                            // Calculate the difference in days as an absolute value
+                            const msPerDay = 1000 * 60 * 60 * 24;
+                            const diffDays =
+                            Math.floor((normalizedEventEnd.getTime() - eventWidthStartTime) / msPerDay) + 1;
+
+                            // Calculate the available days in the cell (the week)
+                            const availableDays = (showWeekends ? 7 : 5) - getDayEs(eventDate);
+
+                            // The event width in percentage is calculated as the minimum between the event duration in days and the available days, multiplied by dayWidth
+                            const eventWidth = Math.min(diffDays, availableDays) * dayWidth;
+
+                                e.isHidden = (i + 2) * height + paddingTop >= cellSize && selectedGroup !== date;
                                 return (
                                     <div
                                         key={`EventMonthView-${e.id}-week-${weekOfMonth}-multi-day`}
                                         className={cn(
                                             "absolute left-0 right-0 inset-1 multi-day-event",
-                                            "z-20"
+                                            "z-20",
+                                            (i+2) * height + paddingTop >= cellSize && selectedGroup !== date  && "hidden",
                                         )}
                                         style={{
                                             top: `${top}px`,
@@ -67,6 +100,7 @@ const EventMonthView = ({
                                         }}
                                     >
                                         <div className="w-full h-full rounded-md p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight flex items-center bg-blue-500 hover:bg-blue-600 border-b border-white">
+                                            {(i+2) * height + paddingTop >= cellSize && selectedGroup === date && <CornerDownRight size={15}/>}
                                             <span className="truncate">{e.title || "(sin título)"}</span>
                                         </div>
                                     </div>
@@ -132,7 +166,7 @@ const EventMonthView = ({
                                     }} 
                                     className="hover:underline"
                                 >
-                                    +{group.length - Math.trunc((cellSize - paddingTop) / height)+1}
+                                    +{group.length - Math.trunc((cellSize - paddingTop) / height) + 1}
                                 </a>
                             :   <a onClick={() => {
                                         setSelectedGroup(null)
