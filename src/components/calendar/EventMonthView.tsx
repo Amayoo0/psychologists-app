@@ -22,7 +22,7 @@ const EventMonthView = ({
 
     const [showEventDialog, setShowEventDialog] = React.useState(false);
     const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
-    const [selectedGroup, setSelectedGroup] = React.useState<String | null>(null);
+    const [selectedGroup, setSelectedGroup] = React.useState<string | null>(null);
 
     const overlappingGroups: EventMap = groupOverlappingEvents(events, "month");
     console.log("EventMonthView.OverlappingGroup: ", overlappingGroups)
@@ -35,35 +35,19 @@ const EventMonthView = ({
             const paddingTop = 30;
             const height = 21;
             const eventDate = new Date(String(date));
+            const weekOfMonth = Math.trunc(days.findIndex(day => day.getDate() === eventDate.getDate() && day.getMonth() === eventDate.getMonth()) / 7); // divided by 7 due to days always contains weekends
+            const dayWidth = 100 / (showWeekends ? 7 : 5);
             return (
                 <div key={`events-groupIndex-${date}`}>
                     {group.flatMap((e, i) => {
-                        const weekOfMonth = Math.trunc(days.findIndex(day => day.getDate() === eventDate.getDate() && day.getMonth() === eventDate.getMonth()) / 7); // divided by 7 due to days always contains weekends
-                        const startIdx = days.findIndex(day => day.toDateString() === e.startTime.toDateString());
-                        const endIdx = days.findIndex(day => day.toDateString() === e.endTime.toDateString());
-
-                        const width = 100 / (showWeekends ? 7 : 5);
-                        const left = getDayEs(e.startTime) * (100 / (showWeekends ? 7 : 5)) + 0.25;
+                        const left = getDayEs(e.startTime) * dayWidth + 0.25;
                         let top = weekOfMonth*cellSize + height*i + paddingTop;
 
-
-                        
-                        // if multi-day event && is the first day of the event
+                        // if multi-day event
                         if (isMultiDay(e)){
+                            // if is the first time the event is printed OR we are in monday which implies the event could have more than one week
                             if (eventDate.getDate() === e.startTime.getDate() || getDayEs(eventDate) === 0) { 
-                                let eventWidth;
-                                const left = getDayEs(eventDate) * (100 / (showWeekends ? 7 : 5)) + 0.25;
-                                const weekEnd = Math.trunc(endIdx / 7);
-                                const isStartWeek = weekOfMonth === 0;
-                                const isEndWeek = weekOfMonth === weekEnd;
-                                if (showWeekends) {
-                                    eventWidth = isStartWeek ? (isEndWeek ? width * (endIdx - startIdx + 1) : width * (7 - getDayEs(e.startTime))) : (isEndWeek ? width * (getDayEs(e.endTime) + 1) : width * 7);
-                                } else {
-                                    const startDay = Math.max(getDayEs(e.startTime), 0);
-                                    const endDay = Math.min(getDayEs(e.endTime), 4);
-                                    eventWidth = isStartWeek ? (isEndWeek ? width * (endDay - startDay + 1) : width * (5 - startDay)) : (isEndWeek ? width * (endDay + 1) : width * 5);
-                                }
-                                console.log("multi-day event", e)
+                                const eventWidth = Math.min((new Date(e.endTime.toDateString()).getDate() - eventDate.getDate() +1), (showWeekends ? 7 : 5) - getDayEs(eventDate))*dayWidth
                                 return (
                                     <div
                                         key={`EventMonthView-${e.id}-week-${weekOfMonth}-multi-day`}
@@ -105,7 +89,7 @@ const EventMonthView = ({
                                             top: `${top}px`,
                                             height: `${height}px`,
                                             left: `${left}%`,
-                                            width: `calc(${width}% - 15px)`
+                                            width: `calc(${dayWidth}% - 15px)`
                                         }}
                                         onClick={() => {
                                             if ((i + 2) * height + paddingTop < cellSize || selectedGroup === date) {
@@ -117,7 +101,7 @@ const EventMonthView = ({
                                         <div 
                                             className={cn(
                                                 "w-full h-full rounded-md p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight justify-between flex border-b border-white",
-                                                e.endTime < new Date(new Date().setHours(0, 0, 0, 0)) ? "bg-gray-400 hover:bg-gray-500" : "bg-blue-500 hover:bg-blue-600",
+                                                "bg-blue-500 hover:bg-blue-600",
                                                 (i+2) * height + paddingTop >= cellSize && selectedGroup !== date  && "hidden",
 
                                             )}
@@ -140,7 +124,7 @@ const EventMonthView = ({
                                 top: `${Math.trunc(days.findIndex(day => day.getDate() === group[0].startTime.getDate()) / (showWeekends ? 7 : 5)) *cellSize + (selectedGroup !== date ? cellSize - paddingTop : 5)}px`,
                                 height: "25px",
                                 width: "25px",
-                                left: `calc(${(getDayEs(group[0].startTime) + 1) * (100 / (showWeekends ? 7 : 5))}% - 25px)`,
+                                left: `calc(${(getDayEs(eventDate) + 1) * dayWidth}% - 25px)`,
                         }}>
                         {selectedGroup !== date 
                             ?   <a onClick={() => {
