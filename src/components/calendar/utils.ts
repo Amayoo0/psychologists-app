@@ -186,7 +186,7 @@ export function groupOverlappingEventsWeek(events: Event[] | null): EventGroup {
   
   if (!events) return groups;
   
-  const sortedEvents = [...events].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+  const sortedEvents = events.filter((e) => !isMultiDay(e)).sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
 
   // Function to check if two events overlap
   const doEventsOverlap = (e1: Event, e2: Event): boolean => {

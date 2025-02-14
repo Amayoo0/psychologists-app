@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 import { Event } from '@prisma/client'
-import { getDayEs, groupOverlappingEvents, formatTime } from "./utils";
+import { getDayEs, groupOverlappingEvents, formatTime, groupOverlappingEventsWeek } from "./utils";
 import { EventDialog } from "../EventDialog";
 
 
@@ -22,7 +22,7 @@ const EventWeekView = ({
     const minHeight = 21;
     const rightMargin = 1.5;
     const leftOverlapping = 2
-    const overlappingGroups = groupOverlappingEvents(events);
+    const overlappingGroups = groupOverlappingEventsWeek(events);
   
     return <>
         {overlappingGroups.flatMap((group) => {
