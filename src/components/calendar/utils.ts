@@ -137,6 +137,7 @@ export function groupOverlappingEvents(events: Event[] | null, view: string = "m
     group.sort((a, b) => {
       if (isMultiDay(a) && !isMultiDay(b)) return -1;
       if (!isMultiDay(a) && isMultiDay(b)) return 1;
+      if (isMultiDay(a) && isMultiDay(b) && a.startTime.toDateString() === b.startTime.toDateString()) return new Date(b.endTime).getTime() - new Date(a.endTime).getTime()
       return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
     });
   });
