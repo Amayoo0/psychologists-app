@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 import { Event } from '@prisma/client'
-import { getDayEs, groupOverlappingEvents, formatTime, groupOverlappingEventsWeek } from "./utils";
+import { getDayEs, groupOverlappingEvents, formatTime, groupOverlappingEventsWeek, isMultiDay } from "./utils";
 import { EventDialog } from "../EventDialog";
 
 
@@ -25,6 +25,7 @@ const EventWeekView = ({
     const overlappingGroups = groupOverlappingEventsWeek(events);
   
     return <>
+        {/* Single-day event */}
         {overlappingGroups.flatMap((group) => {
             return group.map((e, i) => {
                 const dayOfWeek = getDayEs(e.startTime);

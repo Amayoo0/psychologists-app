@@ -7,6 +7,7 @@ const TimeMarker = ({
     cellSize
 } : {showWeekends: boolean, cellSize: number}) => {
     const now = new Date()
+    if (!showWeekends && getDayEs(now) > 4) return null
     return (
         <div 
         id="time-marker" 
