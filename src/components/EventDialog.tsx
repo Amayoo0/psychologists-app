@@ -176,7 +176,7 @@ export function EventDialog({
         
         const filesArray = Array.from(fileList)
 
-        if (eventFiles.length + filesArray.length - filesToDelete.length > 3) {
+        if (eventFiles.length + filesArray.length + filesToSave.length - filesToDelete.length > 3) {
             alert("No se pueden subir más de 3 archivos")
             return
         }
