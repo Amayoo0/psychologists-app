@@ -186,6 +186,15 @@ const { view, setView,
 								day.getMonth() !== date.getMonth() && "text-muted-foreground bg-muted/5",
 								!showWeekends && [5, 6].includes(getDayEs(day)) && "hidden"
 							)}
+							onClick={() =>{
+								const now = new Date()
+								const newTime = new Date(day)
+                                setEventDialogData({
+										startTime: new Date(newTime.setHours(now.getHours(), now.getMinutes())),
+										endTime: new Date(newTime.setHours(now.getHours() + 1, now.getMinutes())),
+								});
+                                setShowEventDialog(true);
+							}}
 						>
 							<div className={cn(
 								"w-10 h-5 rounded-full flex flex-col items-center justify-center text-xs",
@@ -202,6 +211,14 @@ const { view, setView,
 
 					{eventsToShow && <EventMonthView events={eventsToShow} days={days} showWeekends={showWeekends} cellSize={cellSizeMonthView}/>}
 				</div>
+				<EventDialog 
+					open={showEventDialog}
+					onOpenChange={setShowEventDialog}
+					eventData={eventDialogData ?? {
+						startTime: new Date(),
+						endTime: addHours(new Date(), 1),
+					}} 
+				/>
 			</div>
 		)
 	}
@@ -309,7 +326,7 @@ const { view, setView,
 			>
 				{/* Sticky Header */}
 				<div id="sticky-header" className="sticky bg-background flex top-0 z-10">
-					<div id="header-hours-column" className={`w-16 h-[${cellSize}px] bg-gray-50`}/>
+					<div id="header-hours-column" className={`w-16 h-[${cellSize}px] bg-white`}/>
 					<HeaderWeekDays showWeekends={showWeekends} days={days} isMobile={window.innerWidth <= 600}/>
 				</div>
 				<div id="multi-day-events-top" >

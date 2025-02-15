@@ -103,6 +103,11 @@ export function EventDialog({
         let newEnd = new Date(newEndTime)
         newEnd.setHours(Number(endHour), Number(endMinute))
 
+        if (newEnd.getTime() < newStart.getTime()) {
+            alert("La fecha de finalización no puede ser anterior.")
+            return
+        }
+
         const event: Partial<Event> = {
             title,
             type,
@@ -208,7 +213,17 @@ export function EventDialog({
                 }
                 </DialogTitle>
             </DialogHeader>
-            <Tabs defaultValue={type} className="mt-4" onValueChange={(value) => setType(value)}>
+            <Tabs 
+                defaultValue={type} 
+                className="mt-4" 
+                onValueChange={(value) => {
+                    switch(type){
+                        case "event":
+                            setNewEndTime(newStartTime)
+                    }
+                    setType(value)
+                }}
+            >
                 <TabsList className="grid w-full grid-cols-3" autoFocus>
                 <TabsTrigger value="event">Evento</TabsTrigger>
                 <TabsTrigger value="task">Tarea</TabsTrigger>
@@ -232,14 +247,33 @@ export function EventDialog({
                     type="time"
                     className="w-25"
                     value={startTimeStr}
-                    onChange={(e) => setStartTimeStr(e.target.value)}
+                    onChange={(e) => {
+                        const [startHour, startMinute] = e.target.value.split(':')
+                        let newStart = new Date(newStartTime)
+                        newStart.setHours(Number(startHour), Number(startMinute))
+                        // check if the end is before the start
+                        if( newStart.getTime() > newEndTime.getTime() ){
+                            setEndTimeStr(e.target.value)
+                        }
+                        setStartTimeStr(e.target.value)
+                    }}
                 />
                 {type !== "event" && (
                     <Input
                         type="time"
                         value={endTimeStr}
                         className="w-25"
-                        onChange={(e) => setEndTimeStr(e.target.value)}
+                        onChange={(e) => {
+                            const [endHour, endMinute] = e.target.value.split(':')
+                            let newEnd = new Date(newEndTime)
+                            newEnd.setHours(Number(endHour), Number(endMinute))
+                            // check if the end is before the start
+                            if( newEnd.getTime() < newStartTime.getTime() ){
+                                alert("La fecha de fin no puede ser anterior a la fecha de inicio.")
+                                return
+                            }
+                            setEndTimeStr(e.target.value)
+                        }}
                     />
                 )}
                 </div>
@@ -249,13 +283,31 @@ export function EventDialog({
                         type="date"
                         value={format(newEndTime, "yyyy-MM-dd")}
                         className="w-35"
-                        onChange={(e) => setNewEndTime((prev: Date) => new Date(new Date(e.target.value).setHours(prev.getHours(), prev.getMinutes())))}
+                        onChange={(e) => {
+                            const newEnd = new Date(new Date(e.target.value).setHours(newEndTime.getHours(), newEndTime.getMinutes()))
+                            // check if the end is before the start
+                            if( newEnd.getTime() < newStartTime.getTime() ){
+                                alert("La fecha de fin no puede ser anterior a la fecha de inicio.")
+                                return
+                            }
+                            setNewEndTime(newEnd)
+                        }}
                     />
                     <Input
                         type="time"
                         className="w-25"
                         value={endTimeStr}
-                        onChange={(e) => setEndTimeStr(e.target.value)}
+                        onChange={(e) => {
+                            const [endHour, endMinute] = e.target.value.split(':')
+                            let newEnd = new Date(newEndTime)
+                            newEnd.setHours(Number(endHour), Number(endMinute))
+                            // check if the end is before the start
+                            if( newEnd.getTime() < newStartTime.getTime() ){
+                                alert("La fecha de fin no puede ser anterior a la fecha de inicio.")
+                                return
+                            }
+                            setEndTimeStr(e.target.value)
+                        }}
                     />
                 </div>
                 ) : (

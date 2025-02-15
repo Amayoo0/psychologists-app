@@ -29,6 +29,7 @@ const EventWeekView = ({
         {overlappingGroups.flatMap((group) => {
             return group.map((e, i) => {
                 const dayOfWeek = getDayEs(e.startTime);
+                if (!showWeekends && dayOfWeek > 4) return null
                 let height = ((e.endTime.getTime() - e.startTime.getTime()) / (1000 * 60 * 60)) * cellSize;
                 if (height < 21) height = minHeight
                 const top = ((e.startTime.getHours() + e.startTime.getMinutes() / 60) ) * cellSize;
@@ -55,7 +56,7 @@ const EventWeekView = ({
                             <div 
                                 className={cn(
                                     "w-full h-full rounded-lg border border-white shadow-lg p-1 text-sm font-medium text-white overflow-hidden break-words leading-tight",
-                                    e.endTime < new Date() ? "bg-gray-400 hover:bg-gray-500" : "bg-blue-500 hover:bg-blue-600",
+                                    "bg-blue-500 hover:bg-blue-600",
                                 )}
                                 >
                                 <span className="truncate">{e.title == "" ? "(sin título)" : e.title}</span>

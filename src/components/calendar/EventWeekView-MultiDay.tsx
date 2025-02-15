@@ -5,25 +5,26 @@ import { Event } from "@prisma/client";
 import { EventDialog } from "../EventDialog";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "../ui/button";
+import ShowMoreButton from "./EventWeekView-MultiDay-ShowMoreButton";
 
 interface EventWeekViewMultiDayProps {
-events: Event[];
-date: Date;
-cellSize: number;
-showWeekends: boolean;
-showHidden: boolean;
-setShowHidden: (show: boolean) => void;
-nMultiDaysToShow: number;
+    events: Event[];
+    date: Date;
+    cellSize: number;
+    showWeekends: boolean;
+    showHidden: boolean;
+    setShowHidden: (show: boolean) => void;
+    nMultiDaysToShow: number;
 }
 
 const EventWeekViewMultiDay: React.FC<EventWeekViewMultiDayProps> = ({
-events,
-date,
-cellSize,
-showWeekends,
-showHidden,
-setShowHidden,
-nMultiDaysToShow,
+    events,
+    date,
+    cellSize,
+    showWeekends,
+    showHidden,
+    setShowHidden,
+    nMultiDaysToShow,
 }) => {
     const [showEventDialog, setShowEventDialog] = React.useState(false);
     const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
@@ -36,20 +37,47 @@ nMultiDaysToShow,
     const rightMargin = 10;
     if (!events) return null;
 
-    const visibleMultiDaysCount =
-        events.length > nMultiDaysToShow
-        ? showHidden
-            ? events.length
-            : nMultiDaysToShow
-        : events.length;
+    const filteredEvents = events.filter(event => {
+        const eventStartDay = getDayEs(new Date(event.startTime));
+        return showWeekends || (eventStartDay >= 0 && eventStartDay <= 4);
+    });
 
-    const topPadding = visibleMultiDaysCount * 25;
+    const visibleMultiDaysCount =
+        filteredEvents.length > nMultiDaysToShow
+        ? showHidden
+            ? filteredEvents.length
+            : nMultiDaysToShow
+        : filteredEvents.length;
+
+    const topPadding = visibleMultiDaysCount * 25 + (filteredEvents.length > visibleMultiDaysCount && !showHidden ? 25 : 0);
+
+    // Function to get the unique days that have tasks, only from the extra events
+    function getExtraDays(): number[] {
+        const daysSet = new Set<number>();
+        // Consider only the events from nMultiDaysToShow onwards
+        filteredEvents.slice(nMultiDaysToShow).forEach((event) => {
+            const current = new Date(event.startTime);
+            // Iterate from the start to the end of the event (including both ends)
+            while (current <= event.endTime) {
+                // getDayEs should return a day index according to the grid (e.g., 0 for Monday, 4 for Friday)
+                const dayIndex = getDayEs(current);
+                if (showWeekends || dayIndex <= 4) {
+                    daysSet.add(dayIndex);
+                }
+                current.setDate(current.getDate() + 1);
+            }
+        });
+        return Array.from(daysSet).sort((a, b) => a - b);
+    };
+
+    const extraDays = getExtraDays();
 
     return (
         <>
-        <div className="relative bg-white" style={{ height: `${topPadding}px` }}>
+        <div className="relative bg-white" style={{ height: `${topPadding + 1}px` }}>
             {/* Grid background with dividers */}
-            <div className="absolute inset-0 grid grid-cols-7 divide-x divide-gray-100 pl-[64px] pr-[16px] border-b-2 border-gray-300">
+            <div className="absolute inset-0 grid grid-cols-7 divide-x divide-gray-100 pl-[63px] pr-[16px] border-b-2 border-gray-300">
+                <div id="border-left" className="border-l-2 border-gray-300"/>
                 {Array.from({ length: 0 }).map((_, index) => (
                     <div key={`divider-${index}`} className="flex-1" />
                 ))}
@@ -58,7 +86,7 @@ nMultiDaysToShow,
             {/* Sticky container for events */}
             <div id="multi-day-fixed-container" className="relative z-10 pl-[64px]">
             <div className="sticky top-0 z-20">
-                {events.flatMap((e, i) => {
+                {filteredEvents.flatMap((e, i) => {
                     const dayWidth = 100 / (showWeekends ? 7 : 5);
                     const eventStart = new Date(
                         Math.max(startOfWeek.getTime(), e.startTime.getTime())
@@ -68,7 +96,7 @@ nMultiDaysToShow,
                     );
                     const startDayIndex = getDayEs(eventStart);
                     const endDayIndex = getDayEs(eventEnd);
-                    const left = startDayIndex * dayWidth;
+                    const left = startDayIndex * dayWidth === 0 ? 0.2 : startDayIndex * dayWidth;
                     const width = (endDayIndex - startDayIndex + 1) * dayWidth;
 
                     const height = 25;
@@ -95,16 +123,31 @@ nMultiDaysToShow,
                         </div>
                     );
                 })}
+                {filteredEvents.length > nMultiDaysToShow && !showHidden &&
+                    <div id="show-more-buttons">
+                        {extraDays.map((day, index) => (
+                            <ShowMoreButton
+                                key={`show-more-${day}-${index}`}
+                                onClick={() => setShowHidden(true)}
+                                style={{
+                                    top: `${nMultiDaysToShow * 25 + 1}px`,
+                                    left: `${(day * 100) / (showWeekends ? 7 : 5)}%`,
+                                    width: `calc(${100 / (showWeekends ? 7 : 5)}% - 14px)`,
+                                }}
+                            />
+                        ))}
+                    </div>
+                }
             </div>
 
             </div>
 
-            {/* Show more button */}
-            <div id="show-more-multi-days-button" className="relative bg-white">
-            {events.length > nMultiDaysToShow && (
+            {/* Show more button left */}
+            <div id="show-more-button-left" className="relative bg-white">
+            {filteredEvents.length > nMultiDaysToShow && (
                 <div
-                    className="absolute left-4 cursor-pointer z-50"
-                    style={{ top: `${((showHidden ? events.length : nMultiDaysToShow) - 1.7) * 25}px` }}
+                    className="absolute left-[13px] cursor-pointer z-50"
+                    style={{ top: `${((showHidden ? filteredEvents.length - 1 : nMultiDaysToShow) - 0.7) * 25}px` }}
                 >
                     <Button
                         type="button"
