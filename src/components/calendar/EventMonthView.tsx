@@ -155,7 +155,7 @@ const EventMonthView = ({
                     {/* Show hidden items */}
                     {group.length >= (cellSize - paddingTop - height) / height &&
                         <div key={`extend-groupIndex-${date}`} className="absolute left-0 right-0 z-50 inset-1" style={{
-                                top: `${Math.trunc(days.findIndex(day => day.getDate() === group[0].startTime.getDate()) / (showWeekends ? 7 : 5)) *cellSize + (selectedGroup !== date ? cellSize - paddingTop : 5)}px`,
+                                top: `${Math.trunc(days.findIndex(day => day.getDate() === group[0].startTime.getDate()) / 7) *cellSize + (selectedGroup !== date ? cellSize - paddingTop : 5)}px`,
                                 height: "25px",
                                 width: "25px",
                                 left: `calc(${(getDayEs(eventDate) + 1) * dayWidth}% - 25px)`,

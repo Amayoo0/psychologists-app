@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Patient, Event, PsyFile } from "@prisma/client";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import React from "react";
 import { format } from "date-fns";
-import PatientDetails from "./PatientDetails";
-import { PasswordProtect } from "./PasswordProtect";
-import { useCalendar } from "./calendar/calendar-context";
+import PatientDetails from "@/components/patient/PatientDetails";
+import { PasswordProtect } from "@/components/patient/PasswordProtect";
+import { useCalendar } from "@/components/calendar/calendar-context";
 
 function PatientTable({ 
     patients,

@@ -1,7 +1,6 @@
 
 import AppLayout from '../AppLayout'
-import PatientList from '@/components/PatientList'
-import { CalendarProvider } from '@/components/calendar/calendar-context'
+import PatientList from '@/components/patient/PatientList'
 import FloatingActionButton from '@/components/FloatingActionButton'
 import InternalPasswordCheck from '@/components/InternalPasswordCheck'
 

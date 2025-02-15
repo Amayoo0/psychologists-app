@@ -6,106 +6,51 @@ export type ExtendedEvent = Event & {isHidden: boolean};
 
 export type EventMap = Map<string, ExtendedEvent[]>;
 
-
-
-
 export function isMultiDay(event: Event) {
-  const startDate = event.startTime.toDateString();
-  const endDate = event.endTime.toDateString();
-  return startDate !== endDate;
+	const startDate = event.startTime.toDateString();
+	const endDate = event.endTime.toDateString();
+	return startDate !== endDate;
 };
 
-/**
- * Applies prioritization of a single-day event in each array of events,
- * according to the information in the `priorityDays` map.
- *
- * @param eventsMap A Map with string keys (Date.toDateString()) and Event[] values
- * @param priorityDays A Map where the key is the day from which to start prioritization
- *                     and the value is the number of days (including that day) that should have prioritization.
- *
- * The idea is that for each day that is within a prioritization window,
- * the first single-day event (i.e., for which isMultiDay is false) is found
- * and reordered to be at the head of the array.
- */
-export function applyPrioritization(
-  eventsMap: Map<string, Event[]>,
-  priorityDays: Map<string, number>
-): Map<string, Event[]> {
-  // Iterate through each day (key and array of events)
-  for (const [dateStr, events] of eventsMap.entries()) {
-    const currentDay = new Date(dateStr);
-    let shouldPrioritize = false;
-
-    // Check if the current day is within any prioritization window
-    for (const [startStr, daysCount] of priorityDays.entries()) {
-      const startDay = new Date(startStr);
-      const endDay = new Date(startStr);
-      // The window is from [startDay, startDay + (daysCount - 1) days]
-      endDay.setDate(endDay.getDate() + daysCount - 1);
-      if (currentDay >= startDay && currentDay <= endDay) {
-        shouldPrioritize = true;
-        break;
-      }
-    }
-
-    // If this day should have prioritization…
-    if (shouldPrioritize) {
-      // Find the first event that is single-day (isMultiDay === false)
-      const indexSingleDay = events.findIndex(event => !isMultiDay(event));
-      if (indexSingleDay !== -1) {
-        // Remove the event from its current position
-        const [prioritizedEvent] = events.splice(indexSingleDay, 1);
-        // And insert it at the beginning of the array
-        events.unshift(prioritizedEvent);
-      }
-      // If there are no single-day events, leave the array unchanged
-    }
-  }
-  return eventsMap;
-}
-
 export function applyMultiplePrioritization(
-  eventsMap: Map<string, ExtendedEvent[]>,
-  priorityDays: Map<string, Set<number>>
+	eventsMap: Map<string, ExtendedEvent[]>,
+	priorityDays: Map<string, Set<number>>
 ): Map<string, ExtendedEvent[]> {
-  console.log("applyMultiplePrioritization.eventMap", eventsMap)
-  console.log("applyMultiplePrioritization.priorityDays", priorityDays)
-  // Recorremos cada grupo (fecha) en el eventsMap
-  for (const [dateKey, events] of eventsMap.entries()) {
-    // Si no hay prioridades definidas para este día, lo dejamos como está
-    if (!priorityDays.has(dateKey)) continue;
-    
-    // Obtenemos las posiciones prioritarias (huecos) ordenadas de menor a mayor
-    const priorityPositions = Array.from(priorityDays.get(dateKey)!).sort((a, b) => a - b);
-    
-    // Para cada posición prioritaria, intentamos colocar un single-day event
-    for (const pos of priorityPositions) {
-      // Solo actuamos si la posición está dentro del array
-      if (pos < events.length) {
-        // Si ya hay un evento single-day en esa posición, no hacemos nada
-        if (!isMultiDay(events[pos])) continue;
-        
-        // Buscamos, a partir de pos+1, el primer evento single-day
-        let candidateIndex = -1;
-        for (let j = pos + 1; j < events.length; j++) {
-          if (!isMultiDay(events[j])) {
-            candidateIndex = j;
-            break;
-          }
-        }
-        
-        // Si encontramos un candidato, lo movemos a la posición prioritaria
-        if (candidateIndex !== -1) {
-          const [candidate] = events.splice(candidateIndex, 1);
-          events.splice(pos, 0, candidate);
-        }
-      }
-    }
-    
-    // El array "events" ya quedó modificado en su orden para esta fecha
-  }
-  console.log("applyMultiplesPriorization.eventMap", eventsMap)
-  return eventsMap;
+	// Iterate through each group (date) in the eventsMap
+	for (const [dateKey, events] of eventsMap.entries()) {
+	// If there are no priorities defined for this day, leave it as is
+	if (!priorityDays.has(dateKey)) continue;
+	
+	// Get the priority positions (slots) sorted in ascending order
+	const priorityPositions = Array.from(priorityDays.get(dateKey)!).sort((a, b) => a - b);
+	
+	// For each priority position, try to place a single-day event
+	for (const pos of priorityPositions) {
+		// Only act if the position is within the array
+		if (pos < events.length) {
+		// If there is already a single-day event in that position, do nothing
+		if (!isMultiDay(events[pos])) continue;
+		
+		// Search, starting from pos+1, for the first single-day event
+		let candidateIndex = -1;
+		for (let j = pos + 1; j < events.length; j++) {
+			if (!isMultiDay(events[j]) || (isMultiDay(events[j]) && events[j].startTime.toDateString() === dateKey)) {
+				candidateIndex = j;
+				break;
+			}
+		}
+		
+			// If a candidate is found, move it to the priority position
+			if (candidateIndex !== -1) {
+				const [candidate] = events.splice(candidateIndex, 1);
+				events.splice(pos, 0, candidate);
+			}
+		}
+	}
+	
+	// The "events" array has already been modified in its order for this date
+	}
+	return eventsMap;
 }
 
 
