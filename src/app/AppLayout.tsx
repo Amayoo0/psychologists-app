@@ -10,13 +10,13 @@ export default function AppLayout({
 }>) {
   return (
     <CalendarProvider>
-      <div className="flex flex-col h-screen overflow-hidden bg-gray-50">
+      <div className="flex flex-col h-screen overflow-hidden bg-white">
         <main className="flex h-screen w-full">
           <Aside />
           <Separator orientation="vertical" />
           <div
             id="content"
-            className="pl-3 pt-5 pb-2 flex flex-col flex-1"
+            className="pt-5 pb-2 flex flex-col flex-1"
             >
             {children}
           </div>

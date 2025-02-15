@@ -114,7 +114,7 @@ const Aside = () => {
 				<div className="mt-[calc(calc(90vh)-40px)] relative">
 					<button
 					type="button"
-					className="z-50 absolute bottom-32 right-[-12px] flex h-6 w-6 items-center justify-center border border-muted-foreground/20 rounded-full bg-accent shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out"
+					className="z-50 absolute pr-1 bottom-32 right-[-12px] flex h-6 w-6 items-center justify-center border border-gray-500 rounded-full bg-accent shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out bg-white"
 					onClick={toggleSidebar}
 					>
 					{isSidebarExpanded ? (
