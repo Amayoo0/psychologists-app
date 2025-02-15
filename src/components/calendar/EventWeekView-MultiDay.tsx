@@ -50,7 +50,7 @@ nMultiDaysToShow,
         <div className="relative bg-white" style={{ height: `${topPadding}px` }}>
             {/* Grid background with dividers */}
             <div className="absolute inset-0 grid grid-cols-7 divide-x divide-gray-100 pl-[64px] pr-[16px] border-b-2 border-gray-300">
-                {Array.from({ length: showWeekends ? 7 : 5 }).map((_, index) => (
+                {Array.from({ length: 0 }).map((_, index) => (
                     <div key={`divider-${index}`} className="flex-1" />
                 ))}
             </div>
