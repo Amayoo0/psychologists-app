@@ -19,17 +19,15 @@ const Aside = () => {
 	const pathname = usePathname();
 	const { signOut } = useClerk();
 
-	const [isSidebarExpanded, setIsSidebarExpanded] = useState(() => {
-		if (typeof window !== 'undefined'){
-			const saved = window.localStorage.getItem('sidebarExpanded');
-			if (saved === null){
-				return true;
-			}
-			return JSON.parse(saved);
-		}
-		return true; // default state if window is not defined
-	});
+	const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 	const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+
+	useEffect(() => {
+		const saved = window.localStorage.getItem('sidebarExpanded');
+		if (saved !== null) {
+		  setIsSidebarExpanded(JSON.parse(saved));
+		}
+	  }, []);
 
 	useEffect(() => {
 		if (typeof window !== 'undefined') {
@@ -114,7 +112,7 @@ const Aside = () => {
 				<div className="mt-[calc(calc(90vh)-40px)] relative">
 					<button
 					type="button"
-					className="z-50 absolute pr-1 bottom-32 right-[-12px] flex h-6 w-6 items-center justify-center border border-gray-500 rounded-full bg-accent shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out bg-white"
+					className="z-50 absolute pr-1 bottom-32 right-[-12px] flex h-6 w-6 items-center justify-center border border-gray-300 rounded-full bg-accent shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out bg-white"
 					onClick={toggleSidebar}
 					>
 					{isSidebarExpanded ? (
