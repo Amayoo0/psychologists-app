@@ -9,8 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import PatientDialog from './PatientDialog'
-import { EventDialog } from './EventDialog'
+import PatientDialog from '@/components/patient/PatientDialog'
+import { EventDialog } from '@/components/event/EventDialog'
 import { addHours } from 'date-fns'
 
 export default function FloatingActionButton() {

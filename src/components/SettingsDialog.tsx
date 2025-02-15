@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { Calendar, Clock, Lock } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -11,19 +10,16 @@ import {
     DialogHeader,
     DialogOverlay,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useCalendar, ViewType } from "./calendar/calendar-context"
-import { useEffect, useState } from "react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import { useCalendar } from "@/components/calendar/calendar-context"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { saveSettings } from "@/app/actions/settings"
 import { createHash } from 'crypto';
-import LoadingSpinner from "./LoadingSpinner"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 type PreferredView = "weekly" | "general" | "security"
 

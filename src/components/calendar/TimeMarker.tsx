@@ -1,5 +1,5 @@
-import { Separator } from "../ui/separator"
-import { getDayEs } from "./utils"
+import { Separator } from "@/components/ui/separator"
+import { getDayEs } from "@/components/calendar/utils"
 
 
 const TimeMarker = ({

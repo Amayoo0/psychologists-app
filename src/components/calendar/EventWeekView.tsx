@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 import { Event } from '@prisma/client'
-import { getDayEs, groupOverlappingEvents, formatTime, groupOverlappingEventsWeek, isMultiDay } from "./utils";
-import { EventDialog } from "../EventDialog";
+import { getDayEs, formatTime, groupOverlappingEventsWeek, isMultiDay } from "@/components/calendar/utils";
+import { EventDialog } from "@/components/event/EventDialog";
 
 
 const EventWeekView = ({

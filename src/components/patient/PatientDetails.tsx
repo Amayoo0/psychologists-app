@@ -1,13 +1,12 @@
 import { Patient, Event, PsyFile } from "@prisma/client";
-import EventTable from "./EventsTable";
-import { FilesView } from "./FilesView";
+import EventTable from "@/components/event/EventsTable";
 import { useEffect, useState } from "react";
 import { addHours, set } from "date-fns";
-import { useCalendar } from "./calendar/calendar-context";
-import { Button } from "./ui/button";
+import { useCalendar } from "@/components/calendar/calendar-context";
+import { Button } from "@/components/ui/button";
 import { Plus, Save, Upload } from "lucide-react";
-import { EventDialog } from "./EventDialog";
-import { FilesViewTable } from "./FilesViewTable";
+import { EventDialog } from "@/components/event/EventDialog";
+import { FilesViewTable } from "@/components/patient/FilesViewTable";
 import { deleteFiles, getFilesByPatient, saveFiles } from "@/app/actions/files";
 
 const PatientDetails = ({

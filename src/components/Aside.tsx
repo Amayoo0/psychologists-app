@@ -6,13 +6,13 @@ import { cn } from '@/lib/utils';
 import { NavItems } from '@/components/NavItems';
 import { ChevronLeft, ChevronRight, LogOutIcon, Settings } from 'lucide-react';
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { Separator } from "./ui/separator"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Separator } from "@/components/ui/separator"
 import { usePathname } from 'next/navigation';
-import { Avatar } from './ui/avatar';
+import { Avatar } from '@/components/ui/avatar';
 import { useClerk, useUser } from '@clerk/nextjs'
 import { Portal } from '@radix-ui/react-tooltip';
-import { SettingsDialog } from './SettingsDialog';
+import { SettingsDialog } from '@/components/SettingsDialog';
 
 const Aside = () => {
 	const navItems = NavItems();

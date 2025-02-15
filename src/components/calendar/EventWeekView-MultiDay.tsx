@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils";
-import { getDayEs } from "./utils";
+import { getDayEs } from "@/components/calendar/utils";
 import React from "react";
 import { Event } from "@prisma/client";
-import { EventDialog } from "../EventDialog";
+import { EventDialog } from "@/components/event/EventDialog";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "../ui/button";
-import ShowMoreButton from "./EventWeekView-MultiDay-ShowMoreButton";
+import { Button } from "@/components/ui/button";
+import ShowMoreButton from "@/components/calendar/EventWeekView-MultiDay-ShowMoreButton";
 
 interface EventWeekViewMultiDayProps {
     events: Event[];

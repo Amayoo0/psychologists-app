@@ -9,13 +9,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Event, Patient } from "@prisma/client"
+import { Patient } from "@prisma/client"
 import { useEffect, useState } from "react"
 import { savePatient, updatePatient } from "@/app/actions/patients"
-import { format } from "date-fns"
 import { AtSign, File, Phone, User } from "lucide-react"
-import EventTable from "./EventsTable"
-import { useCalendar } from "./calendar/calendar-context"
+import { useCalendar } from "@/components/calendar/calendar-context"
 
 
 interface PatientDialogProps {

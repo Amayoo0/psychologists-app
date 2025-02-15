@@ -1,6 +1,6 @@
-import { Patient, Event } from "@prisma/client";
-import { Button } from "./ui/button";
-import { EventDialog } from "./EventDialog";
+import { Event } from "@prisma/client";
+import { Button } from "@/components/ui/button";
+import { EventDialog } from "@/components/event/EventDialog";
 import { useState } from "react";
 import { deleteEvent } from "@/app/actions/events";
 import { ChevronDown, Pencil, Trash } from "lucide-react";

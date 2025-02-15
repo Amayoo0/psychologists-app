@@ -1,5 +1,5 @@
 import { PsyFile } from "@prisma/client"
-import { Button } from "./ui/button"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { X, File, Download } from "lucide-react"
 import { downloadFileFromS3 } from "@/app/actions/files"

@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 import { Event } from '@prisma/client'
-import { getDayEs, groupOverlappingEvents, formatTime, EventMap } from "./utils";
-import { EventDialog } from "../EventDialog";
+import { getDayEs, groupOverlappingEvents, formatTime, EventMap } from "@/components/calendar/utils";
+import { EventDialog } from "@/components/event/EventDialog";
 import { CircleCheckBig, CornerDownRight, X } from "lucide-react";
 
 const isMultiDay = (event: Event) => {

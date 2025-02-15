@@ -10,18 +10,17 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, File, Trash, Users, Video, X } from 'lucide-react'
+import { Calendar, File, Trash, Users, Video } from 'lucide-react'
 import { format } from "date-fns"
-import { useState, useEffect, use } from "react"
-import SearchableDropdown from "./SearchableDropdown"
+import { useState, useEffect } from "react"
+import SearchableDropdown from "@/components/SearchableDropdown"
 import { Patient, Event, PsyFile } from "@prisma/client"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { deleteEvent, saveEvent, updateEvent } from "@/app/actions/events"
-import { useCalendar } from "./calendar/calendar-context"
+import { useCalendar } from "@/components/calendar/calendar-context"
 import { deleteFiles, getFilesByEvent, saveFiles} from "@/app/actions/files"
-import { cn } from "@/lib/utils"
-import LoadingSpinner from "./LoadingSpinner"
-import { FilesView } from "./FilesView"
+import LoadingSpinner from "@/components/LoadingSpinner"
+import { FilesView } from "@/components/event/FilesView"
 
 
 

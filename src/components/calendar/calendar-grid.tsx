@@ -1,19 +1,18 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { useCalendar } from "./calendar-context"
+import { useCalendar } from "@/components/calendar/calendar-context"
 import React, { useEffect, useRef, useState } from "react"
-import { EventDialog } from "../EventDialog"
+import { EventDialog } from "@/components//event/EventDialog"
 import { getDayEs, getMonth, isMultiDay, isToday  } from "./utils"
-import { EventWeekView, EventWeekViewDragged, DragSelection } from "./EventWeekView"
-import TimeMarker from "./TimeMarker"
-import HeaderWeekDays from "./HeaderWeekDays"
+import { EventWeekView, EventWeekViewDragged, DragSelection } from "@/components/calendar/EventWeekView"
+import TimeMarker from "@/components/calendar/TimeMarker"
+import HeaderWeekDays from "@/components/calendar/HeaderWeekDays"
 import { Event } from '@prisma/client'
 import { EventMonthView } from "./EventMonthView"
-import LoadingSpinner from "../LoadingSpinner"
+import LoadingSpinner from "@/components/LoadingSpinner"
 import { addHours } from "date-fns"
-import EventWeekViewMultiDay from "./EventWeekView-MultiDay"
-import { Separator } from "../ui/separator"
+import EventWeekViewMultiDay from "@/components/calendar/EventWeekView-MultiDay"
 
 
 const CalendarGrid = () => {

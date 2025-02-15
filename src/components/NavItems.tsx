@@ -1,4 +1,4 @@
-import {Calendar1, LayoutDashboard, LucideLogOut, User} from 'lucide-react'
+import {Calendar1, LayoutDashboard, User} from 'lucide-react'
 
 export const NavItems = () => {
     return [

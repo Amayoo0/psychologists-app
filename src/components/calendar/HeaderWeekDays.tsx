@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { getDayEs, isToday } from "./utils"
+import { getDayEs, isToday } from "@/components/calendar/utils"
 
 const HeaderWeekDays = ({
     showWeekends,

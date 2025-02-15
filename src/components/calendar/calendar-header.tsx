@@ -1,10 +1,10 @@
 'use client'
 import { ChevronLeft, ChevronRight, Menu } from "lucide-react";
-import { useCalendar } from "./calendar-context";
+import { useCalendar } from "@/components/calendar/calendar-context";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import { SettingsDialog } from "../SettingsDialog";
+import { SettingsDialog } from "@/components/SettingsDialog";
 
 
 const CalendarHeader = () => {

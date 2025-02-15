@@ -1,12 +1,9 @@
 import { PsyFile, Event } from "@prisma/client"
-import { Button } from "./ui/button"
+import { Button } from "@/components//ui/button"
 import { cn } from "@/lib/utils"
-import { X, File, Download, Trash, ArrowDown, ChevronDown } from "lucide-react"
-import { downloadFileFromS3, getFilesByPatient } from "@/app/actions/files"
+import { X, Download, ChevronDown } from "lucide-react"
+import { downloadFileFromS3 } from "@/app/actions/files"
 import { format } from "date-fns"
-import { getEvents, getEventsByPatient } from "@/app/actions/events"
-import { useEffect, useState } from "react"
-import { useCalendar } from "./calendar/calendar-context"
 
 export function FilesViewTable ({
     filesToSave,
