@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { esES } from "@clerk/localizations";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
