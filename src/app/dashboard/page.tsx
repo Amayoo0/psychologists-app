@@ -31,7 +31,7 @@ export default function Home() {
   return (
     <AppLayout>
         <h1 className="px-6 py-4 text-3xl font-bold mb-6">Tablero</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
           {navItems.map((item, index) => (
             <NavCard key={index} item={item} />
           ))}

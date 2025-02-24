@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import PatientDetails from "@/components/patient/PatientDetails";
 import { PasswordProtect } from "@/components/patient/PasswordProtect";
 import { useCalendar } from "@/components/calendar/calendar-context";
+import { Pencil, PencilIcon, Trash } from "lucide-react";
 
 function PatientTable({ 
     patients,
@@ -86,18 +87,18 @@ function PatientTable({
                         return (
                             <React.Fragment key={patient.id}>
                                 <tr
-                                    className="hover:bg-gray-50 cursor-pointer"
+                                    className="hover:bg-gray-50 cursor-pointer border-b"
                                     onClick={() => onShowDetails(patient)}
                                 >
-                                    <td className="px-4 py-2 border-b">{patient.initials}</td>
-                                    <td className="px-4 py-2 border-b">
+                                    <td className="px-4 py-2">{patient.initials}</td>
+                                    <td className="px-4 py-2">
                                         {patientLastSession
                                             ? format(patientLastSession, "EEEE d MMM, yyyy")
                                             : "No disponible"}
                                     </td>
-                                    <td className="px-4 py-2 border-b">{patientEvents.length}</td>
-                                    <td className="px-4 py-2 border-b">{patientFiles?.length}</td>
-                                    <td className="px-4 py-2 border-b space-x-2">
+                                    <td className="px-4 py-2">{patientEvents.length}</td>
+                                    <td className="px-4 py-2">{patientFiles?.length}</td>
+                                    <td className="px-4 py-6 space-x-2 flex flex-items">
                                         {/* <Button
                                             variant="outline"
                                             size="sm"
@@ -108,26 +109,23 @@ function PatientTable({
                                         >
                                             Enviar Recordatorio
                                         </Button> */}
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
+                                        <Pencil
+                                            size={25}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onEditPatient(patient);
                                             }}
-                                        >
-                                            Editar
-                                        </Button>
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
+                                            className="hover:animate-shake"
+                                        />
+                                        <Trash
+                                            size={25}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onDeletePatient(patient);
                                             }}
-                                        >
-                                            Eliminar
-                                        </Button>
+                                            color="#bc0101" 
+                                            className="hover:animate-shake"
+                                        />
                                     </td>
                                 </tr>
                                 {expandedPatientId === patient.id && (

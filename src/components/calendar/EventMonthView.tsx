@@ -35,10 +35,7 @@ const EventMonthView = ({
 
     
     return <>
-        {Array.from(overlappingGroups.entries()).map(([date, group]) => {
-            // return null if the group is on the weekend and weekends are hidden
-            if (!showWeekends && getDayEs(group[0].startTime) > 4) return null;
-            
+        {Array.from(overlappingGroups.entries()).map(([date, group]) => {           
             const paddingTop = 30;
             const height = 21;
             const eventDate = new Date(String(date));
@@ -47,6 +44,8 @@ const EventMonthView = ({
             return (
                 <div key={`events-groupIndex-${date}`}>
                     {group.flatMap((e, i) => {
+                        // return null if the group is on the weekend and weekends are hidden
+                        if (!showWeekends && getDayEs(e.startTime) > 4) return null;
                         const left = getDayEs(e.startTime) * dayWidth + 0.25;
                         let top = weekOfMonth*cellSize + height*i + paddingTop;
 
