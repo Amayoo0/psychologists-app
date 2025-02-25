@@ -168,17 +168,15 @@ const PatientDetails = ({
                     
                 </ul>
             </div>
-            {/* {showEventDialog &&  */}
-                <EventDialog
-                    open={showEventDialog}
-                    onOpenChange={setShowEventDialog}
-                    eventData={{
-                        startTime: new Date(),
-                        endTime: addHours(new Date(), 1),
-                        patientId: newEventPatientId,
-                    }}
-                />
-            {/* } */}
+            <EventDialog
+                open={showEventDialog}
+                onOpenChange={setShowEventDialog}
+                eventData={{
+                    startTime: new Date(),
+                    endTime: addHours(new Date(), 1),
+                    patientId: newEventPatientId,
+                }}
+            />
         </>
     )
 }
