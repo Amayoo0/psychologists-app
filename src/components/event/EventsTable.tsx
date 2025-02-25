@@ -87,14 +87,16 @@ function EventTable({
             </tbody>
         </table>
         </div>
-        <EventDialog
-            open={showEventDialog}
-            onOpenChange={setShowEventDialog}
-            eventData={selectedEvent ?? {
-                startTime: new Date(),
-                endTime: addHours(new Date(), 1),
-            }}
-        />
+        {/* {showEventDialog &&  */}
+            <EventDialog
+                open={showEventDialog}
+                onOpenChange={setShowEventDialog}
+                eventData={selectedEvent ?? {
+                    startTime: new Date(),
+                    endTime: addHours(new Date(), 1),
+                }}
+            />
+        {/* } */}
         </div>
     );
 }

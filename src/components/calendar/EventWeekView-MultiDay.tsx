@@ -167,13 +167,13 @@ const EventWeekViewMultiDay: React.FC<EventWeekViewMultiDayProps> = ({
             </div>
         </div>
 
-        {showEventDialog && selectedEvent && (
+        {/* {showEventDialog && selectedEvent && ( */}
             <EventDialog
-            open={showEventDialog}
-            onOpenChange={setShowEventDialog}
-            eventData={selectedEvent}
+                open={showEventDialog}
+                onOpenChange={setShowEventDialog}
+                eventData={selectedEvent ?? {}}
             />
-        )}
+        {/* )} */}
         </>
     );
 };

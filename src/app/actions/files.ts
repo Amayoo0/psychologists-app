@@ -8,7 +8,7 @@ import { createCipheriv, randomBytes, createDecipheriv } from "crypto"
 import { Readable } from "stream";
 
 const s3 = new S3({
-  region: process.env.AWS_REGION,
+  region: process.env.NEXT_PUBLIC_AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
@@ -16,7 +16,7 @@ const s3 = new S3({
 });
 
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
+  region: process.env.NEXT_PUBLIC_AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
@@ -165,7 +165,7 @@ export async function saveFiles(fileList: File[], eventId: string | null, patien
       const filename = eventId ? `{${patientId}-${eventId}}${file.name}` : `{${patientId}}${file.name}`
 
       const params = {
-        Bucket: process.env.AWS_BUCKET_NAME ?? '',
+        Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET_NAME ?? '',
         Key: filename,
         Body: encrypted,
         ContentType: file.type
@@ -233,7 +233,7 @@ export async function deleteFiles(fileIds: number[]): Promise<number[]> {
         continue
       }
       const command = new DeleteObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME!,
+        Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET_NAME!,
         Key: file.filename,
       });
 
@@ -245,7 +245,7 @@ export async function deleteFiles(fileIds: number[]): Promise<number[]> {
           maxWaitTime: 10
         },
         { 
-          Bucket: process.env.AWS_BUCKET_NAME!, 
+          Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET_NAME!, 
           Key: file.filename 
         },
       );
@@ -277,7 +277,7 @@ export async function downloadFileFromS3(fileId: number, keyBuffer: Buffer, ivBu
     }
 
     const command = new GetObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME!,
+      Bucket: process.env.NEXT_PUBLIC_AWS_BUCKET_NAME!,
       Key: file.filename,
     });
 

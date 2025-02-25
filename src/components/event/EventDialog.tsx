@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, File, Trash, Users, Video } from 'lucide-react'
+import { Calendar, File, RefreshCw, Trash, Users, Video } from 'lucide-react'
 import { format } from "date-fns"
 import { useState, useEffect } from "react"
 import SearchableDropdown from "@/components/SearchableDropdown"
@@ -21,7 +21,16 @@ import { useCalendar } from "@/components/calendar/calendar-context"
 import { deleteFiles, getFilesByEvent, saveFiles} from "@/app/actions/files"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { FilesView } from "@/components/event/FilesView"
-
+import { useStreamVideoClient } from "@stream-io/video-react-sdk"
+import { Checkbox } from "../ui/checkbox"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+import { TooltipProvider } from "@radix-ui/react-tooltip"
+import { useUser } from "@clerk/nextjs"
+import { Switch } from "../ui/switch"
+import { Label } from "../ui/label"
+import { createMeeting, deleteMeeting } from "@/components/videocall/utils"
+import { cn } from "@/lib/utils"
+import CreateMeetingActions from "../videocall/CreateMeetingActions"
 
 
 interface EventDialogProps {
@@ -53,6 +62,8 @@ export function EventDialog({
     const [filesToDelete, setFilesToDelete] = useState<number[]>([])
     const [eventFiles, setEventFiles] = useState<PsyFile[]>([])
     const [loadingFiles, setLoadingFiles] = useState(false)
+    const streamClient = useStreamVideoClient();
+    const user = useUser();
 
 
     useEffect(() => {
@@ -89,6 +100,43 @@ export function EventDialog({
         const patient = patients.find((p) => p.id === patientId)
         if (patient) setPatient(patient)
     }, [patientId, patients])
+
+    useEffect(() => {
+        if (!open && sessionUrl) {
+            const endSession = async () => {
+                try {
+                    await deleteMeeting(streamClient, user, sessionUrl);
+                    setSessionUrl("");
+                } catch (error) {
+                    console.error("Error al finalizar la sesión:", error);
+                }
+            };
+            endSession();
+        }
+        
+    }, [open, sessionUrl]);
+
+    useEffect(() => {
+        if (!open) {
+            setTitle("");
+            setDescription("");
+            setType("appointment");
+            setPatientId(0);
+            setPatient(null);
+            setSessionUrl("");
+            setStartTimeStr(format(new Date(), "HH:mm"));
+            setEndTimeStr(format(new Date(), "HH:mm"));
+            setNewStartTime(new Date());
+            setNewEndTime(new Date());
+            setRepeat("no-repeat");
+            setRepetitionCount(1);
+            setFilesToSave([]);
+            setFilesToDelete([]);
+            setEventFiles([]);
+            setLoadingFiles(false);
+        }
+    }, [open]);
+      
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -343,11 +391,23 @@ export function EventDialog({
                     <div className="flex items-center gap-4">
                         <Video className="h-4 w-4 text-muted-foreground" />
                         <Input
-                        type="text"
-                        placeholder="Añadir videollamada"
-                        value={sessionUrl}
-                        onChange={(e) => setSessionUrl(e.target.value)}
-                    />
+                            type="text"
+                            placeholder="Añadir videollamada"
+                            value={sessionUrl}
+                            readOnly
+                            className="w-100"
+                        />
+                        <CreateMeetingActions 
+                            streamClient={streamClient} 
+                            sessionUrl={sessionUrl} 
+                            setSessionUrl={setSessionUrl} 
+                            user={user} 
+                            meetingProps={{
+                                startTime: eventData?.startTime ?? newStartTime ?? Date.now,
+                                description: eventData?.description ?? description ?? "",
+                            }} 
+                        />
+                    
                     </div>
                     <div className="flex items-center gap-4 h-10 pb-2">
                         <Users className="h-4 w-4 text-muted-foreground" />

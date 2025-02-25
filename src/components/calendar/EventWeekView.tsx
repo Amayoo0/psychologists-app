@@ -69,13 +69,13 @@ const EventWeekView = ({
                 );
             });
         })}
-        {showEventDialog && selectedEvent &&
+        {/* {showEventDialog && selectedEvent && */}
             <EventDialog
                 open={showEventDialog}
                 onOpenChange={setShowEventDialog}
-                eventData={selectedEvent}
+                eventData={selectedEvent ?? {}}
             />
-        }
+        {/* } */}
     </> 
 };
 
