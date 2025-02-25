@@ -127,7 +127,6 @@ export async function saveFiles(fileList: File[], eventId: string | null, patien
   try {
     const user = await currentUser()
     if (!user) {
-      alert('saveFiles.!user.return[]')
       return []
     }
     const prismaUser = await prisma.user.findUnique({
@@ -137,19 +136,16 @@ export async function saveFiles(fileList: File[], eventId: string | null, patien
     })
 
     if (!prismaUser) {
-      alert('saveFiles.!prismaUser.return[]')
       return []
     }
 
     for (const file of fileList) {
       if (!file) {
-        console.log('No file to save')
         continue
       }
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      console.log("SaveFile.buffer", buffer);
 
       //Encrypt data
       const algorithm = 'aes-256-cbc';
@@ -159,7 +155,6 @@ export async function saveFiles(fileList: File[], eventId: string | null, patien
       const cipher = createCipheriv(algorithm, key, iv);
       let encrypted = cipher.update(buffer);
       encrypted = Buffer.concat([encrypted, cipher.final()]);
-      console.log("SaveFile.encryptedBuffer", encrypted);
       //End Encrypt
 
       const filename = eventId ? `{${patientId}-${eventId}}${file.name}` : `{${patientId}}${file.name}`
@@ -171,16 +166,12 @@ export async function saveFiles(fileList: File[], eventId: string | null, patien
         ContentType: file.type
       };
 
-      console.log("trying to send putobjectcommand")
 
       try {
           const response = await s3.send(new PutObjectCommand(params));
-          console.log("SaveFile.send.response", response);
-          console.log(`File uploaded successfully: ${filename}`);
       } catch (err) {
           console.error(err);
       }
-      console.log("Saving file to DB with key and iv", key, iv)
       const fileToSave: Omit<PsyFile, 'id'> = {
         filename: filename,
         url: 'psycho-app',
@@ -192,7 +183,6 @@ export async function saveFiles(fileList: File[], eventId: string | null, patien
         encrypted_iv: iv,
       }
 
-      console.log('saving file', file)
       const savedFile = await prisma.psyFile.create({ data: fileToSave })
       savedFiles.push(savedFile)
     }
@@ -294,11 +284,9 @@ export async function downloadFileFromS3(fileId: number, keyBuffer: Buffer, ivBu
     }
     const fileBuffer = Buffer.concat(chunks);
 
-    console.log("File Readed from S3: ", fileBuffer)
 
     const decipher = createDecipheriv("aes-256-cbc", keyBuffer, ivBuffer);
     let decrypted = Buffer.concat([decipher.update(fileBuffer), decipher.final()]);
-    console.log("File decrypted: ", decrypted)
 
 
     // Convertir a Base64 para enviarlo al frontend

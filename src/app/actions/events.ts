@@ -100,8 +100,6 @@ export async function saveEvent(event: Partial<Event>, repeat: string, repetitio
       Array.from({ length: repetitionCount }, (_, i) => {
         const startTime = addDays(event.startTime ?? new Date(), shiftTimeInDays * i)
         const endTime = addDays(event.endTime ?? new Date(), shiftTimeInDays * i)
-        console.log('startTime', startTime)
-        console.log('endTime', endTime)
         return prisma.event.create({
           data: {
             title: event.title ? event.title : "",

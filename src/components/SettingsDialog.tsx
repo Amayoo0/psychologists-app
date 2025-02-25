@@ -54,7 +54,6 @@ export function SettingsDialog({
         }
         await saveSettings(settings)
 
-        console.log(settings)
         onOpenChange(false)
     }
     
@@ -74,7 +73,6 @@ export function SettingsDialog({
             const hash = createHash('sha256');
             hash.update(currentPassword + salt);
             const hashedCurrentPassword = hash.digest('hex');
-            console.log("hashedCurrentPassword", hashedCurrentPassword)
 
             if (hashedCurrentPassword !== internalPassword) {
                 alert("Contraseña actual incorrecta");

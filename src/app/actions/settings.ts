@@ -51,7 +51,6 @@ export async function saveSettings(newSettings: Partial<Settings>): Promise<Sett
                 ...newSettings,
             },
         });
-        console.log('updatedSettings', updatedSettings);
         return updatedSettings;
     } catch (error) {
         console.error('Error saving settings:', error);

@@ -1,5 +1,5 @@
 import { PsyFile, Event } from "@prisma/client"
-import { Button } from "@/components//ui/button"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { X, Download, ChevronDown } from "lucide-react"
 import { downloadFileFromS3 } from "@/app/actions/files"
@@ -33,18 +33,6 @@ export function FilesViewTable ({
             setFilesToSave((prevFiles) => prevFiles.filter(f => f !== file));
         }
 
-        // if (filesToDelete.includes(file.id)){
-        //     if (eventFiles.length + (filesToSave?.length || 0) - filesToDelete.length >= maxPatientFiles) {
-        //         alert("No se pueden subir más de 3 archivos")
-        //     } else{
-        //         setFilesToDelete((prevFiles) => prevFiles.filter(id => id !== file.id))
-        //     }
-        // } else if(filesToSave?.some(f => f.name === file.filename)){
-        //     setFilesToSave((prevFiles) => prevFiles ? prevFiles.filter((f) => f.name !== file.filename) : [])
-        // }else{
-        //     console.log('Agregando fichero a FilesToDelete: ', file.id)
-        //     setFilesToDelete((prevFiles) => [...prevFiles, file.id])
-        // }
     }
 
     async function downloadFileAction(file: PsyFile){

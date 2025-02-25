@@ -151,7 +151,6 @@ export function CalendarProvider({ children }: { children: React.ReactNode}) {
                 }));
                 setPreferredView((prev) => fetchedSettings.preferredView as ViewType ?? prev);
                 setInternalPassword((prev) => fetchedSettings.internalPassword ?? prev);
-                console.log('fetchedSettings', fetchedSettings);
             }
             setLoadingSettings(false);
         }

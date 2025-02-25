@@ -71,7 +71,6 @@ const PatientDetails = ({
                             variant="ghost"
                             onClick={() => {
                                 setNewEventPatientId(patient.id)
-                                console.log("newEventPatientId", newEventPatientId)
                                 setShowEventDialog(true)
                             }}
                         >

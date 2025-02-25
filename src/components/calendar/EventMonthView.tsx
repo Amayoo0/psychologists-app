@@ -30,7 +30,6 @@ const EventMonthView = ({
     }));
 
     const overlappingGroups: EventMap = groupOverlappingEvents(extendedEvents, "month");
-    console.log("EventMonthView.OverlappingGroup: ", overlappingGroups)
     type ExtendedEvent = Event & { isHidden: boolean };
 
     
@@ -109,7 +108,6 @@ const EventMonthView = ({
                             }
                         }
                         // single-day event
-                        console.log("single-day event", e)
                         return (
                             <React.Fragment key={`EventMonthView-Fragment-${e.id}`}>
                                 <div 
@@ -179,14 +177,11 @@ const EventMonthView = ({
                 </div>
             );
         })}
-        {showEventDialog && selectedEvent && 
-            <EventDialog
-                open={showEventDialog}
-                onOpenChange={setShowEventDialog}
-                eventData={selectedEvent}
-            />
-        }
-        {console.log('overlappingGroups', overlappingGroups)}
+        <EventDialog
+            open={showEventDialog}
+            onOpenChange={setShowEventDialog}
+            eventData={selectedEvent ?? {}}
+        />
     </>
 };
 

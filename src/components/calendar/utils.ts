@@ -119,9 +119,7 @@ export function groupOverlappingEvents(events: ExtendedEvent[] | null, view: str
       } 
     }
   });
-  console.log("groupThatAllowPriorization23:",groupThatAllowPriorization)
   eventMap = applyMultiplePrioritization(eventMap, groupThatAllowPriorization);
-  console.log("EventMap", eventMap);
   return eventMap;
 }
 
@@ -167,8 +165,6 @@ export function groupOverlappingEventsWeek(events: Event[] | null): EventGroup {
 
 export function getDayEs(date: Date): number {
     const day = date.getDay();
-    // If it's Sunday (0), return 6 (the last day of the week)
-    // If it's Monday (1), return 0 (the first day of the week)
     return day === 0 ? 6 : day - 1;
 }
 

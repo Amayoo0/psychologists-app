@@ -200,7 +200,6 @@ export function EventDialog({
             const savedFiles: PsyFile[] = await saveFiles(newFilesToSave, newEvents[0]?.id || eventData?.id || "", patientId);
             if (savedFiles){
                 setEventFiles([...eventFiles, ...savedFiles])
-                console.log("SetFiles se va a ejecutar con los datos", files, savedFiles);
                 setFiles([...files, ...savedFiles])
             }
             setFilesToSave([])

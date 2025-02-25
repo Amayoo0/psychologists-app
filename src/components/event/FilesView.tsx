@@ -30,7 +30,6 @@ export function FilesView ({
         } else if(filesToSave?.some(f => f.name === file.filename)){
             setFilesToSave((prevFiles) => prevFiles ? prevFiles.filter((f) => f.name !== file.filename) : [])
         }else{
-            console.log('Agregando fichero a FilesToDelete: ', file.id)
             setFilesToDelete((prevFiles) => [...prevFiles, file.id])
         }
     }

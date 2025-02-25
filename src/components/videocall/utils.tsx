@@ -44,15 +44,11 @@ export const deleteMeeting = async (client: any, user: any, meetingUrl: string):
     try {
         const meetingIdParts = meetingUrl.split('/');
         const meetingId = meetingIdParts[meetingIdParts.length - 1];
-        console.log(meetingId)
         const call = client.call('default', meetingId);
         if (!call) throw new Error('No se pudo encontrar la reunión');
 
-        console.log(call); // ID del usuario que creó la llamada
-        console.log(user.id); // ID del usuario actual
 
         await call.endCall();
-        // await call.delete();
         return true;
     } catch (error) {
         console.error('Error al eliminar la reunión:', error);

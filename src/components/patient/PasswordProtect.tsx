@@ -31,7 +31,6 @@ export function PasswordProtect({
 	const hash = createHash('sha256');
 	hash.update(password + salt);
 	const hashedPassword = hash.digest('hex');
-	console.log(hashedPassword)
     if (hashedPassword === internalPassword) {
       onAuthenticated?.();
       setIsAuthenticated(true)
