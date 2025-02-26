@@ -177,3 +177,25 @@ export async function updateEvent(eventId: string, event: Partial<Event>): Promi
     return null
   }
 }
+
+export async function getPatientIdBySessionUrl(sessionUrl: string): Promise<number[] | null> {
+  try {
+    const event = await prisma.event.findMany({
+      where: {
+        sessionUrl: sessionUrl
+      },
+      select: {
+        patientId: true
+      }
+    })
+
+    if (!event) {
+      return null
+    }
+
+    return event.map(e => e.patientId)
+  } catch (error) {
+    console.error('Error fetching patient ID by session URL:', error)
+    return null
+  }
+}

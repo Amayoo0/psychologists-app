@@ -55,6 +55,10 @@ const PatientDetails = ({
                         <p className="text-lg text-gray-900">{patient.name}</p>
                     </div>
                     <div>
+                        <p className="text-sm font-medium text-gray-500">DNI</p>
+                        <p className="text-lg text-gray-900">{patient.dni}</p>
+                    </div>
+                    <div>
                         <p className="text-sm font-medium text-gray-500">Email</p>
                         <p className="text-lg text-gray-900">{patient.email}</p>
                     </div>

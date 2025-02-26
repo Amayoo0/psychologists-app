@@ -28,18 +28,20 @@ export async function getPatients() {
   }
 }
 
-export async function getPatientById(patientId: number) {
+export async function getPatientsByIds(patientIds: number[]) {
   try {
-    const patient = await prisma.patient.findUnique({
+    const patients = await prisma.patient.findMany({
       where: {
-        id: patientId
+        id: {
+          in: patientIds
+        }
       }
     })
 
-    return patient
+    return patients
   } catch (error) {
-    console.error('Error fetching patient:', error)
-    return null
+    console.error('Error fetching patients:', error)
+    return []
   }
 }
 

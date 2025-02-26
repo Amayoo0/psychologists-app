@@ -48,17 +48,17 @@ const MeetingSetup = ({
     if (callTimeNotArrived)
         return (
         <Alert
-            title={`Your Meeting has not started yet. It is scheduled for ${callStartsAt.toLocaleString()}`}
+            title={`Tu reunión aún no ha comenzado. Está programada para ${callStartsAt.toLocaleString()}`}
         />
         );
 
-    if (callHasEnded)
+        if (callHasEnded)
         return (
         <Alert
-            title="The call has been ended by the host"
+            title="La llamada ha sido finalizada por el anfitrión"
             iconUrl="/icons/call-ended.svg"
         />
-    );
+        );
 
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center gap-3">

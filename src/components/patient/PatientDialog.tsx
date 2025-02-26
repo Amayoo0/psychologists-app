@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Patient } from "@prisma/client"
 import { useEffect, useState } from "react"
 import { savePatient, updatePatient } from "@/app/actions/patients"
-import { AtSign, File, Phone, User } from "lucide-react"
+import { AtSign, File, IdCard, Phone, User } from "lucide-react"
 import { useCalendar } from "@/components/calendar/calendar-context"
 
 
@@ -32,6 +32,7 @@ export default function PatientDialog({
 	const [email, setEmail] = useState(patientData?.email ?? '')
 	const [phone, setPhone] = useState(patientData?.phone ?? '')
 	const [initials, setInitials] = useState(patientData?.initials ?? '')
+	const [dni, setDni] = useState(patientData?.dni ?? '')
 
 	useEffect(() => {
 		if (patientData) {
@@ -39,6 +40,7 @@ export default function PatientDialog({
 			setEmail(patientData.email ?? '');
 			setPhone(patientData.phone ?? '');
 			setInitials(patientData.initials ?? '');
+			setDni(patientData.dni ?? '');
 		}
 	}, [patientData]);
 
@@ -50,6 +52,7 @@ export default function PatientDialog({
 			email,
 			phone,
 			initials,
+			dni,
 		}
 
 		if (patientData?.id) {
@@ -89,6 +92,16 @@ export default function PatientDialog({
 						placeholder="Iniciales"
 						value={initials}
 						onChange={(e) => setInitials(e.target.value)}
+						required
+					/>
+				</div>
+				<div className="flex items-center gap-4">
+					<IdCard className="h-4 w-4 text-muted-foreground" />
+					<Input
+						type="text"
+						placeholder="DNI"
+						value={dni}
+						onChange={(e) => setDni(e.target.value)}
 						required
 					/>
 				</div>
