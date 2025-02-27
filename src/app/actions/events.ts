@@ -1,8 +1,9 @@
 "use server"
+import { getDayEs } from '@/components/calendar/utils'
 import { prisma } from '@/lib/prisma'
 import { currentUser, User } from '@clerk/nextjs/server'
 import { Event } from '@prisma/client'
-import { addDays } from 'date-fns'
+import { addDays, addHours } from 'date-fns'
 
 export async function getEvents(startDate: Date, endDate: Date): Promise<Event[]> {
   try {
@@ -197,5 +198,42 @@ export async function getPatientIdBySessionUrl(sessionUrl: string): Promise<numb
   } catch (error) {
     console.error('Error fetching patient ID by session URL:', error)
     return null
+  }
+}
+
+export async function getUpcomingEvents(): Promise<Event[] | null> {
+  try {
+    const user = await currentUser()
+    if (!user) {
+      return []
+    }
+    const prismaUser = await prisma.user.findUnique({
+      where: {
+        authId: user.id
+      }
+    })
+    if (!prismaUser) {
+      return []
+    }
+    const start = new Date(new Date().setHours(0, 0, 0))
+    const end = addDays(new Date(new Date().setHours(23,59,999)), 14 - getDayEs(new Date()))
+    const events = await prisma.event.findMany({
+      where: {
+        userId: prismaUser.id,
+        startTime: {
+          gte: start,
+        },
+        endTime: {
+          lte: end
+        }
+      },
+      orderBy: {
+        startTime: 'asc'
+      }
+    })
+    return events
+  } catch (error) {
+    console.error('Error fetching events by patient:', error)
+    return []
   }
 }

@@ -99,7 +99,6 @@ const CalendarHeader = () => {
                 <Button size="icon" variant="ghost" onClick={() => setIsConfigOpen(true)}>
                     <Menu className="h-4 w-4"/>
                 </Button>
-                {/* <ConfigDialog open={isConfigOpen} onOpenChange={setIsConfigOpen} /> */}
                 <SettingsDialog open={isConfigOpen} onOpenChange={setIsConfigOpen} selectedTab="weekly"/>
             </div>
         </div>

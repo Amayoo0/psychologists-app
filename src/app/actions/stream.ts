@@ -9,7 +9,6 @@ const apiSecret = process.env.STREAM_SECRET_KEY
 export const tokenProvider = async () => {
     const user = await currentUser();
 
-    // if (!user) throw new Error('User is not logged in');
     if (!apiKey) throw new Error('No API key');
     if (!apiSecret) throw new Error('No API secret');
 
