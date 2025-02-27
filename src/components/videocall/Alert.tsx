@@ -11,7 +11,7 @@ interface PermissionCardProps {
 
 const Alert = ({ title, iconUrl }: PermissionCardProps) => {
   return (
-    <section className="flex-center h-screen w-full">
+    <section className="flex justify-center items-center h-72 w-full">
       <Card className="w-full max-w-[520px] bg-dark-1 p-6 py-9">
         <CardContent>
           <div className="flex flex-col gap-9">
@@ -20,7 +20,7 @@ const Alert = ({ title, iconUrl }: PermissionCardProps) => {
             </div>
 
             <Button asChild className="">
-              <Link href="/">Back to Home</Link>
+              <Link href="/">Aceptar</Link>
             </Button>
           </div>
         </CardContent>
