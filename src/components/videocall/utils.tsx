@@ -1,7 +1,7 @@
 export const createMeeting = async (
     client: any, 
     user: any, 
-    meetingProps: { dateTime: Date, description: string }
+    meetingProps: { dateTime: Date, duration: number, description: string }
 ): Promise<string | null> => {
     if (!client || !user) {
         console.error('Cliente o usuario no disponible');
@@ -25,6 +25,11 @@ export const createMeeting = async (
             data: {
                 starts_at: startsAt,
                 custom: { description },
+            },
+            settings: {
+                limits: {
+                  max_duration_seconds: meetingProps.duration,
+                },
             },
         });
 

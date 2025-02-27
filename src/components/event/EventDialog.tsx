@@ -403,6 +403,7 @@ export function EventDialog({
                             user={user} 
                             meetingProps={{
                                 startTime: eventData?.startTime ?? newStartTime ?? Date.now,
+                                duration: eventData?.endTime && eventData?.startTime ? eventData.endTime.getTime() - eventData.startTime.getTime() : 0,
                                 description: eventData?.description ?? description ?? "",
                             }} 
                         />

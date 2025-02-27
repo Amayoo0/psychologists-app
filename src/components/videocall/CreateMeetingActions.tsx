@@ -10,6 +10,7 @@ interface CreateMeetingActionsProps {
     user: any;
     meetingProps?: {
         startTime?: Date;
+        duration?: number;
         description?: string;
     };
 }
@@ -33,6 +34,7 @@ const CreateMeetingActions: React.FC<CreateMeetingActionsProps> = ({ streamClien
 
         const call = await createMeeting(streamClient, user, {
             dateTime: meetingProps?.startTime ?? new Date(),
+            duration: meetingProps?.duration ?? 3600,
             description: meetingProps?.description ?? "",
         });
 
