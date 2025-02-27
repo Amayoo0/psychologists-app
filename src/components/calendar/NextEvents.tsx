@@ -1,5 +1,5 @@
 import { CalendarClock, Clock, Video, Calendar, CheckSquare } from "lucide-react"
-import { formatDistanceToNow, format } from "date-fns"
+import { formatDistanceToNow, format, isSameDay } from "date-fns"
 import { es } from "date-fns/locale"
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -86,8 +86,10 @@ export function NextEvents() {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-4 w-4" />
                         <span>
-                        {format(event.startTime, "d MMM, HH:mm", { locale: es })} -
-                        {format(event.endTime, " HH:mm", { locale: es })}
+                          {isSameDay(event.startTime, event.endTime) 
+                            ?   `${format(event.startTime, "d MMM, HH:mm", { locale: es })} - ${format(event.endTime, "HH:mm", { locale: es })}`
+                            :   `${format(event.startTime, "d MMM, HH:mm", { locale: es })} - ${format(event.endTime, "d MMM, HH:mm", { locale: es })}`
+                          }
                         </span>
                     </div>
 
