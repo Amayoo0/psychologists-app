@@ -61,10 +61,11 @@ function PatientTable({
 
 
     return (
-        <div className="overflow-x-auto">
+    <div className="overflow-x-auto">
+        <div className="h-full overflow-y-auto">
             <table className="min-w-full border-collapse bg-white shadow rounded-lg">
-                <thead>
-                    <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
+                <thead className="bg-gray-100 text-left text-sm font-semibold text-gray-700 sticky top-0 z-10">
+                    <tr>
                         <th className="px-4 py-2 border-b">Iniciales</th>
                         <th className="px-4 py-2 border-b">Última Sesión</th>
                         <th className="px-4 py-2 border-b">Eventos</th>
@@ -72,11 +73,10 @@ function PatientTable({
                         <th className="px-4 py-2 border-b">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y">
                     {patients.map((patient) => {
                         const patientEvents = events.filter((event) => event.patientId === patient.id).reverse();
                         const patientLastSession = patientEvents.length > 0 ? patientEvents[0].startTime : null;
-                        // const [patientFiles, setPatientFiles] = useState<PsyFile[]>(files.filter((file) => file.patientId === patient.id));
                         const patientFiles = patientFilesMap[patient.id];
                         const setPatientFiles = (newFiles: PsyFile[]) => {
                             setPatientFilesMap((prev) => ({
@@ -86,29 +86,14 @@ function PatientTable({
                         };
                         return (
                             <React.Fragment key={patient.id}>
-                                <tr
-                                    className="hover:bg-gray-50 cursor-pointer border-b"
-                                    onClick={() => onShowDetails(patient)}
-                                >
+                                <tr className="hover:bg-gray-50 cursor-pointer border-b" onClick={() => onShowDetails(patient)}>
                                     <td className="px-4 py-2">{patient.initials}</td>
                                     <td className="px-4 py-2">
-                                        {patientLastSession
-                                            ? format(patientLastSession, "EEEE d MMM, yyyy")
-                                            : "No disponible"}
+                                        {patientLastSession ? format(patientLastSession, "EEEE d MMM, yyyy") : "No disponible"}
                                     </td>
                                     <td className="px-4 py-2">{patientEvents.length}</td>
                                     <td className="px-4 py-2">{patientFiles?.length}</td>
                                     <td className="px-4 py-6 space-x-2 flex flex-items">
-                                        {/* <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onSendReminder(patient);
-                                            }}
-                                        >
-                                            Enviar Recordatorio
-                                        </Button> */}
                                         <Pencil
                                             size={25}
                                             onClick={(e) => {
@@ -146,17 +131,9 @@ function PatientTable({
                     })}
                 </tbody>
             </table>
-
-            {selectedPatient && (
-                <PasswordProtect
-                    open={showPasswordDialog}
-                    onOpenChange={setShowPasswordDialog}
-                    onAuthenticated={() => toggleExpand(selectedPatient.id)}
-                >
-                    <></>
-                </PasswordProtect>
-            )}
         </div>
+    </div>
+
     );
 }
 

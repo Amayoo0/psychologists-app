@@ -31,7 +31,7 @@ const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
         setVideoClient(client)
     }, []);
 
-    if (!videoClient) return <LoadingSpinner message="Iniciando App"/>
+    if (!videoClient) return null
 
     return (
         <StreamVideo client={videoClient}>

@@ -91,3 +91,13 @@ model Settings {
   user              User    @relation(fields: [userId], references: [id])
   userId            Int     @unique
 }
+
+model History {
+  id         Int      @id @default(autoincrement())
+  model      String
+  affectedId String
+  action     String
+  duration   Decimal?
+  userId     String
+  timestamp  DateTime @default(now())
+}
