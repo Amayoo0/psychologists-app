@@ -73,7 +73,7 @@ const CalendarHeader = () => {
     }
 
     return (
-        <div id="calendar-header" className="flex justify-between pb-1 z-40 top-0 pl-3">        
+        <div id="calendar-header" className="flex justify-between pb-1 z-40 top-0 pl-6">        
             <div id="calendar-header-navigation" className="flex gap-2 items-center">
                 <Button size="icon" variant="outline" onClick={navigateToday}>
                     Hoy

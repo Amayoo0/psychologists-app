@@ -67,6 +67,7 @@ export async function savePatient(patient: Partial<Patient>) {
         initials: patient.initials ?? '',
         email: patient.email ?? null,
         phone: patient.phone ?? null,
+        dni: patient.dni ?? null,
 
         userId: prismaUser?.id
       }

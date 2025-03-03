@@ -33,18 +33,13 @@ export const extendedPrisma = prismaClient.$extends({
     query: {
       async $allOperations({ operation, model, args, query }) {
         const start = performance.now()
-        console.log("before save setting. Args: ", args)
         const result = await query(args)
-        console.log("After save setting. Args: ", args)
-        console.log("After Result:", result)
-
         const end = performance.now()
         const duration = end - start
         
         const writeOperations = ['create', 'update', 'delete'];
         if (model !== 'History' && 
-            writeOperations.includes(operation) &&
-            !(args.context?.skipHistoryLog)
+            writeOperations.includes(operation)
         ) {
             // UserId should be propagated injecting this data in a context
             const currentUser = args?.where?.userId || args?.data?.userId || 'unknown';
@@ -60,8 +55,6 @@ export const extendedPrisma = prismaClient.$extends({
                 },
             });
 
-            if (!args.context) args.context = {}
-            args.context.skipHistoryLog = true
         }
         return result
       },

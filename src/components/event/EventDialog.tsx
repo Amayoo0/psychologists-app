@@ -395,6 +395,11 @@ export function EventDialog({
                             value={sessionUrl}
                             readOnly
                             className="w-100"
+                            onClick={() => {
+                                if (!sessionUrl.startsWith(`${process.env.NEXT_PUBLIC_BASE_URL}/meeting/`)) {
+                                    window.location.href = sessionUrl;
+                                }
+                            }}                            
                         />
                         <CreateMeetingActions 
                             streamClient={streamClient} 

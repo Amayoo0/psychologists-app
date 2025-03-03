@@ -109,17 +109,21 @@ const Aside = () => {
 					</div>
 				</aside>
 
-				<div className="mt-[calc(calc(90vh)-40px)] relative">
+				<div className="mt-[20px] relative">
 					<button
-					type="button"
-					className="z-50 absolute pr-1 bottom-32 right-[-12px] flex h-6 w-6 items-center justify-center border border-gray-300 rounded-full bg-accent shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out bg-white"
-					onClick={toggleSidebar}
+						type="button"
+						className="z-50 absolute right-[-12px] flex h-6 w-6 items-center justify-center
+						rounded-full shadow-xl transition-all duration-300 ease-in-out
+						bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500
+						hover:from-blue-500 hover:via-purple-500 hover:to-pink-500
+						border-2 border-white animate-pulse ring-2 ring-blue-400/50 hover:ring-pink-400/70"
+						onClick={toggleSidebar}
 					>
-					{isSidebarExpanded ? (
-						<ChevronLeft size={16} className='stroke-foreground'/>
-					) : (
-						<ChevronRight size={16} className='stroke-foreground'/>
-					)}
+						{isSidebarExpanded ? (
+							<ChevronLeft size={16} className="stroke-white drop-shadow-lg" />
+						) : (
+							<ChevronRight size={16} className="stroke-white drop-shadow-lg" />
+						)}
 					</button>
 				</div>
 			</div>

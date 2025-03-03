@@ -50,7 +50,7 @@ export function SettingsDialog({
             workDayStart: workHours.start,
             workDayEnd: workHours.end,
             preferredView: preferredView,
-            internalPassword: newPassword ?? '',
+            internalPassword: newPassword,
         }
         await saveSettings(settings)
 
