@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String
+  name      String?
+
+  authId    String  @unique
+
+  patients  Patient[]
+  events    Event[]
+  files     PsyFile[]
+  settings  Settings?
+}
+
+model Patient {
+  id        Int     @id @default(autoincrement())
+  name      String
+  initials  String  @unique
+  email     String?
+  phone     String?
+  dni       String?
+
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt   DateTime @default(now())
+
+
+  events  Event[]
+  file    PsyFile[]
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  type        String   @default("event") // "appoinment" | "task"
+  sessionUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  patient   Patient @relation(fields: [patientId], references: [id])
+  patientId Int
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  
+  files     PsyFile[]
+}
+
+
+model PsyFile {
+  id            Int      @id @default(autoincrement())
+  filename      String
+  url           String
+  uploadedAt    DateTime @default(now())
+  encrypted_key Bytes?
+  encrypted_iv  Bytes?
+
+  patient       Patient  @relation(fields: [patientId], references: [id])
+  patientId     Int
+
+  user          User     @relation(fields: [userId], references: [id])
+  userId        Int
+
+  event         Event?    @relation(fields: [eventId], references: [id])
+  eventId       String?
+}
+
+model Settings {
+  id                Int     @id @default(autoincrement())
+  showWeekends      Boolean
+  preferredView     String
+  workDayStart      Int
+  workDayEnd        Int
+  cellSize          Int
+  internalPassword  String
+
+  user              User    @relation(fields: [userId], references: [id])
+  userId            Int     @unique
+}
+
+model History {
+  id         Int      @id @default(autoincrement())
+  model      String
+  affectedId String
+  action     String
+  duration   Decimal?
+  userId     String
+  timestamp  DateTime @default(now())
+}
