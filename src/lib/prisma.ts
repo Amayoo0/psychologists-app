@@ -1,9 +1,21 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import { DynamicClientExtensionThis } from '@prisma/client/runtime/library';
+import { PrismaLibSQL } from '@prisma/adapter-libsql'
+import { createClient } from '@libsql/client'
 
-const prismaClientSingleton = () => {
-    return new PrismaClient();
-}
+// Crea el cliente libsql usando las variables de entorno de Turso
+const libsql = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  })
+  
+  // Instancia el adaptador de Turso para Prisma
+  const adapter = new PrismaLibSQL(libsql)
+  
+  // Crea una función que devuelve una instancia de PrismaClient pasando el adaptador
+  const prismaClientSingleton = () => {
+    return new PrismaClient({ adapter })
+  }
 
 declare const globalThis: {
     prismaGlobal: DynamicClientExtensionThis<

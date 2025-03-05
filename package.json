@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "postinstall": "prisma generate",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -14,6 +15,8 @@
     "@clerk/localizations": "^3.10.4",
     "@clerk/nextjs": "^6.9.6",
     "@hookform/resolvers": "^3.9.1",
+    "@libsql/client": "^0.14.0",
+    "@prisma/adapter-libsql": "^6.4.1",
     "@prisma/client": "6.1.0",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-checkbox": "^1.1.3",
