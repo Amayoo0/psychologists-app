@@ -1,7 +1,7 @@
 import { Patient, Event, PsyFile } from "@prisma/client";
 import EventTable from "@/components/event/EventsTable";
 import { useEffect, useState } from "react";
-import { addHours, set } from "date-fns";
+import { addHours } from "date-fns";
 import { useCalendar } from "@/components/calendar/calendar-context";
 import { Button } from "@/components/ui/button";
 import { Plus, Save, Upload } from "lucide-react";

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 import { Event } from '@prisma/client'
-import { getDayEs, formatTime, groupOverlappingEventsWeek, isMultiDay } from "@/components/calendar/utils";
+import { getDayEs, formatTime, groupOverlappingEventsWeek } from "@/components/calendar/utils";
 import { EventDialog } from "@/components/event/EventDialog";
 
 
@@ -12,12 +12,12 @@ const EventWeekView = ({
     showWeekends 
 }: { events: Event[] | null, date: Date, cellSize: number, showWeekends: boolean }) => {
 
-    if (!events) return null;
-
     const startOfWeek = new Date(date);
     startOfWeek.setDate(date.getDate() - getDayEs(date));
     const [showEventDialog, setShowEventDialog] = React.useState(false);
     const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
+    
+    if (!events) return null;
 
     const minHeight = 21;
     const rightMargin = 1.5;

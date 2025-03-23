@@ -1,9 +1,9 @@
 "use server"
 import { getDayEs } from '@/components/calendar/utils'
 import { prisma } from '@/lib/prisma'
-import { currentUser, User } from '@clerk/nextjs/server'
+import { currentUser } from '@clerk/nextjs/server'
 import { Event } from '@prisma/client'
-import { addDays, addHours } from 'date-fns'
+import { addDays } from 'date-fns'
 
 export async function getEvents(startDate: Date, endDate: Date): Promise<Event[]> {
   try {
@@ -97,7 +97,7 @@ export async function saveEvent(event: Partial<Event>, repeat: string, repetitio
           break
     }
     
-    let savedEvents: Event[] = await Promise.all(
+    const savedEvents: Event[] = await Promise.all(
       Array.from({ length: repetitionCount }, (_, i) => {
         const startTime = addDays(event.startTime ?? new Date(), shiftTimeInDays * i)
         const endTime = addDays(event.endTime ?? new Date(), shiftTimeInDays * i)

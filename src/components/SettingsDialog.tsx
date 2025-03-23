@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useCalendar } from "@/components/calendar/calendar-context"
+import { useCalendar, ViewType } from "@/components/calendar/calendar-context"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { saveSettings } from "@/app/actions/settings"
 import { createHash } from 'crypto';
@@ -190,7 +190,7 @@ export function SettingsDialog({
                                 <Label htmlFor="prefered-view" className="text-right">
                                     Vista Preferida
                                 </Label>
-                                <Select value={preferredView} onValueChange={(value: any) => setPreferredView(value)}>
+                                <Select value={preferredView} onValueChange={(value: ViewType) => setPreferredView(value)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Elige vista" />
                                     </SelectTrigger>

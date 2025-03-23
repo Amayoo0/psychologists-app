@@ -2,12 +2,13 @@ import { Button } from "@/components/ui/button";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { MessageSquareX, RefreshCw } from "lucide-react";
 import { deleteMeeting, createMeeting } from "@/components/videocall/utils"; 
+import { StreamVideoClient } from "@stream-io/video-react-sdk";
 
 interface CreateMeetingActionsProps {
-    streamClient: any;
+    streamClient: StreamVideoClient | undefined;
     sessionUrl: string;
     setSessionUrl: (url: string) => void;
-    user: any;
+    user: object;
     meetingProps?: {
         startTime?: Date;
         duration?: number;
@@ -22,7 +23,7 @@ const CreateMeetingActions: React.FC<CreateMeetingActionsProps> = ({ streamClien
             return;
         }
 
-        const result = await deleteMeeting(streamClient, user, sessionUrl);
+        const result = await deleteMeeting(streamClient, sessionUrl);
         if (result) setSessionUrl("");
     };
 

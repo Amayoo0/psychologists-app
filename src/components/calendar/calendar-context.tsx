@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { Event, Patient, PsyFile } from '@prisma/client'
 import { getEvents } from "@/app/actions/events"
-import { addMonths, isAfter, isBefore, set, subMonths } from "date-fns"
+import { addMonths, isAfter, isBefore, subMonths } from "date-fns"
 import { getPatients } from "@/app/actions/patients"
 import { getFiles } from "@/app/actions/files"
 import { getSettings } from "@/app/actions/settings"

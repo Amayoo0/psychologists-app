@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Patient } from "@prisma/client"
 import { useEffect, useState } from "react"
 import { savePatient, updatePatient } from "@/app/actions/patients"
-import { AtSign, File, IdCard, Phone, User } from "lucide-react"
+import { AtSign, IdCard, Phone, User } from "lucide-react"
 import { useCalendar } from "@/components/calendar/calendar-context"
 
 

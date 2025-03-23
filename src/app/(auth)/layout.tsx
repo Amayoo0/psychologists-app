@@ -1,5 +1,4 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { SignOutButton } from "@clerk/nextjs";
 
 export default function Layout ({ children } : { children: React.ReactNode }) {
     return (

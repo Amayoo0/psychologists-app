@@ -58,12 +58,21 @@ const Aside = () => {
 								{user?.emailAddresses?.toString().slice(0, 2).toUpperCase()}
 							</div>	
 						</Avatar>
-						{isSidebarExpanded  && user?.emailAddresses ? (
-							<div className="pl-2 flex flex-col">
-								<h2 className="text-md font-bold">{user?.emailAddresses.toString().split('@')[0].charAt(0).toUpperCase()! + user?.emailAddresses.toString().split('@')[0].slice(1)}</h2>
-								<span className="text-xs italic">Gratis</span>
-							</div>
-						): ('') }
+						{isSidebarExpanded && user?.emailAddresses ? (() => {
+							const emailStr = user.emailAddresses.toString();
+							const emailName = emailStr.split('@')[0];
+							// Si emailName es undefined o vacío, se le asigna un fallback
+							const displayName = emailName 
+								? emailName.charAt(0).toUpperCase() + emailName.slice(1) 
+								: 'Usuario';
+							return (
+								<div className="pl-2 flex flex-col">
+									<h2 className="text-md font-bold">{displayName}</h2>
+									<span className="text-xs italic">Gratis</span>
+								</div>
+							);
+						})() : ''}
+
 					</div>
 					{isSidebarExpanded && (
 						<Separator className='w-full'/>

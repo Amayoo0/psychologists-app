@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, File, RefreshCw, Trash, Users, Video } from 'lucide-react'
+import { Calendar, File, Trash, Users, Video } from 'lucide-react'
 import { format } from "date-fns"
 import { useState, useEffect } from "react"
 import SearchableDropdown from "@/components/SearchableDropdown"
@@ -22,14 +22,8 @@ import { deleteFiles, getFilesByEvent, saveFiles} from "@/app/actions/files"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { FilesView } from "@/components/event/FilesView"
 import { useStreamVideoClient } from "@stream-io/video-react-sdk"
-import { Checkbox } from "../ui/checkbox"
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
-import { TooltipProvider } from "@radix-ui/react-tooltip"
 import { useUser } from "@clerk/nextjs"
-import { Switch } from "../ui/switch"
-import { Label } from "../ui/label"
-import { createMeeting, deleteMeeting } from "@/components/videocall/utils"
-import { cn } from "@/lib/utils"
+import { deleteMeeting } from "@/components/videocall/utils"
 import CreateMeetingActions from "../videocall/CreateMeetingActions"
 
 
@@ -105,7 +99,7 @@ export function EventDialog({
         if (!open && sessionUrl) {
             const endSession = async () => {
                 try {
-                    await deleteMeeting(streamClient, user, sessionUrl);
+                    await deleteMeeting(streamClient, sessionUrl);
                     setSessionUrl("");
                 } catch (error) {
                     console.error("Error al finalizar la sesión:", error);
@@ -144,10 +138,10 @@ export function EventDialog({
         const [startHour, startMinute] = startTimeStr.split(':')
         const [endHour, endMinute] = endTimeStr.split(':')
         
-        let newStart = new Date(newStartTime)
+        const newStart = new Date(newStartTime)
         newStart.setHours(Number(startHour), Number(startMinute))
 
-        let newEnd = new Date(newEndTime)
+        const newEnd = new Date(newEndTime)
         newEnd.setHours(Number(endHour), Number(endMinute))
 
         if (newEnd.getTime() < newStart.getTime()) {
@@ -250,7 +244,7 @@ export function EventDialog({
                         size={25} 
                         color="#bc0101" 
                         onClick={() => {
-                            eventData?.id && deleteEvent(eventData.id)
+                            if( eventData?.id ) deleteEvent(eventData.id)
                             setEvents(events.filter((event) => event.id !== eventData?.id))
                             onOpenChange(false)
                         }}
@@ -295,7 +289,7 @@ export function EventDialog({
                     value={startTimeStr}
                     onChange={(e) => {
                         const [startHour, startMinute] = e.target.value.split(':')
-                        let newStart = new Date(newStartTime)
+                        const newStart = new Date(newStartTime)
                         newStart.setHours(Number(startHour), Number(startMinute))
                         // check if the end is before the start
                         if( newStart.getTime() > newEndTime.getTime() ){
@@ -311,7 +305,7 @@ export function EventDialog({
                         className="w-25"
                         onChange={(e) => {
                             const [endHour, endMinute] = e.target.value.split(':')
-                            let newEnd = new Date(newEndTime)
+                            const newEnd = new Date(newEndTime)
                             newEnd.setHours(Number(endHour), Number(endMinute))
                             // check if the end is before the start
                             if( newEnd.getTime() < newStartTime.getTime() ){
@@ -345,7 +339,7 @@ export function EventDialog({
                         value={endTimeStr}
                         onChange={(e) => {
                             const [endHour, endMinute] = e.target.value.split(':')
-                            let newEnd = new Date(newEndTime)
+                            const newEnd = new Date(newEndTime)
                             newEnd.setHours(Number(endHour), Number(endMinute))
                             // check if the end is before the start
                             if( newEnd.getTime() < newStartTime.getTime() ){
@@ -417,7 +411,7 @@ export function EventDialog({
                     <div className="flex items-center gap-4 h-10 pb-2">
                         <Users className="h-4 w-4 text-muted-foreground" />
                         <div className="relative w-full h-8">
-                            <SearchableDropdown
+                            <SearchableDropdown<Patient>
                                 options={patients}
                                 label="initials"
                                 id="id"

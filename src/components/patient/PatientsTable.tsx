@@ -1,27 +1,23 @@
 import { useEffect, useState } from "react";
 import { Patient, Event, PsyFile } from "@prisma/client";
-import { Button } from "@/components/ui/button";
 import React from "react";
 import { format } from "date-fns";
 import PatientDetails from "@/components/patient/PatientDetails";
-import { PasswordProtect } from "@/components/patient/PasswordProtect";
 import { useCalendar } from "@/components/calendar/calendar-context";
-import { Pencil, PencilIcon, Trash } from "lucide-react";
+import { Pencil, Trash } from "lucide-react";
 
 function PatientTable({ 
     patients,
-    onSendReminder, 
     onEditPatient, 
     onDeletePatient 
 }: { 
-    patients: Patient[], 
-    onSendReminder: (patient: Patient) => void, 
+    patients: Patient[],
     onEditPatient: (patient: Patient) => void, 
     onDeletePatient: (patient: Patient) => void 
 }) {
     const { isAuthenticated, files, events, setEvents } = useCalendar();
     const [expandedPatientId, setExpandedPatientId] = useState<number | null>(null);
-    const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+    const [, setShowPasswordDialog] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     const toggleExpand = (patientId: number) => {
         setExpandedPatientId((prev) => (prev === patientId ? null : patientId));

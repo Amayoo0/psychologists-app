@@ -20,7 +20,6 @@ interface EventWeekViewMultiDayProps {
 const EventWeekViewMultiDay: React.FC<EventWeekViewMultiDayProps> = ({
     events,
     date,
-    cellSize,
     showWeekends,
     showHidden,
     setShowHidden,

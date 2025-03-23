@@ -1,6 +1,6 @@
 'use server'
 import { prisma } from '@/lib/prisma'
-import { currentUser, User } from '@clerk/nextjs/server'
+import { currentUser } from '@clerk/nextjs/server'
 import { Settings } from '@prisma/client'
 
 export async function getSettings(): Promise<Settings | null> {

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import PatientDialog from "./PatientDialog";
 import { useCalendar } from "@/components/calendar/calendar-context";
-import { Patient, Event } from "@prisma/client";
+import { Patient } from "@prisma/client";
 import { PasswordProtect } from "./PasswordProtect";
 import { deletePatient } from "@/app/actions/patients";
 import PatientTable from "@/components/patient/PatientsTable";
@@ -24,12 +24,8 @@ const PatientList = () => {
 		}
 	}
 
-	const onSendReminder = (patient: Patient) => {
-		console.log('Send reminder to patient:', patient)
-	}
-
 	const onDeletePatient = async (patient: Patient) => {
-		const result = await deletePatient(patient.id)
+		await deletePatient(patient.id)
 		setPatients(patients.filter(p => p.id !== patient.id))
 	}
 	
@@ -43,8 +39,7 @@ const PatientList = () => {
 				{((patients.length > 0) 
 					?   <>
 						<PatientTable 
-							patients={patients} 
-							onSendReminder={onSendReminder}
+							patients={patients}
 							onEditPatient={onEditPatient} 
 							onDeletePatient={onDeletePatient} 
 						/>

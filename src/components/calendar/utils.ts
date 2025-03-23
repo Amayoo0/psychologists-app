@@ -55,7 +55,7 @@ export function applyMultiplePrioritization(
 
 
 
-export function groupOverlappingEvents(events: ExtendedEvent[] | null, view: string = "month"): EventMap {
+export function groupOverlappingEvents(events: ExtendedEvent[] | null): EventMap {
   let eventMap: EventMap = new Map();
 
   if (!events) {
@@ -92,7 +92,7 @@ export function groupOverlappingEvents(events: ExtendedEvent[] | null, view: str
     });
   });
 
-  let groupThatAllowPriorization: Map<string, Set<number>> = new Map()
+  const groupThatAllowPriorization: Map<string, Set<number>> = new Map()
   eventMap.forEach((group) => {
     const multiDayEvents = group.filter(event => isMultiDay(event));
     for (let i = 0; i < multiDayEvents.length; i++){
@@ -106,7 +106,7 @@ export function groupOverlappingEvents(events: ExtendedEvent[] | null, view: str
           continue
         }
         // Adds priorization in next days starting at the end of a
-        let dayToPrior = new Date(a)
+        const dayToPrior = new Date(a)
         dayToPrior.setDate(dayToPrior.getDate() + 1);
         while( diffEnds > 0 && getDayEs(dayToPrior) > 0 ){
           if (!groupThatAllowPriorization.has(dayToPrior.toDateString())) {

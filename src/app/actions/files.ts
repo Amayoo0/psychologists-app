@@ -2,20 +2,11 @@
 import { prisma } from "@/lib/prisma"
 import { currentUser } from "@clerk/nextjs/server"
 import { PsyFile } from "@prisma/client"
-import { promises as fs } from "fs"
-import { S3Client, GetObjectCommand, S3, PutObjectCommand, DeleteObjectCommand, waitUntilObjectNotExists } from "@aws-sdk/client-s3";
+import { GetObjectCommand, S3, PutObjectCommand, DeleteObjectCommand, waitUntilObjectNotExists } from "@aws-sdk/client-s3";
 import { createCipheriv, randomBytes, createDecipheriv } from "crypto"
 import { Readable } from "stream";
 
 const s3 = new S3({
-  region: process.env.NEXT_PUBLIC_AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
-
-const s3Client = new S3Client({
   region: process.env.NEXT_PUBLIC_AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
@@ -37,7 +28,7 @@ export async function getFiles(): Promise<PsyFile[]> {
     if (!prismaUser) {
         return []
     }
-    let files = await prisma.psyFile.findMany(
+    const files = await prisma.psyFile.findMany(
       {
         where: {
           userId: prismaUser.id
@@ -45,7 +36,7 @@ export async function getFiles(): Promise<PsyFile[]> {
       }
     )
 
-    files.forEach(file => {
+    files.forEach((file: PsyFile) => {
       file.filename = file.filename.split('}')[1]
     });
 
@@ -72,14 +63,14 @@ export async function getFilesByEvent(eventId: string | null): Promise<PsyFile[]
     if (!prismaUser) {
       return []
     }
-    let files = await prisma.psyFile.findMany({
+    const files = await prisma.psyFile.findMany({
       where: {
         userId: prismaUser.id,
         eventId: eventId
       }
     })
 
-    files.forEach(file => {
+    files.forEach((file: PsyFile) => {
       file.filename = file.filename.split('}')[1]
     });
 
@@ -104,14 +95,14 @@ export async function getFilesByPatient(patientId: number): Promise<PsyFile[]> {
     if (!prismaUser) {
       return []
     }
-    let files = await prisma.psyFile.findMany({
+    const files = await prisma.psyFile.findMany({
       where: {
         userId: prismaUser.id,
         patientId: patientId
       }
     })
     
-    files.forEach(file => {
+    files.forEach((file: PsyFile) => {
       file.filename = file.filename.split('}')[1]
     });
 
@@ -168,7 +159,7 @@ export async function saveFiles(fileList: File[], eventId: string | null, patien
 
 
       try {
-          const response = await s3.send(new PutObjectCommand(params));
+          await s3.send(new PutObjectCommand(params));
       } catch (err) {
           console.error(err);
       }
@@ -195,7 +186,7 @@ export async function saveFiles(fileList: File[], eventId: string | null, patien
 }
 
 export async function deleteFiles(fileIds: number[]): Promise<number[]> {
-  let deletedFilesIds: number[] = []
+  const deletedFilesIds: number[] = []
   try {
     const user = await currentUser()
     if (!user) {
@@ -286,7 +277,7 @@ export async function downloadFileFromS3(fileId: number, keyBuffer: Buffer, ivBu
 
 
     const decipher = createDecipheriv("aes-256-cbc", keyBuffer, ivBuffer);
-    let decrypted = Buffer.concat([decipher.update(fileBuffer), decipher.final()]);
+    const decrypted = Buffer.concat([decipher.update(fileBuffer), decipher.final()]);
 
 
     // Convertir a Base64 para enviarlo al frontend

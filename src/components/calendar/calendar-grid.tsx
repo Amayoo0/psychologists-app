@@ -19,12 +19,11 @@ const CalendarGrid = () => {
 const { view, setView, 
 	date, 
 	showWeekends,
-	cellSize, setCellSize, 
+	cellSize, 
 	workHours, 
 	events, 
 	loadMoreEvents,
-	loading, 
-	files, setFiles,
+	loading,
 	preferredView,
 } = useCalendar()
 	const [showEventDialog, setShowEventDialog] = useState(false)
@@ -229,12 +228,12 @@ const { view, setView,
 		const multiDayEvents = eventsToShow.filter((e) => isMultiDay(e))
 
 		// Determine how many events are actually shown
-		const visibleMultiDaysCount = multiDayEvents.length > nMultiDaysToShow 
-										? (showHiddenMultiDays ? multiDayEvents.length : nMultiDaysToShow)
-										: multiDayEvents.length;
+		// const visibleMultiDaysCount = multiDayEvents.length > nMultiDaysToShow 
+		// 								? (showHiddenMultiDays ? multiDayEvents.length : nMultiDaysToShow)
+		// 								: multiDayEvents.length;
 
 		// Each event takes up 25px in height, so the padding will be:
-		const topPadding = visibleMultiDaysCount * 25;
+		// const topPadding = visibleMultiDaysCount * 25;
 
 
 		const getTimeFromMousePosition = (y: number, baseDate: Date) => {

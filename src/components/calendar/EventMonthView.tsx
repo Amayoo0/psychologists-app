@@ -18,18 +18,19 @@ const EventMonthView = ({
     cellSize
 }: { events: Event[] | null, days: Date[], showWeekends: boolean, cellSize: number }) => {
 
-    if (!events) return null;
-
     const [showEventDialog, setShowEventDialog] = React.useState(false);
     const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
     const [selectedGroup, setSelectedGroup] = React.useState<string | null>(null);
+    
+    if (!events) return null;
+
 
     const extendedEvents: ExtendedEvent[] = events.map(event => ({
         ...event,
         isHidden: false
     }));
 
-    const overlappingGroups: EventMap = groupOverlappingEvents(extendedEvents, "month");
+    const overlappingGroups: EventMap = groupOverlappingEvents(extendedEvents);
     type ExtendedEvent = Event & { isHidden: boolean };
 
     
@@ -46,7 +47,7 @@ const EventMonthView = ({
                         // return null if the group is on the weekend and weekends are hidden
                         if (!showWeekends && getDayEs(e.startTime) > 4) return null;
                         const left = getDayEs(e.startTime) * dayWidth + 0.25;
-                        let top = weekOfMonth*cellSize + height*i + paddingTop;
+                        const top = weekOfMonth*cellSize + height*i + paddingTop;
 
                         // if multi-day event
                         if (isMultiDay(e)){

@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import {
   DeviceSettings,
-  MenuVisualType,
   VideoPreview,
   useCall,
   useCallStateHooks,
@@ -56,7 +55,6 @@ const MeetingSetup = ({
         return (
         <Alert
             title="La llamada ha sido finalizada por el anfitrión"
-            iconUrl="/icons/call-ended.svg"
         />
         );
 

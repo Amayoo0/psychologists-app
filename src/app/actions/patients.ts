@@ -1,6 +1,6 @@
 "use server"
 import { prisma } from '@/lib/prisma'
-import { currentUser, User } from '@clerk/nextjs/server'
+import { currentUser } from '@clerk/nextjs/server'
 import { Patient } from '@prisma/client'
 export async function getPatients() {
   try {

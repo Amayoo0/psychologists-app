@@ -1,6 +1,6 @@
 'use client'
 import { ChevronLeft, ChevronRight, Menu } from "lucide-react";
-import { useCalendar } from "@/components/calendar/calendar-context";
+import { useCalendar, ViewType } from "@/components/calendar/calendar-context";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
@@ -87,7 +87,7 @@ const CalendarHeader = () => {
                 <h1 className="text-xl font-semibold">{formatDate()}</h1>
             </div>
             <div id="calendar-header-view-and-settings" className="flex gap-2 items-center pr-2">
-                <Select value={view} onValueChange={(value: any) => setView(value)}>
+                <Select value={view} onValueChange={(value: ViewType) => setView(value)}>
                     <SelectTrigger>
                         <SelectValue placeholder="Elige vista" />
                     </SelectTrigger>

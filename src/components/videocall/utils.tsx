@@ -1,6 +1,8 @@
+import { StreamVideoClient } from "@stream-io/video-react-sdk";
+
 export const createMeeting = async (
-    client: any, 
-    user: any, 
+    client: StreamVideoClient, 
+    user: object, 
     meetingProps: { dateTime: Date, duration: number, description: string }
 ): Promise<string | null> => {
     if (!client || !user) {
@@ -25,13 +27,14 @@ export const createMeeting = async (
             data: {
                 starts_at: startsAt,
                 custom: { description },
-            },
-            settings: {
-                limits: {
-                  max_duration_seconds: meetingProps.duration,
+                settings_override: {
+                  limits: {
+                    max_duration_seconds: meetingProps.duration,
+                  },
                 },
-            },
+              },
         });
+
 
         return call.id;
     } catch (error) {
@@ -40,7 +43,7 @@ export const createMeeting = async (
     }
 };
 
-export const deleteMeeting = async (client: any, user: any, meetingUrl: string): Promise<boolean> => {
+export const deleteMeeting = async (client: StreamVideoClient | undefined, meetingUrl: string): Promise<boolean> => {
     if (!client || !meetingUrl) {
         console.error('Cliente o ID de reunión no disponible');
         return false;
