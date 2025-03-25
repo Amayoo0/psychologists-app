@@ -1,45 +1,26 @@
-import { Prisma, PrismaClient } from '@prisma/client'
-import { DynamicClientExtensionThis } from '@prisma/client/runtime/library';
+import { PrismaClient } from '@prisma/client'
 import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
 
 // Crea el cliente libsql usando las variables de entorno de Turso
 const libsql = createClient({
-    url: process.env.TURSO_DATABASE_URL,
+    url: process.env.TURSO_DATABASE_URL!,
     authToken: process.env.TURSO_AUTH_TOKEN,
-  })
+})
   
-  // Instancia el adaptador de Turso para Prisma
-  const adapter = new PrismaLibSQL(libsql)
-  
-  // Crea una función que devuelve una instancia de PrismaClient pasando el adaptador
-  const prismaClientSingleton = () => {
-    return new PrismaClient({ adapter })
-  }
+// Instancia el adaptador de Turso para Prisma
+const adapter = new PrismaLibSQL(libsql)
 
-declare const globalThis: {
-    prismaGlobal: DynamicClientExtensionThis<
-        Prisma.TypeMap<
-            {
-                result: {};
-                model: {};
-                query: {};
-                client: {};
-            },
-            Prisma.PrismaClientOptions
-        >,
-        Prisma.TypeMapCb,
-        {
-            result: {};
-            model: {};
-            query: {};
-            client: {};
-        },
-        {}
-    >;
-} & typeof global;
+// Crea una función que devuelve una instancia de PrismaClient pasando el adaptador
+const prismaClientSingleton = () => {
+	if (process.env.NODE_ENV === 'production') {
+		return new PrismaClient({ adapter })
+	} else {
+		return new PrismaClient()
+	}
+}
 
-const prismaClient = globalThis.prismaGlobal ?? prismaClientSingleton();
+const prismaClient = prismaClientSingleton();
 
 export const extendedPrisma = prismaClient.$extends({
     query: {
@@ -74,7 +55,3 @@ export const extendedPrisma = prismaClient.$extends({
 });
 
 export const prisma = extendedPrisma
-
-if (process.env.NODE_ENV !== 'production' && !globalThis.prismaGlobal) {
-    globalThis.prismaGlobal = extendedPrisma;
-}
