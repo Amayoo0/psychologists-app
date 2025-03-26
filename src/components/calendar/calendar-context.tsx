@@ -52,7 +52,7 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 
 
 export function CalendarProvider({ children }: { children: React.ReactNode}) {
-    const [view, setView] = useState<ViewType>("month")
+    const [view, setView] = useState<ViewType>("week")
     const [date, setDate] = useState(new Date())
     const [showWeekends, setShowWeekends] = useState(true)
     const [showDeclinedEvents, setShowDeclinedEvents] = useState(true)

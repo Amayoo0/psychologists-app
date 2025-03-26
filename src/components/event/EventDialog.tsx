@@ -78,7 +78,10 @@ export function EventDialog({
                 setFilesToDelete([]);
                 setFilesToSave([]);
                 if (eventData.patientId) {
-                    setPatient(patients.find((p) => p.id === eventData.patientId) || null);
+                    console.log("Looking for patient with id", eventData.patientId)
+                    const p = patients.find((p) => p.id === eventData.patientId)
+                    console.log("found Patient:", p)
+                    setPatient( p || null);
                 }
             }
         };
@@ -390,7 +393,7 @@ export function EventDialog({
                             readOnly
                             className="w-100"
                             onClick={() => {
-                                if (!sessionUrl.startsWith(`${process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.NEXT_PUBLIC_BASE_URL}/meeting/`)) {
+                                if (sessionUrl.startsWith(`${process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.NEXT_PUBLIC_BASE_URL}/meeting/`)) {
                                     window.location.href = sessionUrl;
                                 }
                             }}                            
