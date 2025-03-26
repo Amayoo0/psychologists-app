@@ -113,7 +113,7 @@ export function NextEvents() {
         <CardFooter className="border-t bg-muted/50 p-4">
             <div className="flex w-full justify-between text-sm text-muted-foreground">
             <span>Mostrando {eventsToShow.length} eventos</span>
-            <Button variant="link" size="sm" onClick={() => window.location.href = `${process.env.VERCEL_URL ?? process.env.NEXT_PUBLIC_BASE_URL}/calendar`}>
+            <Button variant="link" size="sm" onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.NEXT_PUBLIC_BASE_URL}/calendar`}>
                 Calendario completo
             </Button>
             </div>

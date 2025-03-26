@@ -23,7 +23,7 @@ const AuthenticatePatient = ({
 
     useEffect(() => {
         async function fetchInvitedPatients() {
-            const sessionUrl = `${process.env.VERCEL_URL ?? process.env.NEXT_PUBLIC_BASE_URL}/meeting/${sessionId}`;
+            const sessionUrl = `${process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.NEXT_PUBLIC_BASE_URL}/meeting/${sessionId}`;
             const patientIds = await getPatientIdBySessionUrl(sessionUrl);
 
             if (patientIds) {

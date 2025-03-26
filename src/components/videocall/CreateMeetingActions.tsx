@@ -28,7 +28,7 @@ const CreateMeetingActions: React.FC<CreateMeetingActionsProps> = ({ streamClien
     };
 
     const handleCreateMeeting = async () => {
-        console.log("VERCEL_URL", process.env.VERCEL_URL);
+        console.log("NEXT_PUBLIC_VERCEL_URL", process.env.NEXT_PUBLIC_VERCEL_URL);
         console.log("BASE_URL", process.env.NEXT_PUBLIC_BASE_URL);
         if (!streamClient) {
             alert("Stream client is not available.");
@@ -41,7 +41,7 @@ const CreateMeetingActions: React.FC<CreateMeetingActionsProps> = ({ streamClien
             description: meetingProps?.description ?? "",
         });
 
-        if (call) setSessionUrl(`${process.env.VERCEL_URL ?? process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call}`);
+        if (call) setSessionUrl(`${process.env.NEXT_PUBLIC_VERCEL_URL ?? process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call}`);
     };
 
     return (
