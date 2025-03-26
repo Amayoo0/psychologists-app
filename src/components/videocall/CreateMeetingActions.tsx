@@ -39,7 +39,7 @@ const CreateMeetingActions: React.FC<CreateMeetingActionsProps> = ({ streamClien
             description: meetingProps?.description ?? "",
         });
 
-        if (call) setSessionUrl(`${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call}`);
+        if (call) setSessionUrl(`${process.env.VERCEL_URL ?? process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call}`);
     };
 
     return (
