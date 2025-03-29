@@ -233,17 +233,6 @@ const { view, setView,
 		const nMultiDaysToShow = 2;
 
 		const multiDayEvents = eventsToShow.filter((e) => isMultiDay(e))
-		console.log("multiDayEvents", multiDayEvents)
-		console.log("eventsToShow", eventsToShow)
-
-		// Determine how many events are actually shown
-		// const visibleMultiDaysCount = multiDayEvents.length > nMultiDaysToShow 
-		// 								? (showHiddenMultiDays ? multiDayEvents.length : nMultiDaysToShow)
-		// 								: multiDayEvents.length;
-
-		// Each event takes up 25px in height, so the padding will be:
-		// const topPadding = visibleMultiDaysCount * 25;
-
 
 		const getTimeFromMousePosition = (y: number, baseDate: Date) => {
 			if (!gridRef.current) return new Date()
