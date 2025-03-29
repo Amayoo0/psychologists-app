@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { useCalendar } from "@/components/calendar/calendar-context"
 import React, { useEffect, useRef, useState } from "react"
 import { EventDialog } from "@/components/event/EventDialog"
-import { getDayEs, getMonth, isMultiDay, isToday  } from "./utils"
+import { getDatesBetween, getDayEs, getMonth, isMultiDay, isToday, normalizeDate  } from "./utils"
 import { EventWeekView, EventWeekViewDragged, DragSelection } from "@/components/calendar/EventWeekView"
 import TimeMarker from "@/components/calendar/TimeMarker"
 import HeaderWeekDays from "@/components/calendar/HeaderWeekDays"
@@ -79,8 +79,15 @@ const { view, setView,
 			// if days is out of the loadedRange dates it will calculate a new range
 			loadMoreEvents(days[0], days[days.length-1])
 			const filteredEvents: Event[] = events.filter(event => {
-				return event.startTime >= days[0] && event.endTime <= days[days.length - 1];
-			});
+				// Obtenemos todas las fechas del evento y las normalizamos (devuelve timestamp)
+				const eventDates = getDatesBetween(event.startTime, event.endTime).map(normalizeDate);
+				// Normalizamos el array days para que solo se tenga en cuenta día/mes/año
+				const normalizedDays = days.map(normalizeDate);
+				
+				// Si al menos una de las fechas del evento se encuentra en normalizedDays, filtramos el evento
+				return eventDates.some(dateTimestamp => normalizedDays.includes(dateTimestamp));
+			  });
+			  
 
 			if (filteredEvents) {
 				setEventsToShow(filteredEvents);
@@ -226,6 +233,8 @@ const { view, setView,
 		const nMultiDaysToShow = 2;
 
 		const multiDayEvents = eventsToShow.filter((e) => isMultiDay(e))
+		console.log("multiDayEvents", multiDayEvents)
+		console.log("eventsToShow", eventsToShow)
 
 		// Determine how many events are actually shown
 		// const visibleMultiDaysCount = multiDayEvents.length > nMultiDaysToShow 

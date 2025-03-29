@@ -161,7 +161,25 @@ export function groupOverlappingEventsWeek(events: Event[] | null): EventGroup {
   return groups;
 };
 
+export function getDatesBetween(startTime: Date, endTime: Date) {
+  const dates = [];
+  let currentDate = new Date(startTime);
+  currentDate.setHours(0, 0, 0, 0);
+  const finalDate = new Date(endTime);
+  finalDate.setHours(0, 0, 0, 0);
 
+  while (currentDate <= finalDate) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return dates;
+}
+
+export function normalizeDate(date: Date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0); // Fijamos la hora a medianoche
+  return d.getTime(); // Usamos el timestamp para comparar
+}
 
 export function getDayEs(date: Date): number {
     const day = date.getDay();
