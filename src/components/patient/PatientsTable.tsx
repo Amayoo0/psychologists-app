@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import PatientDetails from "@/components/patient/PatientDetails";
 import { useCalendar } from "@/components/calendar/calendar-context";
 import { Pencil, Trash } from "lucide-react";
+import { PasswordProtect } from "./PasswordProtect";
 
 function PatientTable({ 
     patients,
@@ -17,7 +18,7 @@ function PatientTable({
 }) {
     const { isAuthenticated, files, events, setEvents } = useCalendar();
     const [expandedPatientId, setExpandedPatientId] = useState<number | null>(null);
-    const [, setShowPasswordDialog] = useState(false);
+    const [showPasswordDialog, setShowPasswordDialog] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     const toggleExpand = (patientId: number) => {
         setExpandedPatientId((prev) => (prev === patientId ? null : patientId));
@@ -46,6 +47,7 @@ function PatientTable({
     };
 
     const onShowDetails = (patient: Patient) => {
+        setExpandedPatientId(patient.id)
         if (isAuthenticated) {
             toggleExpand(patient.id);
         } else {
@@ -109,7 +111,7 @@ function PatientTable({
                                         />
                                     </td>
                                 </tr>
-                                {expandedPatientId === patient.id && (
+                                {expandedPatientId === patient.id && isAuthenticated &&(
                                     <tr>
                                         <td colSpan={4} className="px-4 py-2 border-b">
                                             <PatientDetails
@@ -128,6 +130,13 @@ function PatientTable({
                 </tbody>
             </table>
         </div>
+        <PasswordProtect 
+            open={showPasswordDialog} 
+            onOpenChange={setShowPasswordDialog}
+            onAuthenticated={() => {}}
+        >
+            <></>
+        </PasswordProtect>
     </div>
 
     );
