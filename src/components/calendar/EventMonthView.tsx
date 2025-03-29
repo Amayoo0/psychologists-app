@@ -45,7 +45,7 @@ const EventMonthView = ({
                 <div key={`events-groupIndex-${date}`}>
                     {group.flatMap((e, i) => {
                         // return null if the group is on the weekend and weekends are hidden
-                        if (!showWeekends && getDayEs(e.startTime) > 4) return null;
+                        if (!showWeekends && getDayEs(eventDate) > 4) return null;
                         const left = getDayEs(e.startTime) * dayWidth + 0.25;
                         const top = weekOfMonth*cellSize + height*i + paddingTop;
 
@@ -53,30 +53,32 @@ const EventMonthView = ({
                         if (isMultiDay(e)){
                             // if is the first time the event is printed OR we are in monday which implies the event could have more than one week
                             if (eventDate.getDate() === e.startTime.getDate() || getDayEs(eventDate) === 0 || ( e.isHidden && selectedGroup === date)) {
-                            // Calculate the start of the group's week
-                            const startOfWeekDate = new Date(eventDate);
-                            startOfWeekDate.setDate(eventDate.getDate() - getDayEs(eventDate));
+                                // Calculate the start of the group's week
+                                const startOfWeekDate = new Date(eventDate);
+                                startOfWeekDate.setDate(eventDate.getDate() - getDayEs(eventDate));
 
-                            // Normalize event dates to midnight to avoid issues with hours
-                            const normalizedEventStart = new Date(e.startTime.toDateString());
-                            const normalizedEventEnd = new Date(e.endTime.toDateString());
+                                // Normalize event dates to midnight to avoid issues with hours
+                                const normalizedEventStart = new Date(e.startTime.toDateString());
+                                const normalizedEventEnd = new Date(e.endTime.toDateString());
 
-                            // For the width, use the later of the event start date and the start of the week
-                            const eventWidthStartTime =
-                            normalizedEventStart.getTime() < startOfWeekDate.getTime()
-                                ? startOfWeekDate.getTime()
-                                : normalizedEventStart.getTime();
+                                // For the width, use the later of the event start date and the start of the week
+                                const eventWidthStartTime =
+                                    normalizedEventStart.getTime() < startOfWeekDate.getTime()
+                                        ? startOfWeekDate.getTime()
+                                        : normalizedEventStart.getTime();
+                                
+                                const multiDayLeft = getDayEs(new Date(eventWidthStartTime)) * dayWidth + 0.25;
+                                
+                                // Calculate the difference in days as an absolute value
+                                const msPerDay = 1000 * 60 * 60 * 24;
+                                const diffDays =
+                                Math.floor((normalizedEventEnd.getTime() - eventWidthStartTime) / msPerDay) + 1;
 
-                            // Calculate the difference in days as an absolute value
-                            const msPerDay = 1000 * 60 * 60 * 24;
-                            const diffDays =
-                            Math.floor((normalizedEventEnd.getTime() - eventWidthStartTime) / msPerDay) + 1;
+                                // Calculate the available days in the cell (the week)
+                                const availableDays = (showWeekends ? 7 : 5) - getDayEs(eventDate);
 
-                            // Calculate the available days in the cell (the week)
-                            const availableDays = (showWeekends ? 7 : 5) - getDayEs(eventDate);
-
-                            // The event width in percentage is calculated as the minimum between the event duration in days and the available days, multiplied by dayWidth
-                            const eventWidth = Math.min(diffDays, availableDays) * dayWidth;
+                                // The event width in percentage is calculated as the minimum between the event duration in days and the available days, multiplied by dayWidth
+                                const eventWidth = Math.min(diffDays, availableDays) * dayWidth;
 
                                 e.isHidden = (i + 2) * height + paddingTop >= cellSize && selectedGroup !== date;
                                 return (
@@ -90,7 +92,7 @@ const EventMonthView = ({
                                         style={{
                                             top: `${top}px`,
                                             height: `${height}px`,
-                                            left: `${left}%`,
+                                            left: `${multiDayLeft}%`,
                                             width: `calc(${eventWidth}% - 15px)`
                                         }}
                                         onClick={() => {
