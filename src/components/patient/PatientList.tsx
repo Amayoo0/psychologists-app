@@ -31,35 +31,36 @@ const PatientList = () => {
 	
     return (
 		<>
-		{loading ? (
-        	<LoadingSpinner message="Cargando pacientes..." />
-		) : (
 			<div className="overflow-x-auto ">
 				<h1 className="px-6 py-1 text-3xl font-bold mb-6">Pacientes</h1>
-				{((patients.length > 0) 
-					?   <>
-						<PatientTable 
-							patients={patients}
-							onEditPatient={onEditPatient} 
-							onDeletePatient={onDeletePatient} 
-						/>
+				{loading ? (
+					<LoadingSpinner message="Cargando pacientes..." />
+				) : (
+					(patients.length > 0) 
+						?   <>
+								<PatientTable 
+									patients={patients}
+									onEditPatient={onEditPatient} 
+									onDeletePatient={onDeletePatient} 
+								/>
 
-						<PasswordProtect 
-							open={showPasswordDialog} 
-							onOpenChange={setShowPasswordDialog}
-							onAuthenticated={() => setShowPatientDialog(true)}
-						>
-							<PatientDialog 
-								open={showPatientDialog}
-								onOpenChange={setShowPatientDialog}
-								patientData={selectedPatient ?? undefined}
-							/>
-						</PasswordProtect>
-						</>
-					:   <p className="px-6 text-gray-500 text-sm">No hay pacientes registrados.</p>
+								<PasswordProtect 
+									open={showPasswordDialog} 
+									onOpenChange={setShowPasswordDialog}
+									onAuthenticated={() => setShowPatientDialog(true)}
+								>
+									<PatientDialog 
+										open={showPatientDialog}
+										onOpenChange={setShowPatientDialog}
+										patientData={selectedPatient ?? undefined}
+									/>
+								</PasswordProtect>
+							</>
+						:   <p className="px-6 text-gray-500 text-sm">No hay pacientes registrados.</p>
+					
 				)}
 			</div>
-		)}
+		
 		</>
     )
 }

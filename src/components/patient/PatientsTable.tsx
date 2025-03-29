@@ -47,11 +47,10 @@ function PatientTable({
     };
 
     const onShowDetails = (patient: Patient) => {
-        setExpandedPatientId(patient.id)
+        setSelectedPatient(patient);
         if (isAuthenticated) {
             toggleExpand(patient.id);
         } else {
-            setSelectedPatient(patient);
             setShowPasswordDialog(true);
         }
     };
@@ -59,8 +58,8 @@ function PatientTable({
 
 
     return (
-    <div className="overflow-x-auto">
-        <div className="h-full overflow-y-auto">
+    <div className="relative overflow-x-auto overflow-y-auto">
+        <div className="max-h-[calc(100vh-100px)] max-w-[calc(100vw-20px)] ">
             <table className="min-w-full border-collapse bg-white shadow rounded-lg">
                 <thead className="bg-gray-100 text-left text-sm font-semibold text-gray-700 sticky top-0 z-10">
                     <tr>
@@ -133,7 +132,9 @@ function PatientTable({
         <PasswordProtect 
             open={showPasswordDialog} 
             onOpenChange={setShowPasswordDialog}
-            onAuthenticated={() => {}}
+            onAuthenticated={() => {
+                if( selectedPatient ) toggleExpand(selectedPatient.id)
+            }}
         >
             <></>
         </PasswordProtect>
