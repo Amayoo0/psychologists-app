@@ -138,6 +138,11 @@ export function EventDialog({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
+        if ( !patient ){
+            alert("No hay ningún paciente seleccionado")
+            return
+        }
+
         const [startHour, startMinute] = startTimeStr.split(':')
         const [endHour, endMinute] = endTimeStr.split(':')
         
@@ -421,7 +426,7 @@ export function EventDialog({
                                 filterBy="name"                 
                                 selectedVal={patient ? patient.initials : ""}
                                 handleChange={(val) => setPatientId(Number(val))}
-                                placeholder="Seleccionar paciente"
+                                placeholder="Seleccionar paciente *"
                                 required
                             />
                         </div>

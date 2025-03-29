@@ -29,7 +29,7 @@ const SearchableDropdown = <T extends Record<string, unknown>>({
 
   useEffect(() => {
     if (selectedVal) {
-      const selectedOption = options.find(option => option[id] === selectedVal);
+      const selectedOption = options.find(option => option[label] === selectedVal);
       if (selectedOption) {
         setQuery(String(selectedOption[label]));
       }
@@ -42,6 +42,7 @@ const SearchableDropdown = <T extends Record<string, unknown>>({
         setIsOpen(false);
       }
     };
+    console.log("SelectedVal in dropdown component:", selectedVal)
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
