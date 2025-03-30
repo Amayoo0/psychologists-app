@@ -5,6 +5,7 @@ import { NavItems } from "@/components/NavItems";
 import AppLayout from "../AppLayout";
 import InternalPasswordCheck from "@/components/InternalPasswordCheck";
 import { NextEvents } from "@/components/calendar/NextEvents";
+import FloatingActionButton from "@/components/FloatingActionButton";
 
 // Componente reutilizable para las tarjetas de navegación
 function NavCard({ item }: { item: { name: string; icon: React.ElementType, href: string } }) {
@@ -44,6 +45,7 @@ export default function Home() {
         </div>
 
       </div>
+      <FloatingActionButton/>
     </AppLayout>
   );
 }

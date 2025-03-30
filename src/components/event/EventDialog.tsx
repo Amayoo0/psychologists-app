@@ -134,7 +134,7 @@ export function EventDialog({
         }
     }, [open]);
       
-    
+    if (!patients) alert("No hay pacientes disponibles. Por favor, añade pacientes antes de crear un evento.")
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
