@@ -16,16 +16,16 @@ import EventWeekViewMultiDay from "@/components/calendar/EventWeekView-MultiDay"
 
 
 const CalendarGrid = () => {
-const { view, setView, 
-	date, 
-	showWeekends,
-	cellSize, 
-	workHours, 
-	events, 
-	loadMoreEvents,
-	loading,
-	preferredView,
-} = useCalendar()
+	const { view, setView, 
+		date, 
+		showWeekends,
+		cellSize, 
+		workHours, 
+		events, 
+		loadMoreEvents,
+		loading,
+		preferredView,
+	} = useCalendar()
 	const [showEventDialog, setShowEventDialog] = useState(false)
 	const [eventsToShow, setEventsToShow] = useState<Event[]>([])
 	const [days, setDays] = useState<Date[]>([])
@@ -60,6 +60,7 @@ const { view, setView,
 	// Calculate cellSizeMonthView height based on the number of days to show
 	useEffect(() => {
 		const handleResize = () => {
+			if ( !days.length ) return
 			if (gridRef.current) {
 				const gridRect = gridRef.current.getBoundingClientRect()
 				let height = gridRect.height / Math.ceil(days.length / 7)
@@ -75,6 +76,7 @@ const { view, setView,
 
 	// Load events when the date, view or days change
 	useEffect(() => {
+		if ( !days.length ) return
 		function loadEvents() {
 			// if days is out of the loadedRange dates it will calculate a new range
 			loadMoreEvents(days[0], days[days.length-1])
@@ -99,24 +101,24 @@ const { view, setView,
 
 	// Load days when view or date change
 	useEffect(() => {
+		let newDays = [];
 		if (view === "month"){
 			const start = new Date(date.getFullYear(), date.getMonth(), 1)
 			start.setHours(0, 0, 0, 0)
 			const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
 			end.setHours(23, 59, 59, 999)
-			const monthDays = []
 			
 			// Add days from previous month to start on Sunday
 			const firstDay = getDayEs(start)
 			for (let i = firstDay; i > 0; i--) {
 				const prevDate = new Date(start)
 				prevDate.setDate(-i + 1)
-				monthDays.push(prevDate)
+				newDays.push(prevDate)
 			}
 			
 			// Add days of current month
 			for (let i = 1; i <= end.getDate(); i++) {
-				monthDays.push(new Date(date.getFullYear(), date.getMonth(), i))
+				newDays.push(new Date(date.getFullYear(), date.getMonth(), i))
 			}
 			
 			// Add days from next month to complete the grid
@@ -124,12 +126,10 @@ const { view, setView,
 			for (let i = 1; i < 7 - lastDay; i++) {
 				const nextDate = new Date(end)
 				nextDate.setDate(end.getDate() + i)
-				monthDays.push(nextDate)
+				newDays.push(nextDate)
 			}
-
-			setDays(monthDays);
 		}else{
-			const weekDays = Array.from({ length: 7 }, (_, i) => {
+			newDays = Array.from({ length: 7 }, (_, i) => {
 				const day = new Date(date)
 				if (i === 0)
 					day.setHours(0, 0, 0, 0)
@@ -139,10 +139,9 @@ const { view, setView,
 				day.setDate(date.getDate() - getDayEs(date) + i)
 				return day
 			})
-
-			setDays(weekDays)
 		}
-		loadMoreEvents(days[0], days[days.length - 1])
+		setDays(newDays)
+		loadMoreEvents(newDays[0], newDays[newDays.length - 1])
 	}, [view, date])
 
 	useEffect(() => {
