@@ -1,4 +1,4 @@
-import { CalendarClock, Clock, Video, Calendar, CheckSquare } from "lucide-react"
+import { CalendarClock, Clock, Video, Calendar, CheckSquare, User } from "lucide-react"
 import { formatDistanceToNow, format, isSameDay } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import { Event } from "@prisma/client"
 import { getUpcomingEvents } from "@/app/actions/events"
+import { EventDialog } from "../event/EventDialog"
+import { getPatientsByIds } from "@/app/actions/patients"
 
 function getEventIcon(type: string) {
   switch (type) {
@@ -42,8 +44,17 @@ function getEventTypeColor(type: string) {
   }
 }
 
+async function getPatientInitials(patientId: number) {
+  const patientsFound = await getPatientsByIds([patientId]);
+  if (!patientsFound || patientsFound.length === 0) return 'Paciente';
+  return patientsFound[0].initials;
+}
+
 export function NextEvents() {
     const [eventsToShow, setEventsToShow] = useState<Event[] | null>(null);
+    const [showEventDialog, setShowEventDialog] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
     useEffect(() => {
         async function fetchEvent(){
             const events = await getUpcomingEvents()
@@ -55,6 +66,7 @@ export function NextEvents() {
     if (!eventsToShow) return null
 
     return (
+      <>
         <Card className="">
         <CardHeader>
             <div className="flex items-center justify-between">
@@ -68,11 +80,20 @@ export function NextEvents() {
             <div className="divide-y">
             {eventsToShow.length > 0 ? (
                 eventsToShow.map((event) => (
-                <div key={event.id} className="p-4 hover:bg-muted/50 transition-colors">
+                <div 
+                  key={event.id} 
+                  className="p-4 hover:bg-muted/50 transition-colors"
+                  onClick={() => {
+                    setSelectedEvent(event);
+                    setShowEventDialog(true);
+                }}
+                >
                     <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2">
                         {getEventIcon(event.type)}
-                        <h3 className="font-medium">{event.title}</h3>
+                        <h3 className="font-medium">{event.title || "(Sin título)"}</h3>
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <PatientInitials patientId={event.patientId} />
                         <Badge className={getEventTypeColor(event.type)} variant="outline">
                         {getEventTypeName(event.type)}
                         </Badge>
@@ -96,18 +117,23 @@ export function NextEvents() {
                     </div>
 
                     {event.sessionUrl && (
-                    <div className="mt-2">
-                        <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                        <Video className="h-3.5 w-3.5" />
-                        Unirse a sesión
-                        </Button>
-                    </div>
+                      <div className="mt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="gap-1.5 text-xs" 
+                            onClick={() => window.location.href = `${event.sessionUrl}`}
+                            >
+                            <Video className="h-3.5 w-3.5" />
+                            Unirse a sesión
+                          </Button>
+                      </div>
                     )}
                 </div>
                 ))
-            ) : (
+              ) : (
                 <div className="p-6 text-center text-muted-foreground">No hay eventos próximos programados</div>
-            )}
+              )}
             </div>
         </CardContent>
         <CardFooter className="border-t bg-muted/50 p-4">
@@ -119,6 +145,32 @@ export function NextEvents() {
             </div>
         </CardFooter>
         </Card>
+        <EventDialog
+          open={showEventDialog}
+            onOpenChange={setShowEventDialog}
+            eventData={selectedEvent ?? {}}
+        />
+      </>
     )
 }
+
+interface PatientInitialsProps {
+  patientId: number;
+}
+
+const PatientInitials: React.FC<PatientInitialsProps> = ({ patientId }) => {
+  const [initials, setInitials] = useState<string>('Paciente');
+
+  useEffect(() => {
+    async function fetchInitials() {
+      const initials = await getPatientInitials(patientId);
+      setInitials(initials);
+    }
+    fetchInitials();
+  }, [patientId]);
+
+  return (
+    <span className="text-sm text-muted-foreground">{initials}</span>
+  );
+};
 
