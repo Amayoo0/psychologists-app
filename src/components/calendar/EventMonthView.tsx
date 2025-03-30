@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 import { Event } from '@prisma/client'
-import { getDayEs, groupOverlappingEvents, formatTime, EventMap } from "@/components/calendar/utils";
+import { getDayEs, groupOverlappingEvents, formatTime, EventMap, normalizeDate } from "@/components/calendar/utils";
 import { EventDialog } from "@/components/event/EventDialog";
 import { CircleCheckBig, CornerDownRight, X } from "lucide-react";
 
@@ -41,6 +41,11 @@ const EventMonthView = ({
             const eventDate = new Date(String(date));
             const weekOfMonth = Math.trunc(days.findIndex(day => day.getDate() === eventDate.getDate() && day.getMonth() === eventDate.getMonth()) / 7); // divided by 7 due to days always contains weekends
             const dayWidth = 100 / (showWeekends ? 7 : 5);
+            
+            const normalizedDays = days.map(normalizeDate);
+            const normalizedEventDate = normalizeDate(eventDate);
+            if (!normalizedDays.includes(normalizedEventDate)) return null; // skip if the date is not in the days array
+            
             return (
                 <div key={`events-groupIndex-${date}`}>
                     {group.flatMap((e, i) => {
@@ -52,7 +57,13 @@ const EventMonthView = ({
                         // if multi-day event
                         if (isMultiDay(e)){
                             // if is the first time the event is printed OR we are in monday which implies the event could have more than one week
-                            if (eventDate.getDate() === e.startTime.getDate() || getDayEs(eventDate) === 0 || ( e.isHidden && selectedGroup === date)) {
+                            if (eventDate.getDate() === e.startTime.getDate() && eventDate.getMonth() === e.startTime.getMonth() || getDayEs(eventDate) === 0 || ( e.isHidden && selectedGroup === date)) {
+                                console.log("multi-day: group day:", eventDate)
+                                console.log("eventDate.getDate() === e.startTime.getDate() && eventDate.getMonth() === e.startTime.getMonth()", eventDate.getDate() === e.startTime.getDate() && eventDate.getMonth() === e.startTime.getMonth())
+                                console.log("getDayEs(eventDate) === 0", getDayEs(eventDate) === 0)
+                                console.log("e.isHidden && selectedGroup === date", e.isHidden && selectedGroup === date)
+                                console.log("eventDate", eventDate)
+                                console.log("e.startTime", e.startTime)
                                 // Calculate the start of the group's week
                                 const startOfWeekDate = new Date(eventDate);
                                 startOfWeekDate.setDate(eventDate.getDate() - getDayEs(eventDate));
