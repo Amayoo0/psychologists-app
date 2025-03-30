@@ -39,23 +39,13 @@ export function FilesViewTable ({
         if (!file.encrypted_iv || !file.encrypted_key) {
             throw new Error("Encrypted key or IV is null");
         }
-        const keyBuffer = Buffer.from(
-            file.encrypted_key!.buffer,
-            file.encrypted_key!.byteOffset,
-            file.encrypted_key!.byteLength
-        );
-          
-        const ivBuffer = Buffer.from(
-            file.encrypted_iv!.buffer,
-            file.encrypted_iv!.byteOffset,
-            file.encrypted_iv!.byteLength
-        );
           
         const response = await downloadFileFromS3(
             file.id,
-            keyBuffer,
-            ivBuffer
+            file.encrypted_key as Buffer,
+            file.encrypted_iv as Buffer
         );
+        
         if (!response.fileBase64) {
             throw new Error("File base64 data is undefined");
         }
