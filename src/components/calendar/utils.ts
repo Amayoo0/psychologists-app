@@ -163,7 +163,7 @@ export function groupOverlappingEventsWeek(events: Event[] | null): EventGroup {
 
 export function getDatesBetween(startTime: Date, endTime: Date) {
   const dates = [];
-  let currentDate = new Date(startTime);
+  const currentDate = new Date(startTime);
   currentDate.setHours(0, 0, 0, 0);
   const finalDate = new Date(endTime);
   finalDate.setHours(0, 0, 0, 0);
