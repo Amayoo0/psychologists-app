@@ -29,9 +29,11 @@ const SearchableDropdown = <T extends Record<string, unknown>>({
 
   useEffect(() => {
     if (selectedVal) {
-      const selectedOption = options.find(option => option[label] === selectedVal);
+      const selectedOption = options.find(option => option[id] === selectedVal);
       if (selectedOption) {
         setQuery(String(selectedOption[label]));
+      } else {
+        setQuery("");
       }
     }
   }, [selectedVal, options, id, label]);
